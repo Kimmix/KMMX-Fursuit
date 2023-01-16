@@ -31,17 +31,7 @@
 #define OE 15
 */
 
-#define PANEL_WIDTH 64
-#define PANEL_HEIGHT 32
-#define PANELS_NUMBER 2
-
-#define PANE_WIDTH PANEL_WIDTH* PANELS_NUMBER
-#define PANE_HEIGHT PANEL_HEIGHT
-#define NUM_LEDS PANE_WIDTH* PANE_HEIGHT
-
 MatrixPanel_I2S_DMA* matrix = nullptr;
-
-#define PATTERN_DELAY 2000
 
 void buffclear(CRGB* buf) {
   memset(buf, 0x00, NUM_LEDS * sizeof(CRGB));  // flush buffer to black
@@ -95,6 +85,14 @@ void drawEye(int bitmap[]) {
   }
 }
 
+void drawColorTest() {
+  for (int i = 0; i < 64; i++) {
+    uint8_t r, g, b;
+    myColor(255, i, r, g, b);
+    matrix->drawPixelRGB888(0, i, r, g, b);
+  }
+}
+
 void setup() {
   Serial.begin(BAUD_RATE);
   // Setup P3 LED Matrix Pannel
@@ -105,7 +103,9 @@ void setup() {
   matrix->setBrightness8(20);
   // matrix->clearScreen();
   // draw_888_face_con(0, 0, myFace);
-  drawEye(eyeDefault);
+  // drawEye(eyeDefault);
+  drawGSBitmap(face_gs);
+  drawColorTest();
 }
 
 void loop() {
