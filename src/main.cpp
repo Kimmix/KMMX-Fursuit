@@ -37,54 +37,6 @@ void buffclear(CRGB* buf) {
   memset(buf, 0x00, NUM_LEDS * sizeof(CRGB));  // flush buffer to black
 }
 
-void draw_888_face_con(
-    int x,
-    int y,
-    const uint8_t ani[])  // this draws the face, x and y is an offset
-{
-  // Draw screen1
-  int imageHeight = 32;
-  int imageWidth = 64;
-  int counter = 0;
-  for (int yy = 0; yy < imageHeight; yy++) {
-    for (int xx = 0; xx < imageWidth; xx++) {
-      matrix->drawPixelRGB888(xx + x, yy + y, ani[counter], ani[counter + 1],
-                              ani[counter + 2]);
-
-      counter = counter + 3;
-    }
-  }
-  // Draw screen2
-  imageHeight = 32;
-  imageWidth = 64;
-  counter = 0;
-  for (int yy = 0; yy < imageHeight; yy++) {
-    for (int xx = 63; xx > -1; xx--) {
-      matrix->drawPixelRGB888(xx + 64, yy + y, ani[counter], ani[counter + 1],
-                              ani[counter + 2]);
-
-      counter = counter + 3;
-    }
-  }
-}
-
-void drawEye(int bitmap[]) {
-  int imageWidth = 25;
-  int imageHeight = 14;
-  int offsetX = 10;
-  int offsetY = 2;
-  int i, j, j2;
-  for (i = 0; i < imageHeight; i++) {
-    for (j = 0, j2 = 63; j < imageWidth; j++) {
-      matrix->drawPixel(offsetX + j, offsetY + i,
-                        (uint16_t)bitmap[i * imageWidth + j]);
-      matrix->drawPixel(-offsetX + PANEL_WIDTH + j2, offsetY + i,
-                        (uint16_t)bitmap[i * imageWidth + j]);
-      j2--;
-    }
-  }
-}
-
 void drawColorTest() {
   for (int i = 0; i < 64; i++) {
     uint8_t r, g, b;
@@ -95,16 +47,17 @@ void drawColorTest() {
 
 void setup() {
   Serial.begin(BAUD_RATE);
-  // Setup P3 LED Matrix Pannel
+  // ------ Setup P3 LED Matrix Pannel ------
   HUB75_I2S_CFG mxconfig(PANEL_WIDTH, PANEL_HEIGHT, PANELS_NUMBER);
   mxconfig.driver = HUB75_I2S_CFG::ICN2038S;
   matrix = new MatrixPanel_I2S_DMA(mxconfig);
   matrix->begin();
   matrix->setBrightness8(20);
   // matrix->clearScreen();
-  // draw_888_face_con(0, 0, myFace);
-  // drawEye(eyeDefault);
-  drawGSBitmap(face_gs);
+  // drawGSBitmap(face_gs);
+  drawEye(eyeDefault);
+  drawNose(noseDefault);
+  drawMouth(mouthDefault);
   drawColorTest();
 }
 

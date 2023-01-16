@@ -38,3 +38,51 @@ void drawGSBitmap(const uint8_t bitmap[]) {
     }
   }
 }
+
+void drawEye(const uint8_t bitmap[]) {
+  int imageWidth = 32, imageHeight = 18;
+  int offsetX = 6, offsetY = 0;
+  int i, j, j2;
+  for (i = 0; i < imageHeight; i++) {
+    for (j = 0, j2 = 63; j < imageWidth; j++) {
+      uint8_t r, g, b;
+      myColor(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
+      matrix->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
+      matrix->drawPixelRGB888(-offsetX + PANEL_WIDTH + j2, offsetY + i, r, g,
+                              b);
+      j2--;
+    }
+  }
+}
+
+void drawNose(const uint8_t bitmap[]) {
+  int imageWidth = 10, imageHeight = 6;
+  int offsetX = 54, offsetY = 6;
+  int i, j, j2;
+  for (i = 0; i < imageHeight; i++) {
+    for (j = 0, j2 = 63; j < imageWidth; j++) {
+      uint8_t r, g, b;
+      myColor(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
+      matrix->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
+      matrix->drawPixelRGB888(-offsetX + PANEL_WIDTH + j2, offsetY + i, r, g,
+                              b);
+      j2--;
+    }
+  }
+}
+
+void drawMouth(const uint8_t bitmap[]) {
+  int imageWidth = 50, imageHeight = 14;
+  int offsetX = 14, offsetY = 18;
+  int i, j, j2;
+  for (i = 0; i < imageHeight; i++) {
+    for (j = 0, j2 = 63; j < imageWidth; j++) {
+      uint8_t r, g, b;
+      myColor(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
+      matrix->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
+      matrix->drawPixelRGB888(-offsetX + PANEL_WIDTH + j2, offsetY + i, r, g,
+                              b);
+      j2--;
+    }
+  }
+}
