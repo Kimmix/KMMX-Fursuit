@@ -1,35 +1,34 @@
 #include "main.h"
 #include <Arduino.h>
+#include <ArduinoBLE.h>
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 #include "Icons.h"
 
-// HUB75E pinout
-// R1 | G1
-// B1 | GND
-// R2 | G2
-// B2 | E
-//  A | B
-//  C | D
-// CLK| LAT
-// OE | GND
-
-/*  Default library pin configuration for the reference
-  you can redefine only ones you need later on object creation
-#define R1 25
-#define G1 26
-#define BL1 27
-#define R2 14
-#define G2 12
-#define BL2 13
-#define CH_A 23
-#define CH_B 19
-#define CH_C 5
-#define CH_D 17
-#define CH_E -1 // assign to any available pin if using panels with 1/32 scan
-#define CLK 16
-#define LAT 4
-#define OE 15
-*/
+// BLE Service
+BLEService kmmxBLEControl(BLE_SERVICE_UUID);
+BLEByteCharacteristic controlCharacteristic(BLE_CHARACTERISTIC_UUID,
+                                            BLERead | BLEWrite);
+// On bluetooth connected
+void blePeripheralConnectHandler(BLEDevice central) {
+  Serial.print("Connected event, central: ");
+  Serial.println(central.address());
+}
+// On bluetooth disconnected
+void blePeripheralDisconnectHandler(BLEDevice central) {
+  Serial.print("Disconnected event, central: ");
+  Serial.println(central.address());
+}
+void switchCharacteristicWritten(BLEDevice central,
+                                 BLECharacteristic characteristic) {
+  Serial.print("Characteristic event, written: ");
+  if (controlCharacteristic.value()) {
+    Serial.println("LED on");
+    digitalWrite(LED_BUILTIN, HIGH);
+  } else {
+    Serial.println("LED off");
+    digitalWrite(LED_BUILTIN, LOW);
+  }
+}
 
 MatrixPanel_I2S_DMA* matrix = nullptr;
 
@@ -47,6 +46,23 @@ void drawColorTest() {
 
 void setup() {
   Serial.begin(BAUD_RATE);
+  // ------ Setup Bluetooth Low Energy ------
+  pinMode(LED_BUILTIN, OUTPUT);
+  if (!BLE.begin()) {
+    Serial.println("starting Bluetooth® Low Energy module failed!");
+  }
+  BLE.setLocalName("KMMX-BLE");
+  BLE.setAdvertisedService(kmmxBLEControl);
+  kmmxBLEControl.addCharacteristic(controlCharacteristic);
+  BLE.addService(kmmxBLEControl);
+  BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
+  BLE.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
+  controlCharacteristic.setEventHandler(BLEWritten,
+                                        switchCharacteristicWritten);
+  controlCharacteristic.setValue(0);
+  BLE.advertise();
+  Serial.println(("Bluetooth® device active, waiting for connections..."));
+
   // ------ Setup P3 LED Matrix Pannel ------
   HUB75_I2S_CFG mxconfig(PANEL_WIDTH, PANEL_HEIGHT, PANELS_NUMBER);
   mxconfig.driver = HUB75_I2S_CFG::ICN2038S;
@@ -62,6 +78,7 @@ void setup() {
 }
 
 void loop() {
+  BLE.poll(); // Start BLE
   // Serial.println("Fill screen: RED");
   // matrix->fillScreenRGB888(255, 0, 0);
   // delay(PATTERN_DELAY);

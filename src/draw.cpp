@@ -1,5 +1,6 @@
 // #include "Icons.h"
 #include "main.h"
+#include "Icons.h"
 
 /**
  * @brief - return RGB of my custom defined gradient color
