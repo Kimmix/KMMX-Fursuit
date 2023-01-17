@@ -51,6 +51,7 @@ void setup() {
   if (!BLE.begin()) {
     Serial.println("starting Bluetooth® Low Energy module failed!");
   }
+  BLE.setDeviceName("KMMX");
   BLE.setLocalName("KMMX-BLE");
   BLE.setAdvertisedService(kmmxBLEControl);
   kmmxBLEControl.addCharacteristic(controlCharacteristic);
