@@ -45,7 +45,6 @@ void drawColorTest() {
 }
 
 void setup() {
-  Serial.begin(BAUD_RATE);
   // ------ Setup Bluetooth Low Energy ------
   pinMode(LED_BUILTIN, OUTPUT);
   if (!BLE.begin()) {
@@ -68,8 +67,10 @@ void setup() {
   HUB75_I2S_CFG mxconfig(PANEL_WIDTH, PANEL_HEIGHT, PANELS_NUMBER);
   mxconfig.driver = HUB75_I2S_CFG::ICN2038S;
   matrix = new MatrixPanel_I2S_DMA(mxconfig);
+  // matrix->setBrightness8(20);  // 0-255
   matrix->begin();
-  matrix->setBrightness8(20);
+
+  Serial.begin(BAUD_RATE);
   // matrix->clearScreen();
   // drawGSBitmap(face_gs);
   drawEye(eyeDefault);
@@ -80,9 +81,38 @@ void setup() {
 
 void loop() {
   BLE.poll(); // Start BLE
+  drawEye(eyeDefault);
+  delay(6);
+  drawEye(eyeBlink0);
+  delay(7);
+  drawEye(eyeBlink1);
+  delay(7);
+  drawEye(eyeBlink2);
+  delay(8);
+  drawEye(eyeBlink3);
+  delay(9);
+  drawEye(eyeBlink4);
+  delay(9);
+  drawEye(eyeBlink5);
+  delay(10);
+  drawEye(eyeBlink6);
+  delay(13);
+  drawEye(eyeBlink5);
+  delay(10);
+  drawEye(eyeBlink4);
+  delay(10);
+  drawEye(eyeBlink3);
+  delay(10);
+  drawEye(eyeBlink2);
+  delay(11);
+  drawEye(eyeBlink1);
+  delay(12);
+  drawEye(eyeBlink0);
+  delay(15);
+  drawEye(eyeDefault);
+  delay(2000);
   // Serial.println("Fill screen: RED");
   // matrix->fillScreenRGB888(255, 0, 0);
   // delay(PATTERN_DELAY);
   // draw_eye(0, 0, myEye);
-  // delay(PATTERN_DELAY);
 }
