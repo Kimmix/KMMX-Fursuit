@@ -6,7 +6,7 @@
 
 // BLE Service
 BLEService kmmxBLEControl(BLE_SERVICE_UUID);
-BLEByteCharacteristic controlCharacteristic(BLE_CHARACTERISTIC_UUID,
+BLEByteCharacteristic brightnessCharacteristic(BLE_CHARACTERISTIC_UUID,
                                             BLERead | BLEWrite);
 // On bluetooth connected
 void blePeripheralConnectHandler(BLEDevice central) {
@@ -20,14 +20,9 @@ void blePeripheralDisconnectHandler(BLEDevice central) {
 }
 void switchCharacteristicWritten(BLEDevice central,
                                  BLECharacteristic characteristic) {
-  Serial.print("Characteristic event, written: ");
-  if (controlCharacteristic.value()) {
-    Serial.println("LED on");
-    digitalWrite(LED_BUILTIN, HIGH);
-  } else {
-    Serial.println("LED off");
-    digitalWrite(LED_BUILTIN, LOW);
-  }
+  // Serial.print("Characteristic event, written: ");
+  // Serial.println(brightnessCharacteristic.value());
+  matrix->setBrightness8(brightnessCharacteristic.value());  // 0-255
 }
 
 // *** Led Matrix ***
@@ -53,13 +48,13 @@ void setup() {
   BLE.setDeviceName("KMMX");
   BLE.setLocalName("KMMX-BLE");
   BLE.setAdvertisedService(kmmxBLEControl);
-  kmmxBLEControl.addCharacteristic(controlCharacteristic);
+  kmmxBLEControl.addCharacteristic(brightnessCharacteristic);
   BLE.addService(kmmxBLEControl);
   BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
   BLE.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
-  controlCharacteristic.setEventHandler(BLEWritten,
+  brightnessCharacteristic.setEventHandler(BLEWritten,
                                         switchCharacteristicWritten);
-  controlCharacteristic.setValue(0);
+  brightnessCharacteristic.setValue(0);
   BLE.advertise();
   Serial.println(("Bluetooth® device active, waiting for connections..."));
 
@@ -67,7 +62,6 @@ void setup() {
   HUB75_I2S_CFG mxconfig(PANEL_WIDTH, PANEL_HEIGHT, PANELS_NUMBER);
   mxconfig.driver = HUB75_I2S_CFG::ICN2038S;
   matrix = new MatrixPanel_I2S_DMA(mxconfig);
-  // matrix->setBrightness8(20);  // 0-255
   matrix->begin();
 
   Serial.begin(BAUD_RATE);
