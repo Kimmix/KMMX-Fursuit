@@ -2,6 +2,8 @@
 #include <FastLED.h>
 
 #define BAUD_RATE 115200  // serial debug port baud rate
+// Sensors
+#define IR_PIN 36
 
 // BLE
 #define BLE_SERVICE_UUID "c1449275-bf34-40ab-979d-e34a1fdbb129"
@@ -42,7 +44,6 @@ extern MatrixPanel_I2S_DMA* matrix;
 #define PANE_WIDTH PANEL_WIDTH* PANELS_NUMBER
 #define PANE_HEIGHT PANEL_HEIGHT
 #define NUM_LEDS PANE_WIDTH* PANE_HEIGHT
-
 void buffclear(CRGB* buf);
 
 // KMMX Custom draw function

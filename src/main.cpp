@@ -43,8 +43,6 @@ void drawColorTest() {
   }
 }
 
-#define IR_PIN 36
-
 void setup() {
   pinMode(IR_PIN, INPUT);
   // ------ Setup Bluetooth Low Energy ------
