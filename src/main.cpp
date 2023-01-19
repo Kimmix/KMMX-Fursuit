@@ -89,6 +89,7 @@ void loop() {
   } else {
     blink();
   }
+  // oFace();
   // Serial.println("Fill screen: RED");
   // matrix->fillScreenRGB888(255, 0, 0);
   // delay(PATTERN_DELAY);

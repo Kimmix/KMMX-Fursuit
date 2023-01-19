@@ -58,3 +58,4 @@ void drawNose(const uint8_t bitmap[]);
 void drawMouth(const uint8_t bitmap[]);
 void blink();
 void boop(bool isBoop);
+void oFace();
