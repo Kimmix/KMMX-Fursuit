@@ -86,3 +86,34 @@ void drawMouth(const uint8_t bitmap[]) {
     }
   }
 }
+
+volatile unsigned long blinkTime = 0;
+volatile unsigned long blinkSpeed = 0;
+const unsigned long blinkInterval = 4000;
+int Step = 0;
+const uint8_t* blinkAnimation[8] = {
+    eyeDefault, eyeBlink1, eyeBlink2, eyeBlink3,
+    eyeBlink4,  eyeBlink5, eyeBlink6, eyeBlink7,
+};
+int blinkAnimationStep = 0;
+void blink() {
+  if (millis() - blinkTime >= blinkInterval) {
+    if (millis() - blinkSpeed >= 25) {
+      if (Step < 8) {
+        drawEye(blinkAnimation[blinkAnimationStep]);
+        blinkAnimationStep++;
+        Step++;
+      } else if (Step >= 8) {
+        blinkAnimationStep--;
+        drawEye(blinkAnimation[blinkAnimationStep]);
+        Step++;
+      }
+      if (Step == 16) {
+        blinkAnimationStep = 0;
+        Step = 0;
+        blinkTime = millis();
+      }
+      blinkSpeed = millis();
+    }
+  }
+}

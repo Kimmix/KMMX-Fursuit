@@ -30,12 +30,11 @@ void switchCharacteristicWritten(BLEDevice central,
   }
 }
 
+// *** Led Matrix ***
 MatrixPanel_I2S_DMA* matrix = nullptr;
-
 void buffclear(CRGB* buf) {
   memset(buf, 0x00, NUM_LEDS * sizeof(CRGB));  // flush buffer to black
 }
-
 void drawColorTest() {
   for (int i = 0; i < 64; i++) {
     uint8_t r, g, b;
@@ -44,7 +43,10 @@ void drawColorTest() {
   }
 }
 
+#define IR_PIN 36
+
 void setup() {
+  pinMode(IR_PIN, INPUT);
   // ------ Setup Bluetooth Low Energy ------
   pinMode(LED_BUILTIN, OUTPUT);
   if (!BLE.begin()) {
@@ -80,37 +82,9 @@ void setup() {
 }
 
 void loop() {
-  BLE.poll(); // Start BLE
-  drawEye(eyeDefault);
-  delay(6);
-  drawEye(eyeBlink0);
-  delay(7);
-  drawEye(eyeBlink1);
-  delay(7);
-  drawEye(eyeBlink2);
-  delay(8);
-  drawEye(eyeBlink3);
-  delay(9);
-  drawEye(eyeBlink4);
-  delay(9);
-  drawEye(eyeBlink5);
-  delay(10);
-  drawEye(eyeBlink6);
-  delay(13);
-  drawEye(eyeBlink5);
-  delay(10);
-  drawEye(eyeBlink4);
-  delay(10);
-  drawEye(eyeBlink3);
-  delay(10);
-  drawEye(eyeBlink2);
-  delay(11);
-  drawEye(eyeBlink1);
-  delay(12);
-  drawEye(eyeBlink0);
-  delay(15);
-  drawEye(eyeDefault);
-  delay(2000);
+  BLE.poll();  // Start BLE
+  // int state = digitalRead(IR_PIN);
+  blink();
   // Serial.println("Fill screen: RED");
   // matrix->fillScreenRGB888(255, 0, 0);
   // delay(PATTERN_DELAY);
