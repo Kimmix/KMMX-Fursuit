@@ -115,3 +115,19 @@ void blink() {
     }
   }
 }
+
+volatile unsigned long boopSpeed = 0;
+const uint8_t* boopAnimation[2] = {eyeV1, eyeV2};
+int boopAnimationFrame = 0;
+void boop(bool isBoop) {
+  while (isBoop) {
+    if (millis() - boopSpeed >= 250) {
+      boopAnimationFrame ^= 1;
+      drawEye(boopAnimation[boopAnimationFrame]);
+      boopSpeed = millis();
+    }
+    isBoop = !digitalRead(IR_PIN);
+  }
+  blinkTime = millis();
+  drawEye(eyeDefault);
+}

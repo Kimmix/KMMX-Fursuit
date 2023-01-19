@@ -79,10 +79,16 @@ void setup() {
   drawColorTest();
 }
 
+bool isBoop;
+
 void loop() {
   BLE.poll();  // Start BLE
-  // int state = digitalRead(IR_PIN);
-  blink();
+  isBoop = !digitalRead(IR_PIN);
+  if (isBoop) {
+    boop(isBoop);
+  } else {
+    blink();
+  }
   // Serial.println("Fill screen: RED");
   // matrix->fillScreenRGB888(255, 0, 0);
   // delay(PATTERN_DELAY);
