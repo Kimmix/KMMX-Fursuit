@@ -87,6 +87,22 @@ void drawMouth(const uint8_t bitmap[]) {
   }
 }
 
+void drawHeart() {
+  int imageWidth = 8, imageHeight = 6;
+  int i, j, j2;
+  for (i = 0; i < imageHeight; i++) {
+    for (j = 0, j2 = 63; j < imageWidth; j++) {
+      if (heart[i * imageWidth + j] > 0) {
+        matrix->drawPixelRGB888(j, i, (heart[i * imageWidth + j] * 255) / 255,
+                                0, 0);
+        matrix->drawPixelRGB888(PANEL_WIDTH + j2, i,
+                                (heart[i * imageWidth + j] * 255) / 255, 0, 0);
+        j2--;
+      }
+    }
+  }
+}
+
 volatile unsigned long blinkTime = 0, blinkSpeed = 0, blinkSpeedInterval = 25;
 const unsigned long blinkInterval = 4000;
 int Step = 0, blinkAnimationStep = 0;
