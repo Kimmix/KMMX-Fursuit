@@ -40,6 +40,7 @@ void drawColorTest() {
 
 void setup() {
   pinMode(IR_PIN, INPUT);
+  randomSeed(analogRead(0));
   // ------ Setup Bluetooth Low Energy ------
   pinMode(LED_BUILTIN, OUTPUT);
   if (!BLE.begin()) {

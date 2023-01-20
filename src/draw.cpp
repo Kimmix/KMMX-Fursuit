@@ -103,8 +103,7 @@ void drawHeart() {
   }
 }
 
-volatile unsigned long blinkTime = 0, blinkSpeed = 0, blinkSpeedInterval = 25;
-const unsigned long blinkInterval = 4000;
+volatile unsigned long blinkTime = 0, blinkSpeed = 0, blinkSpeedInterval = 25, blinkInterval = 1000;
 int Step = 0, blinkAnimationStep = 0;
 const uint8_t* blinkAnimation[8] = {
     eyeDefault, eyeBlink1, eyeBlink2, eyeBlink3,
@@ -132,6 +131,7 @@ void blink() {
       if (Step == 16) {
         blinkAnimationStep = 0;
         Step = 0;
+        blinkInterval = (1000 * random(4, 12));
         blinkTime = millis();
       }
       blinkSpeed = millis();
