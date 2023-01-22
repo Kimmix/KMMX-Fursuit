@@ -1,4 +1,5 @@
 #include "main.h"
+#include "FastLED_Pixel_Buffer.h"
 #include "Icons.h"
 
 /**
@@ -87,22 +88,6 @@ void drawMouth(const uint8_t bitmap[]) {
   }
 }
 
-void drawHeart(int offsetX, int offsetY) {
-  int imageWidth = 5, imageHeight = 5;
-  // int offsetX = 0, offsetY = 0;
-  int i, j, j2;
-  for (i = 0; i < imageHeight; i++) {
-    for (j = 0, j2 = 63; j < imageWidth; j++) {
-      if (heartS[i * imageWidth + j] > 0) {
-        matrix->drawPixelRGB888(offsetX + j, offsetY + i,
-                                (heartS[i * imageWidth + j] * 255) / 255, 0, 0);
-        // matrix->drawPixelRGB888(-offsetX + PANEL_WIDTH + j2, offsetY + i,
-        //                         (heartS[i * imageWidth + j] * 255) / 255, 0, 0);
-        j2--;
-      }
-    }
-  }
-}
 
 volatile unsigned long blinkTime = 0, blinkSpeed = 0, blinkSpeedInterval = 25, blinkInterval = 1000;
 int Step = 0, blinkAnimationStep = 0;
