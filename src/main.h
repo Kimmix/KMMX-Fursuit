@@ -44,7 +44,6 @@ extern MatrixPanel_I2S_DMA* matrix;
 #define PANE_WIDTH PANEL_WIDTH* PANELS_NUMBER
 #define PANE_HEIGHT PANEL_HEIGHT
 #define NUM_LEDS PANE_WIDTH* PANE_HEIGHT
-void buffclear(CRGB* buf);
 
 // KMMX Custom draw function
 void myColor(const uint8_t lightness,
@@ -56,6 +55,7 @@ void drawGSBitmap(const uint8_t bitmap[]);
 void drawEye(const uint8_t bitmap[]);
 void drawNose(const uint8_t bitmap[]);
 void drawMouth(const uint8_t bitmap[]);
+void drawHeart(int offsetX, int offsetY);
 void blink();
 void boop(bool isBoop);
 void oFace();

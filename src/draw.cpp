@@ -87,16 +87,17 @@ void drawMouth(const uint8_t bitmap[]) {
   }
 }
 
-void drawHeart() {
-  int imageWidth = 8, imageHeight = 6;
+void drawHeart(int offsetX, int offsetY) {
+  int imageWidth = 5, imageHeight = 5;
+  // int offsetX = 0, offsetY = 0;
   int i, j, j2;
   for (i = 0; i < imageHeight; i++) {
     for (j = 0, j2 = 63; j < imageWidth; j++) {
-      if (heart[i * imageWidth + j] > 0) {
-        matrix->drawPixelRGB888(j, i, (heart[i * imageWidth + j] * 255) / 255,
-                                0, 0);
-        matrix->drawPixelRGB888(PANEL_WIDTH + j2, i,
-                                (heart[i * imageWidth + j] * 255) / 255, 0, 0);
+      if (heartS[i * imageWidth + j] > 0) {
+        matrix->drawPixelRGB888(offsetX + j, offsetY + i,
+                                (heartS[i * imageWidth + j] * 255) / 255, 0, 0);
+        // matrix->drawPixelRGB888(-offsetX + PANEL_WIDTH + j2, offsetY + i,
+        //                         (heartS[i * imageWidth + j] * 255) / 255, 0, 0);
         j2--;
       }
     }
