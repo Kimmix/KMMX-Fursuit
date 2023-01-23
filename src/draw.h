@@ -1,7 +1,3 @@
-#include "main.h"
-#include "FastLED_Pixel_Buffer.h"
-#include "Icons.h"
-
 /**
  * @brief - return RGB of my custom defined gradient color
  * @param lightness 8-bit brightness of color
@@ -125,6 +121,17 @@ void blink() {
   }
 }
 
+volatile unsigned long oFaceSpeed = 0;
+const uint8_t* oFaceAnimation[3] = {eyeO1, eyeO2, eyeO3};
+int oFaceAnimationFrame = 0;
+void oFace() {
+  if (millis() - oFaceSpeed >= 250) {
+    oFaceAnimationFrame = random(0, 2);
+    drawEye(oFaceAnimation[oFaceAnimationFrame]);
+    oFaceSpeed = millis();
+  }
+}
+
 volatile unsigned long boopSpeed = 0;
 const uint8_t* boopAnimation[2] = {eyeV1, eyeV2};
 int boopAnimationFrame = 0;
@@ -146,13 +153,3 @@ void boop(bool isBoop) {
   drawEye(eyeDefault);
 }
 
-volatile unsigned long oFaceSpeed = 0;
-const uint8_t* oFaceAnimation[3] = {eyeO1, eyeO2, eyeO3};
-int oFaceAnimationFrame = 0;
-void oFace() {
-  if (millis() - oFaceSpeed >= 250) {
-    oFaceAnimationFrame = random(0, 2);
-    drawEye(oFaceAnimation[oFaceAnimationFrame]);
-    oFaceSpeed = millis();
-  }
-}

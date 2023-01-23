@@ -4,6 +4,7 @@
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 #include "FastLED_Pixel_Buffer.h"
 #include "Icons.h"
+#include "draw.h"
 
 // BLE Service
 BLEService kmmxBLEControl(BLE_SERVICE_UUID);
@@ -83,7 +84,6 @@ void flyingHeart() {
       Hearts[i].ypos += Hearts[i].velocityy;
       heartSpeed = millis();
     }
-    drawMouth(mouthDefault);
     FastLED_Pixel_Buff->show();
   }
 }
