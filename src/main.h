@@ -6,7 +6,6 @@
 // Sensors
 #define IR_PIN 36
 
-
 // ---- P3 LED Matrix Panel ----
 // HUB75E pinout
 // R1 | G1
@@ -35,6 +34,7 @@
 #define LAT 4
 #define OE 15
 */
+
 extern MatrixPanel_I2S_DMA* matrix;
 extern VirtualMatrixPanel_FastLED_Pixel_Buffer* FastLED_Pixel_Buff;
 #define PANEL_WIDTH 64

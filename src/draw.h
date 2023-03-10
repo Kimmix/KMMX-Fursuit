@@ -6,7 +6,7 @@
  * @param uint8_t g - RGB888 color
  * @param uint8_t b - RGB888 color
  */
-void myColor(const uint8_t lightness,
+void getColorAcc(const uint8_t lightness,
 	int row,
 	uint8_t& r,
 	uint8_t& g,
@@ -19,8 +19,8 @@ void myColor(const uint8_t lightness,
 void drawColorTest() {
 	uint8_t r, g, b;
 	for (int i = 0; i < 64; i++) {
-		myColor(255, i, r, g, b);
-		matrix->drawPixelRGB888(0, i, r, g, b);
+		getColorAcc(255, i, r, g, b);
+		FastLED_Pixel_Buff->drawPixel(0, i, r, g, b);
 	}
 }
 
@@ -35,9 +35,9 @@ void drawGSBitmap(const uint8_t bitmap[]) {
 	for (i = 0; i < imageHeight; i++) {
 		for (j = 0, j2 = 63; j < imageWidth; j++) {
 			uint8_t r, g, b;
-			myColor(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
-			FastLED_Pixel_Buff->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
-			FastLED_Pixel_Buff->drawPixelRGB888(-offsetX + PANEL_WIDTH + j2, offsetY + i, r, g, b);
+			getColorAcc(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
+			FastLED_Pixel_Buff->drawPixel(offsetX + j, offsetY + i, r, g, b);
+			FastLED_Pixel_Buff->drawPixel(-offsetX + PANEL_WIDTH + j2, offsetY + i, r, g, b);
 			j2--;
 		}
 	}
@@ -50,9 +50,9 @@ void drawEye(const uint8_t bitmap[]) {
 	for (i = 0; i < imageHeight; i++) {
 		for (j = 0, j2 = 63; j < imageWidth; j++) {
 			uint8_t r, g, b;
-			myColor(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
-			FastLED_Pixel_Buff->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
-			FastLED_Pixel_Buff->drawPixelRGB888(-offsetX + PANEL_WIDTH + j2, offsetY + i, r, g, b);
+			getColorAcc(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
+			FastLED_Pixel_Buff->drawPixel(offsetX + j, offsetY + i, r, g, b);
+			FastLED_Pixel_Buff->drawPixel(-offsetX + PANEL_WIDTH + j2, offsetY + i, r, g, b);
 			j2--;
 		}
 	}
@@ -65,9 +65,9 @@ void drawNose(const uint8_t bitmap[]) {
 	for (i = 0; i < imageHeight; i++) {
 		for (j = 0, j2 = 63; j < imageWidth; j++) {
 			uint8_t r, g, b;
-			myColor(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
-			FastLED_Pixel_Buff->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
-			FastLED_Pixel_Buff->drawPixelRGB888(-offsetX + PANEL_WIDTH + j2, offsetY + i, r, g, b);
+			getColorAcc(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
+			FastLED_Pixel_Buff->drawPixel(offsetX + j, offsetY + i, r, g, b);
+			FastLED_Pixel_Buff->drawPixel(-offsetX + PANEL_WIDTH + j2, offsetY + i, r, g, b);
 			j2--;
 		}
 	}
@@ -80,9 +80,9 @@ void drawMouth(const uint8_t bitmap[]) {
 	for (i = 0; i < imageHeight; i++) {
 		for (j = 0, j2 = 63; j < imageWidth; j++) {
 			uint8_t r, g, b;
-			myColor(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
-			FastLED_Pixel_Buff->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
-			FastLED_Pixel_Buff->drawPixelRGB888(-offsetX + PANEL_WIDTH + j2, offsetY + i, r, g, b);
+			getColorAcc(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
+			FastLED_Pixel_Buff->drawPixel(offsetX + j, offsetY + i, r, g, b);
+			FastLED_Pixel_Buff->drawPixel(-offsetX + PANEL_WIDTH + j2, offsetY + i, r, g, b);
 			j2--;
 		}
 	}
@@ -157,6 +157,5 @@ void boop(bool isBoop) {
 		isBoop = !digitalRead(IR_PIN);
 	}
 	blinkTime = millis();
-	drawEye(eyeDefault);
 }
 

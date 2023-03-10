@@ -40,13 +40,13 @@ void flyingHeart() {
 		for (int i = 0; i < numHeart; i++) {
 			// Draw heart and then calculate
 			drawHeart(Hearts[i].xpos, Hearts[i].ypos);
-			if (8 + Hearts[i].xpos >= FastLED_Pixel_Buff->width()) {
+			if (8 + Hearts[i].xpos >= PANEL_WIDTH) {
 				Hearts[i].velocityx *= -1;
 			}
 			else if (Hearts[i].xpos <= 0) {
 				Hearts[i].velocityx = abs(Hearts[i].velocityx);
 			}
-			if (6 + Hearts[i].ypos >= FastLED_Pixel_Buff->height()) {
+			if (6 + Hearts[i].ypos >= PANEL_HEIGHT) {
 				Hearts[i].velocityy *= -1;
 			}
 			else if (Hearts[i].ypos <= 0) {
@@ -64,35 +64,26 @@ void setup() {
 	Serial.begin(BAUD_RATE);
 	pinMode(IR_PIN, INPUT);
 	randomSeed(analogRead(0));
-	bleController.Initialize();
+	// bleController.Initialize();
 
 	// ------ Setup P3 LED Matrix Pannel ------
 	HUB75_I2S_CFG mxconfig(PANEL_WIDTH, PANEL_HEIGHT, PANELS_NUMBER);
-	// mxconfig.driver = HUB75_I2S_CFG::ICN2038S;
-	// mxconfig.double_buff = true; // Turn of double buffer
-	mxconfig.clkphase = false;
+	// mxconfig.clkphase = false;
 	matrix = new MatrixPanel_I2S_DMA(mxconfig);
-	matrix->setBrightness8(125);  // 0-255
+	matrix->setBrightness8(96);  // 0-255
 	matrix->clearScreen();
+	delay(500);
 	if (not matrix->begin())
 		Serial.println("****** I2S memory allocation failed ***********");
-	FastLED_Pixel_Buff = new VirtualMatrixPanel_FastLED_Pixel_Buffer(
-		(*matrix), 1, PANELS_NUMBER, PANEL_WIDTH, PANEL_HEIGHT, true, false);
+	FastLED_Pixel_Buff = new VirtualMatrixPanel_FastLED_Pixel_Buffer((*matrix), 1, PANELS_NUMBER, PANEL_WIDTH, PANEL_HEIGHT, true, false);
 	if (not FastLED_Pixel_Buff->allocateMemory())
-		Serial.println(
-			"****** Unable to find enough memory for the FastLED pixel "
-			"buffer! ***********");
-	// drawGSBitmap(face_gs);
-	drawEye(eyeDefault);
-	drawNose(noseDefault);
-	drawMouth(mouthDefault);
-	drawColorTest();
+		Serial.println("****** Unable to find enough memory for the FastLED pixel buffer! ***********");
 
 	for (int i = 0; i < numHeart; i++) {
 		// Hearts[i].xpos = random(0, matrix->width() - 8);
 		// Hearts[i].ypos = random(0, matrix->height() - 6);
 		Hearts[i].xpos = 0;
-		Hearts[i].ypos = random(0, matrix->height() - 5);
+		Hearts[i].ypos = random(0, PANEL_HEIGHT - 5);
 		Hearts[i].velocityx = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 		Hearts[i].velocityy = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 	}
@@ -101,13 +92,13 @@ void setup() {
 bool isBoop;
 
 void loop() {
-	bleController.start();
-	// BLE.poll();  // Start BLE
-	// matrix->flipDMABuffer();
-	// matrix->clearScreen();
-	// drawEye(eyeDefault);
-	// drawNose(noseDefault);
-	// drawMouth(mouthDefault);
+	// bleController.start();
+	FastLED_Pixel_Buff->dimAll(200);
+	drawColorTest();
+
+	drawEye(eyeDefault);
+	drawNose(noseDefault);
+	drawMouth(mouthDefault);
 	// flyingHeart();
 	isBoop = !digitalRead(IR_PIN);
 	if (isBoop) {
@@ -117,9 +108,6 @@ void loop() {
 	else {
 		blink();
 	}
-	// oFace();
-	// Serial.println("Fill screen: RED");
-	// matrix->fillScreenRGB888(255, 0, 0);
-	// delay(PATTERN_DELAY);
-	// draw_eye(0, 0, myEye);
+	FastLED_Pixel_Buff->show();
+	delay(20);
 }
