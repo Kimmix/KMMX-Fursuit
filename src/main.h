@@ -1,13 +1,11 @@
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
+#include "FastLED_Pixel_Buffer.h"
 #include <FastLED.h>
 
 #define BAUD_RATE 115200  // serial debug port baud rate
 // Sensors
 #define IR_PIN 36
 
-// BLE
-#define BLE_SERVICE_UUID "c1449275-bf34-40ab-979d-e34a1fdbb129"
-#define BLE_CHARACTERISTIC_UUID "49a36bb2-1c66-4e5c-8ff3-28e55a64beb3"
 
 // ---- P3 LED Matrix Panel ----
 // HUB75E pinout
@@ -38,6 +36,7 @@
 #define OE 15
 */
 extern MatrixPanel_I2S_DMA* matrix;
+extern VirtualMatrixPanel_FastLED_Pixel_Buffer* FastLED_Pixel_Buff;
 #define PANEL_WIDTH 64
 #define PANEL_HEIGHT 32
 #define PANELS_NUMBER 2
