@@ -6,8 +6,9 @@
 
 // BLE Service
 BLEService kmmxBLEControl(BLE_SERVICE_UUID);
-BLEByteCharacteristic brightnessCharacteristic(BLE_CHARACTERISTIC_UUID,
-											   BLERead | BLEWrite);
+
+// BLE Characteristic
+BLEByteCharacteristic connetionCharacteristic(BLE_CHARACTERISTIC_UUID, BLERead | BLEWrite);
 
 class BLEController {
 private:
@@ -21,30 +22,39 @@ private:
 		Serial.print("Disconnected event, central: ");
 		Serial.println(central.address());
 	}
-	static void switchCharacteristicWritten(BLEDevice central,
-											BLECharacteristic characteristic) {
-		// Serial.print("Characteristic event, written: ");
-		// Serial.println(brightnessCharacteristic.value());
-		// matrix->setBrightness8(brightnessCharacteristic.value());  // 0-255
+	static void switchCharacteristicWritten(BLEDevice central, BLECharacteristic characteristic) {
+		// central wrote new value to characteristic, update LED
+		Serial.print("Characteristic event, written: ");
+
+		if (connetionCharacteristic.value()) {
+			Serial.println("LED on");
+			digitalWrite(LED_BUILTIN, HIGH);
+		}
+		else {
+			Serial.println("LED off");
+			digitalWrite(LED_BUILTIN, LOW);
+		}
 	}
 
 public:
-	void Initialize() {
+	void init() {
 		// ------ Setup Bluetooth Low Energy ------
 		pinMode(LED_BUILTIN, OUTPUT);
-		if (!BLE.begin()) {
+		if (!BLE.begin())
 			Serial.println("starting Bluetooth® Low Energy module failed!");
-		}
 		BLE.setDeviceName("KMMX");
 		BLE.setLocalName("KMMX-BLE");
 		BLE.setAdvertisedService(kmmxBLEControl);
-		kmmxBLEControl.addCharacteristic(brightnessCharacteristic);
 		BLE.addService(kmmxBLEControl);
+
+		// Connection Status LED
+		kmmxBLEControl.addCharacteristic(connetionCharacteristic);
 		BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
 		BLE.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
-		brightnessCharacteristic.setEventHandler(BLEWritten,
-												 switchCharacteristicWritten);
-		brightnessCharacteristic.setValue(0);
+		connetionCharacteristic.setEventHandler(BLEWritten, switchCharacteristicWritten);
+		connetionCharacteristic.setValue(0);
+
+		// Begin 
 		BLE.advertise();
 		Serial.println(("Bluetooth® device active, waiting for connections..."));
 	}

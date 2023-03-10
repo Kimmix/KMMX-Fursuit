@@ -10,9 +10,10 @@ DisplayController displayController = DisplayController();
 
 
 void setup() {
-	Serial.begin(BAUD_RATE);
+	Serial.begin(115200);
+	while (!Serial);
 	pinMode(IR_PIN, INPUT);
-	// bleController.Initialize();
+	// bleController.init();
 	displayController.init();
 }
 
@@ -26,10 +27,8 @@ void loop() {
 		drawEye(eyeDefault);
 	drawNose(noseDefault);
 	drawMouth(mouthDefault);
-	// flyingHeart();
 	isBoop = !digitalRead(IR_PIN);
 	if (isBoop) {
-		// flyingHeart();
 		boop();
 	}
 	else {
