@@ -95,8 +95,9 @@ const uint8_t* blinkAnimation[8] = {
 	eyeDefault, eyeBlink1, eyeBlink2, eyeBlink3,
 	eyeBlink4,  eyeBlink5, eyeBlink6, eyeBlink7,
 };
-void blink() {
+void blink(bool& isOverrideEye) {
 	if (millis() - blinkTime >= blinkInterval) {
+		isOverrideEye = true;
 		if (millis() - blinkSpeed >= blinkSpeedInterval) {
 			if (Step < 8) {
 				drawEye(blinkAnimation[blinkAnimationStep]);
@@ -113,6 +114,7 @@ void blink() {
 				Step = 0;
 				blinkInterval = (1000 * random(4, 12));
 				blinkTime = millis();
+				isOverrideEye = false;
 			}
 			blinkSpeed = millis();
 		}
