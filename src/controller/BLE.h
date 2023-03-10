@@ -25,7 +25,7 @@ private:
 											BLECharacteristic characteristic) {
 		// Serial.print("Characteristic event, written: ");
 		// Serial.println(brightnessCharacteristic.value());
-		matrix->setBrightness8(brightnessCharacteristic.value());  // 0-255
+		// matrix->setBrightness8(brightnessCharacteristic.value());  // 0-255
 	}
 
 public:
