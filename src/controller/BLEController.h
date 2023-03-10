@@ -9,7 +9,7 @@ BLEService kmmxBLEControl(BLE_SERVICE_UUID);
 BLEByteCharacteristic brightnessCharacteristic(BLE_CHARACTERISTIC_UUID,
 											   BLERead | BLEWrite);
 
-class BLEControl {
+class BLEController {
 private:
 	// On bluetooth connected
 	static void blePeripheralConnectHandler(BLEDevice central) {

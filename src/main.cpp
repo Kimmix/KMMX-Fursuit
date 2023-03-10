@@ -1,11 +1,11 @@
 #include "main.h"
 #include <Arduino.h>
-#include "controller/BLE.h"
+#include "controller/BLEController.h"
 #include "controller/displayController.h"
 #include "Icons.h"
 #include "draw.h"
 
-BLEControl bleController = BLEControl();
+BLEController bleController = BLEController();
 DisplayController displayController = DisplayController();
 
 
