@@ -103,11 +103,11 @@ void loop() {
 	isBoop = !digitalRead(IR_PIN);
 	if (isBoop) {
 		// flyingHeart();
-		boop(isBoop);
+		boop();
 	}
 	else {
 		blink();
 	}
 	FastLED_Pixel_Buff->show();
-	delay(20);
+	delay(25);
 }
