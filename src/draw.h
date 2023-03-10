@@ -99,19 +99,11 @@ void blink() {
 	if (millis() - blinkTime >= blinkInterval) {
 		if (millis() - blinkSpeed >= blinkSpeedInterval) {
 			if (Step < 8) {
-				blinkSpeedInterval = 30;
 				drawEye(blinkAnimation[blinkAnimationStep]);
 				blinkAnimationStep++;
 				Step++;
 			}
-			else if (Step >= 8 && Step < 14) {
-				blinkSpeedInterval = 15;
-				blinkAnimationStep--;
-				drawEye(blinkAnimation[blinkAnimationStep]);
-				Step++;
-			}
-			else if (Step >= 14) {
-				blinkSpeedInterval = 80;
+			else if (Step >= 8 && Step < 16) {
 				blinkAnimationStep--;
 				drawEye(blinkAnimation[blinkAnimationStep]);
 				Step++;
@@ -141,20 +133,17 @@ void oFace() {
 volatile unsigned long boopSpeed = 0;
 const uint8_t* boopAnimation[2] = { eyeV1, eyeV2 };
 int boopAnimationFrame = 0;
-void boop(bool isBoop) {
+void boop() {
 	bool isConfused = !!random(2);
-	while (isBoop) {
-		if (millis() - boopSpeed >= 250) {
-			if (isConfused) {
-				oFace();
-			}
-			else {
-				boopAnimationFrame ^= 1;
-				drawEye(boopAnimation[boopAnimationFrame]);
-				boopSpeed = millis();
-			}
+	if (millis() - boopSpeed >= 250) {
+		if (isConfused) {
+			oFace();
 		}
-		isBoop = !digitalRead(IR_PIN);
+		else {
+			boopAnimationFrame ^= 1;
+			drawEye(boopAnimation[boopAnimationFrame]);
+			boopSpeed = millis();
+		}
 	}
 	blinkTime = millis();
 }
