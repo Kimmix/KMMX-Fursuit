@@ -56,5 +56,8 @@ public:
 		if (not FastLED_Pixel_Buff->allocateMemory())
 			Serial.println("****** Unable to find enough memory for the FastLED pixel buffer! ***********");
 	}
+	void writeBUffer(int16_t x, int16_t y, int r, int g, int b) {
+		FastLED_Pixel_Buff->drawPixel(x, y, r, g, b);
+	}
 
 };

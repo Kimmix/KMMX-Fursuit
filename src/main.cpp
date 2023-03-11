@@ -6,7 +6,7 @@
 #include "draw.h"
 
 BLEController bleController = BLEController();
-DisplayController displayController = DisplayController();
+DisplayController display = DisplayController();
 
 
 void setup() {
@@ -14,7 +14,7 @@ void setup() {
 	while (!Serial);
 	pinMode(IR_PIN, INPUT);
 	// bleController.init();
-	displayController.init();
+	display.init();
 }
 
 bool isBoop, isOverrideEye = false;
