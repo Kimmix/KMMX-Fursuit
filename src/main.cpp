@@ -29,6 +29,7 @@ void loop() {
 	isBoop = !digitalRead(IR_PIN);
 	if (isBoop) {
 		eye.setBoop();
+		drawMouth(mouthOpen);
 	}
 	eye.update();
 	FastLED_Pixel_Buff->show();
