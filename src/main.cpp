@@ -2,11 +2,11 @@
 #include <Arduino.h>
 #include "controller/BLEController.h"
 #include "controller/displayController.h"
-#include "Icons.h"
-#include "draw.h"
+#include "state/eyeState.h"
 
-BLEController bleController = BLEController();
-DisplayController display = DisplayController();
+BLEController bleController;
+DisplayController *display;
+EyeState eye;
 
 
 void setup() {
@@ -14,26 +14,29 @@ void setup() {
 	while (!Serial);
 	pinMode(IR_PIN, INPUT);
 	// bleController.init();
-	display.init();
+	display = new DisplayController();
+	display->init();
+	drawColorTest();
+	drawNose(noseDefault);
+	drawMouth(mouthDefault);
 }
 
 bool isBoop, isOverrideEye = false;
 
 void loop() {
-	// bleController.start();
 	FastLED_Pixel_Buff->dimAll(200);
 	drawColorTest();
-	if (!isOverrideEye)
-		drawEye(eyeDefault);
 	drawNose(noseDefault);
 	drawMouth(mouthDefault);
+	// bleController.start();
 	isBoop = !digitalRead(IR_PIN);
 	if (isBoop) {
-		boop();
+		eye.setBoop();
 	}
 	else {
-		blink(isOverrideEye);
+		eye.setIdle();
 	}
+	eye.update();
 	FastLED_Pixel_Buff->show();
 	// delay(25);
 }
