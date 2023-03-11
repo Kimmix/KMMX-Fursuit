@@ -91,37 +91,37 @@ void drawMouth(const uint8_t bitmap[]) {
 }
 
 
-volatile unsigned long blinkTime = 0, blinkSpeed = 0, blinkSpeedInterval = 25, blinkInterval = 1000;
-int Step = 0, blinkAnimationStep = 0;
-const uint8_t* blinkAnimation[8] = {
-	eyeDefault, eyeBlink1, eyeBlink2, eyeBlink3,
-	eyeBlink4,  eyeBlink5, eyeBlink6, eyeBlink7,
-};
-void blink(bool& isOverrideEye) {
-	if (millis() - blinkTime >= blinkInterval) {
-		isOverrideEye = true;
-		if (millis() - blinkSpeed >= blinkSpeedInterval) {
-			if (Step < 8) {
-				drawEye(blinkAnimation[blinkAnimationStep]);
-				blinkAnimationStep++;
-				Step++;
-			}
-			else if (Step >= 8 && Step < 16) {
-				blinkAnimationStep--;
-				drawEye(blinkAnimation[blinkAnimationStep]);
-				Step++;
-			}
-			if (Step == 16) {
-				blinkAnimationStep = 0;
-				Step = 0;
-				blinkInterval = (1000 * random(4, 12));
-				blinkTime = millis();
-				isOverrideEye = false;
-			}
-			blinkSpeed = millis();
-		}
-	}
-}
+// volatile unsigned long blinkTime = 0, blinkSpeed = 0, blinkSpeedInterval = 25, blinkInterval = 1000;
+// int Step = 0, blinkAnimationStep = 0;
+// const uint8_t* blinkAnimation[8] = {
+// 	eyeDefault, eyeBlink1, eyeBlink2, eyeBlink3,
+// 	eyeBlink4,  eyeBlink5, eyeBlink6, eyeBlink7,
+// };
+// void blink(bool& isOverrideEye) {
+// 	if (millis() - blinkTime >= blinkInterval) {
+// 		isOverrideEye = true;
+// 		if (millis() - blinkSpeed >= blinkSpeedInterval) {
+// 			if (Step < 8) {
+// 				drawEye(blinkAnimation[blinkAnimationStep]);
+// 				blinkAnimationStep++;
+// 				Step++;
+// 			}
+// 			else if (Step >= 8 && Step < 16) {
+// 				blinkAnimationStep--;
+// 				drawEye(blinkAnimation[blinkAnimationStep]);
+// 				Step++;
+// 			}
+// 			if (Step == 16) {
+// 				blinkAnimationStep = 0;
+// 				Step = 0;
+// 				blinkInterval = (1000 * random(4, 12));
+// 				blinkTime = millis();
+// 				isOverrideEye = false;
+// 			}
+// 			blinkSpeed = millis();
+// 		}
+// 	}
+// }
 
 // volatile unsigned long oFaceSpeed = 0;
 // const uint8_t* oFaceAnimation[3] = { eyeO1, eyeO2, eyeO3 };

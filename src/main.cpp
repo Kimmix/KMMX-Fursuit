@@ -30,9 +30,6 @@ void loop() {
 	if (isBoop) {
 		eye.setBoop();
 	}
-	else {
-		eye.setIdle();
-	}
 	eye.update();
 	FastLED_Pixel_Buff->show();
 	// delay(25);
