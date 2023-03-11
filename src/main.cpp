@@ -16,9 +16,6 @@ void setup() {
 	// bleController.init();
 	display = new DisplayController();
 	display->init();
-	drawColorTest();
-	drawNose(noseDefault);
-	drawMouth(mouthDefault);
 }
 
 bool isBoop, isOverrideEye = false;

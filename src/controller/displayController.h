@@ -56,8 +56,19 @@ public:
 		if (not FastLED_Pixel_Buff->allocateMemory())
 			Serial.println("****** Unable to find enough memory for the FastLED pixel buffer! ***********");
 	}
+	void start() {
+		unsigned long currentMillis = millis();
+		FastLED_Pixel_Buff->dimAll(200);
+		if (currentMillis - previousMillis >= interval) {
+			previousMillis = currentMillis; 
+			FastLED_Pixel_Buff->show();
+		}
+	}
+
 	void writeBUffer(int16_t x, int16_t y, int r, int g, int b) {
 		FastLED_Pixel_Buff->drawPixel(x, y, r, g, b);
 	}
-
+private:
+	unsigned long previousMillis = 0;
+	const unsigned long interval = 50;
 };
