@@ -1,9 +1,9 @@
 #include <Arduino.h>
-#include "Icons.h"
-#include "draw.h"
 
 class EyeState {
 public:
+    EyeState(DisplayController* displayPtr): display(displayPtr) {}
+
     enum State {
         IDLE,
         BLINK,
@@ -17,7 +17,7 @@ public:
         // Serial.print("\n");
         switch (currentState) {
         case IDLE:
-            drawEye(eyeDefault);
+            display->drawEye(eyeDefault);
             if (millis() >= nextBlink) {
                 nextBlink = millis() + (1000 * random(4, 12));
                 currentState = BLINK;
@@ -50,8 +50,10 @@ public:
     }
 
 private:
+    DisplayController* display;
+
     State currentState;
-    volatile unsigned long
+    unsigned long
         nextBlink = 0,
         blinkInterval = 0,
         nextBoop = 0,
@@ -64,7 +66,7 @@ private:
             nextBoop = millis() + 500;
             boopAnimationFrame ^= 1;
         }
-        drawEye(boopAnimation[boopAnimationFrame]);
+        display->drawEye(boopAnimation[boopAnimationFrame]);
     }
 
     const uint8_t* oFaceAnimation[3] = { eyeO1, eyeO2, eyeO3 };
@@ -74,7 +76,7 @@ private:
             nextBoop = millis() + 200;
             oFaceAnimationFrame = random(0, 2);
         }
-        drawEye(oFaceAnimation[oFaceAnimationFrame]);
+        display->drawEye(oFaceAnimation[oFaceAnimationFrame]);
     }
 
     const uint8_t* blinkAnimation[8] = {
@@ -99,6 +101,6 @@ private:
             }
             blinkInterval = millis() + 50;
         }
-        drawEye(blinkAnimation[blinkAnimationStep]);
+        display->drawEye(blinkAnimation[blinkAnimationStep]);
     }
 };

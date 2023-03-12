@@ -37,38 +37,92 @@
 #define SCREEN_HEIGHT PANEL_HEIGHT
 
 // *** Led Matrix ***
-MatrixPanel_I2S_DMA* matrix = nullptr;
-VirtualMatrixPanel_FastLED_Pixel_Buffer* FastLED_Pixel_Buff = nullptr;
+MatrixPanel_I2S_DMA* matrix;
+VirtualMatrixPanel_FastLED_Pixel_Buffer* FastLED_Pixel_Buff;
 
 class DisplayController {
 public:
+	DisplayController(): kPanelWidth(128), kPanelHeight(64) {}
+
 	void init() {
 		// ------ Setup P3 LED Matrix Pannel ------
 		HUB75_I2S_CFG mxconfig(PANEL_WIDTH, PANEL_HEIGHT, PANELS_NUMBER);
-		// mxconfig.clkphase = false;
 		matrix = new MatrixPanel_I2S_DMA(mxconfig);
-		// matrix->setBrightness8(96);  // 0-255
 		matrix->clearScreen();
 		delay(500);
-		if (not matrix->begin())
+		if (!matrix->begin())
 			Serial.println("****** I2S memory allocation failed ***********");
 		FastLED_Pixel_Buff = new VirtualMatrixPanel_FastLED_Pixel_Buffer((*matrix), 1, PANELS_NUMBER, PANEL_WIDTH, PANEL_HEIGHT, true, false);
-		if (not FastLED_Pixel_Buff->allocateMemory())
+		if (!FastLED_Pixel_Buff->allocateMemory())
 			Serial.println("****** Unable to find enough memory for the FastLED pixel buffer! ***********");
 	}
-	void start() {
-		unsigned long currentMillis = millis();
-		FastLED_Pixel_Buff->dimAll(200);
-		if (currentMillis - previousMillis >= interval) {
-			previousMillis = currentMillis; 
-			FastLED_Pixel_Buff->show();
+
+	/**
+	 * @brief Returns the RGB value of a color in a gradient
+	 * @param lightness Brightness of color (8-bit)
+	 * @param row Current row of the LED matrix
+	 * @param uint8_t r - RGB888 color
+	 * @param uint8_t g - RGB888 color
+	 * @param uint8_t b - RGB888 color
+	 */
+	void getColorMap(const uint8_t lightness, const int row, uint8_t& r, uint8_t& g, uint8_t& b) {
+		const int index = row * 3;
+		if (row >= 0 && index < sizeof(accColor)) { // add a check for valid range
+			r = (lightness * accColor[index]) >> 8;
+			g = (lightness * accColor[index + 1]) >> 8;
+			b = (lightness * accColor[index + 2]) >> 8;
+		}
+		else {
+			// handle the case where row is out of range
+			r = g = b = 0;
 		}
 	}
 
-	void writeBUffer(int16_t x, int16_t y, int r, int g, int b) {
-		FastLED_Pixel_Buff->drawPixel(x, y, r, g, b);
+	/**
+	 * @brief Draws a bitmap onto the LED matrix
+	 * @param bitmap Array of 8-bit values representing the image
+	 * @param image_width Width of the image in pixels
+	 * @param image_height Height of the image in pixels
+	 * @param offset_x X offset of the image
+	 * @param offset_y Y offset of the image
+	 */
+	void drawBitmap(const uint8_t bitmap[], int imageWidth, int imageHeight, int offsetX, int offsetY) {
+		for (int i = 0; i < imageHeight; i++) {
+			for (int j = 0, j2 = kPanelWidth - 1; j < imageWidth; j++, j2--) {
+				uint8_t r, g, b;
+				getColorMap(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
+				FastLED_Pixel_Buff->drawPixel(offsetX + j, offsetY + i, r, g, b);
+				FastLED_Pixel_Buff->drawPixel(-offsetX + kPanelWidth + j2, offsetY + i, r, g, b);
+			}
+		}
 	}
+
+	void drawGSBitmap(const uint8_t bitmap[]) {
+		drawBitmap(bitmap, PANEL_WIDTH, PANEL_HEIGHT, 0, 0);
+	}
+
+	void drawEye(const uint8_t bitmap[]) {
+		drawBitmap(bitmap, 32, 18, 6, 0);
+	}
+
+	void drawNose(const uint8_t bitmap[]) {
+		drawBitmap(bitmap, 10, 6, 54, 6);
+	}
+
+	void drawMouth(const uint8_t bitmap[]) {
+		drawBitmap(bitmap, 50, 14, 14, 18);
+	}
+
+	void drawColorTest() {
+		uint8_t r, g, b;
+		for (int i = 0; i < 64; i++) {
+			getColorMap(255, i, r, g, b);
+			FastLED_Pixel_Buff->drawPixel(0, i, r, g, b);
+			FastLED_Pixel_Buff->drawPixel(kPanelWidth - 1, i, r, g, b);
+		}
+	}
+
 private:
-	unsigned long previousMillis = 0;
-	const unsigned long interval = 50;
+	const int kPanelWidth;
+	const int kPanelHeight;
 };
