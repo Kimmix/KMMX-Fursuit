@@ -1,9 +1,11 @@
-#include "main.h"
 #include <Arduino.h>
 #include "Icons.h"
 #include "controller/BLEController.h"
 #include "controller/displayController.h"
 #include "state/eyeState.h"
+
+#define IR_PIN 36
+bool isBoop;
 
 BLEController bleController;
 DisplayController display;
@@ -17,7 +19,6 @@ void setup() {
 	display.init();
 }
 
-bool isBoop;
 
 void loop() {
 	FastLED_Pixel_Buff->dimAll(200);
