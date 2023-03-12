@@ -37,7 +37,7 @@ private:
 	}
 
 public:
-	void init() {
+	BLEController() {
 		// ------ Setup Bluetooth Low Energy ------
 		pinMode(LED_BUILTIN, OUTPUT);
 		if (!BLE.begin())
@@ -58,6 +58,7 @@ public:
 		BLE.advertise();
 		Serial.println(("Bluetooth® device active, waiting for connections..."));
 	}
+
 	void start() {
 		BLE.poll();
 	}

@@ -7,7 +7,7 @@
 #define IR_PIN 36
 bool isBoop;
 
-BLEController bleController;
+// BLEController bleController;
 DisplayController display;
 EyeState eyeState(&display);
 
@@ -15,13 +15,11 @@ void setup() {
 	Serial.begin(115200);
 	while (!Serial);
 	pinMode(IR_PIN, INPUT);
-	// bleController.init();
-	display.init();
 }
 
 
 void loop() {
-	FastLED_Pixel_Buff->dimAll(200);
+	display.clearScreen();
 	display.drawColorTest();
 	display.drawNose(noseDefault);
 	display.drawMouth(mouthDefault);
@@ -32,5 +30,5 @@ void loop() {
 		display.drawMouth(mouthOpen);
 	}
 	eyeState.update();
-	FastLED_Pixel_Buff->show();
+	display.render();
 }

@@ -33,29 +33,33 @@
 #define SCREEN_WIDTH PANEL_WIDTH* PANELS_NUMBER
 #define SCREEN_HEIGHT PANEL_HEIGHT
 
-// *** Led Matrix ***
-MatrixPanel_I2S_DMA* matrix;
-VirtualMatrixPanel_FastLED_Pixel_Buffer* FastLED_Pixel_Buff;
-
 class DisplayController {
 private:
+	MatrixPanel_I2S_DMA* matrix;
+	VirtualMatrixPanel_FastLED_Pixel_Buffer* FastLED_Pixel_Buff;
 	const int panelWidth;
 	const int panelHeight;
 
 public:
-	DisplayController(): panelWidth(PANEL_WIDTH), panelHeight(PANEL_HEIGHT) {}
-
-	void init() {
-		// ------ Setup P3 LED Matrix Pannel ------
-		HUB75_I2S_CFG mxconfig(PANEL_WIDTH, PANEL_HEIGHT, PANELS_NUMBER);
+	DisplayController(): panelWidth(PANEL_WIDTH), panelHeight(PANEL_HEIGHT) {
+		// ------ Setup P3 LED Matrix Panel ------
+		HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER);
 		matrix = new MatrixPanel_I2S_DMA(mxconfig);
 		matrix->clearScreen();
 		delay(500);
 		if (!matrix->begin())
 			Serial.println("****** I2S memory allocation failed ***********");
-		FastLED_Pixel_Buff = new VirtualMatrixPanel_FastLED_Pixel_Buffer((*matrix), 1, PANELS_NUMBER, PANEL_WIDTH, PANEL_HEIGHT, true, false);
+		FastLED_Pixel_Buff = new VirtualMatrixPanel_FastLED_Pixel_Buffer((*matrix), 1, PANELS_NUMBER, panelWidth, panelHeight, true, false);
 		if (!FastLED_Pixel_Buff->allocateMemory())
 			Serial.println("****** Unable to find enough memory for the FastLED pixel buffer! ***********");
+	}
+
+	void clearScreen() {
+		FastLED_Pixel_Buff->dimAll(200);
+	}
+
+	void render() {
+		FastLED_Pixel_Buff->show();
 	}
 
 	/**
