@@ -42,7 +42,7 @@ VirtualMatrixPanel_FastLED_Pixel_Buffer* FastLED_Pixel_Buff;
 
 class DisplayController {
 public:
-	DisplayController(): kPanelWidth(128), kPanelHeight(64) {}
+	DisplayController(): kPanelWidth(PANEL_WIDTH), kPanelHeight(PANEL_HEIGHT) {}
 
 	void init() {
 		// ------ Setup P3 LED Matrix Pannel ------
@@ -118,7 +118,7 @@ public:
 		for (int i = 0; i < 64; i++) {
 			getColorMap(255, i, r, g, b);
 			FastLED_Pixel_Buff->drawPixel(0, i, r, g, b);
-			FastLED_Pixel_Buff->drawPixel(kPanelWidth - 1, i, r, g, b);
+			FastLED_Pixel_Buff->drawPixel(SCREEN_WIDTH - 1, i, r, g, b);
 		}
 	}
 

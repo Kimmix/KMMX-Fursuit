@@ -15,7 +15,7 @@ void setup() {
 	Serial.begin(115200);
 	while (!Serial);
 	pinMode(IR_PIN, INPUT);
-	// bleController.init();	
+	// bleController.init();
 	display.init();
 }
 
