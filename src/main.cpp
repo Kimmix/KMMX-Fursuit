@@ -6,33 +6,30 @@
 #include "state/eyeState.h"
 
 BLEController bleController;
-DisplayController* display;
-EyeState eye(display);
-
+DisplayController display;
+EyeState eyeState(&display);
 
 void setup() {
 	Serial.begin(115200);
 	while (!Serial);
 	pinMode(IR_PIN, INPUT);
 	// bleController.init();	
-	display = new DisplayController();
-	display->init();
+	display.init();
 }
 
-bool isBoop, isOverrideEye = false;
+bool isBoop;
 
 void loop() {
 	FastLED_Pixel_Buff->dimAll(200);
-	display->drawColorTest();
-	display->drawNose(noseDefault);
-	display->drawMouth(mouthDefault);
+	display.drawColorTest();
+	display.drawNose(noseDefault);
+	display.drawMouth(mouthDefault);
 	// bleController.start();
 	isBoop = !digitalRead(IR_PIN);
 	if (isBoop) {
-		eye.setBoop();
-		display->drawMouth(mouthOpen);
+		eyeState.setBoop();
+		display.drawMouth(mouthOpen);
 	}
-	eye.update();
+	eyeState.update();
 	FastLED_Pixel_Buff->show();
-	// delay(25);
 }
