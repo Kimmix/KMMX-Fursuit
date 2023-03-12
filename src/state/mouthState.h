@@ -18,7 +18,7 @@ public:
             display->drawMouth(mouthDefault);
             break;
         case BOOP:
-            display->drawMouth(mouthOpen);
+            display->drawMouth(mouthAh);
             currentState = IDLE;
             break;
         case TALKING:

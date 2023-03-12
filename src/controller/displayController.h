@@ -37,8 +37,7 @@ class DisplayController {
 private:
 	MatrixPanel_I2S_DMA* matrix;
 	VirtualMatrixPanel_FastLED_Pixel_Buffer* FastLED_Pixel_Buff;
-	const int panelWidth;
-	const int panelHeight;
+	const int panelWidth, panelHeight;
 
 public:
 	DisplayController(): panelWidth(PANEL_WIDTH), panelHeight(PANEL_HEIGHT) {
