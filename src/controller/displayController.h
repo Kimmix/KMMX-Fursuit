@@ -27,9 +27,6 @@
 // #define CLK 16
 // #define LAT 4
 
-// extern MatrixPanel_I2S_DMA* matrix;
-// extern VirtualMatrixPanel_FastLED_Pixel_Buffer* FastLED_Pixel_Buff;
-
 #define PANEL_WIDTH 64
 #define PANEL_HEIGHT 32
 #define PANELS_NUMBER 2
@@ -41,8 +38,12 @@ MatrixPanel_I2S_DMA* matrix;
 VirtualMatrixPanel_FastLED_Pixel_Buffer* FastLED_Pixel_Buff;
 
 class DisplayController {
+private:
+	const int panelWidth;
+	const int panelHeight;
+
 public:
-	DisplayController(): kPanelWidth(PANEL_WIDTH), kPanelHeight(PANEL_HEIGHT) {}
+	DisplayController(): panelWidth(PANEL_WIDTH), panelHeight(PANEL_HEIGHT) {}
 
 	void init() {
 		// ------ Setup P3 LED Matrix Pannel ------
@@ -88,18 +89,18 @@ public:
 	 */
 	void drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY) {
 		for (int i = 0; i < imageHeight; i++) {
-			for (int j = 0, j2 = kPanelWidth - 1; j < imageWidth; j++, j2--) {
+			for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
 				uint8_t r, g, b;
 				uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j); // read the bytes from program memory
 				getColorMap(pixel, i + offsetY, r, g, b);
 				FastLED_Pixel_Buff->drawPixel(offsetX + j, offsetY + i, r, g, b);
-				FastLED_Pixel_Buff->drawPixel(-offsetX + kPanelWidth + j2, offsetY + i, r, g, b);
+				FastLED_Pixel_Buff->drawPixel(-offsetX + panelWidth + j2, offsetY + i, r, g, b);
 			}
 		}
 	}
 
 	void drawFullscreen(const uint8_t* bitmap) {
-		drawBitmap(bitmap, kPanelWidth, kPanelHeight, 0, 0);
+		drawBitmap(bitmap, panelWidth, panelHeight, 0, 0);
 	}
 
 	void drawEye(const uint8_t* bitmap) {
@@ -122,8 +123,4 @@ public:
 			FastLED_Pixel_Buff->drawPixel(SCREEN_WIDTH - 1, i, r, g, b);
 		}
 	}
-
-private:
-	const int kPanelWidth;
-	const int kPanelHeight;
 };
