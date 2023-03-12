@@ -86,30 +86,31 @@ public:
 	 * @param offset_x X offset of the image
 	 * @param offset_y Y offset of the image
 	 */
-	void drawBitmap(const uint8_t bitmap[], int imageWidth, int imageHeight, int offsetX, int offsetY) {
+	void drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY) {
 		for (int i = 0; i < imageHeight; i++) {
 			for (int j = 0, j2 = kPanelWidth - 1; j < imageWidth; j++, j2--) {
 				uint8_t r, g, b;
-				getColorMap(bitmap[i * imageWidth + j], i + offsetY, r, g, b);
+				uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j); // read the bytes from program memory
+				getColorMap(pixel, i + offsetY, r, g, b);
 				FastLED_Pixel_Buff->drawPixel(offsetX + j, offsetY + i, r, g, b);
 				FastLED_Pixel_Buff->drawPixel(-offsetX + kPanelWidth + j2, offsetY + i, r, g, b);
 			}
 		}
 	}
 
-	void drawGSBitmap(const uint8_t bitmap[]) {
-		drawBitmap(bitmap, PANEL_WIDTH, PANEL_HEIGHT, 0, 0);
+	void drawFullscreen(const uint8_t* bitmap) {
+		drawBitmap(bitmap, kPanelWidth, kPanelHeight, 0, 0);
 	}
 
-	void drawEye(const uint8_t bitmap[]) {
+	void drawEye(const uint8_t* bitmap) {
 		drawBitmap(bitmap, 32, 18, 6, 0);
 	}
 
-	void drawNose(const uint8_t bitmap[]) {
+	void drawNose(const uint8_t* bitmap) {
 		drawBitmap(bitmap, 10, 6, 54, 6);
 	}
 
-	void drawMouth(const uint8_t bitmap[]) {
+	void drawMouth(const uint8_t* bitmap) {
 		drawBitmap(bitmap, 50, 14, 14, 18);
 	}
 
