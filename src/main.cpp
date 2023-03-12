@@ -3,6 +3,7 @@
 #include "controller/BLEController.h"
 #include "controller/displayController.h"
 #include "state/eyeState.h"
+#include "state/mouthState.h"
 
 #define IR_PIN 36
 bool isBoop;
@@ -10,6 +11,7 @@ bool isBoop;
 // BLEController bleController;
 DisplayController display;
 EyeState eyeState(&display);
+MouthState mouthState(&display);
 
 void setup() {
 	Serial.begin(115200);
@@ -19,16 +21,16 @@ void setup() {
 
 
 void loop() {
+	// bleController.start();
 	display.clearScreen();
 	display.drawColorTest();
 	display.drawNose(noseDefault);
-	display.drawMouth(mouthDefault);
-	// bleController.start();
 	isBoop = !digitalRead(IR_PIN);
 	if (isBoop) {
 		eyeState.setBoop();
-		display.drawMouth(mouthOpen);
+		mouthState.setBoop();
 	}
 	eyeState.update();
+	mouthState.update();
 	display.render();
 }

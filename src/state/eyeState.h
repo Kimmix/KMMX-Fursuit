@@ -14,12 +14,6 @@ public:
         currentBlinkFrameIndex(0)
     {}
 
-    enum State {
-        IDLE,
-        BLINK,
-        BOOP,
-    };
-
     void update() {
         // Serial.print(currentState);
         // Serial.print("\n");
@@ -59,6 +53,12 @@ public:
 
 private:
     DisplayController* display;
+
+    enum State {
+        IDLE,
+        BLINK,
+        BOOP,
+    };
 
     State currentState;
     unsigned long
