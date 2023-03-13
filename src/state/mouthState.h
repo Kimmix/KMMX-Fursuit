@@ -11,8 +11,8 @@ public:
     {}
 
     void update() {
-        Serial.print(currentState);
-        Serial.print("\n");
+        // Serial.print(currentState);
+        // Serial.print("\n");
         switch (currentState) {
         case IDLE:
             display->drawMouth(mouthDefault);
