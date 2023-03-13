@@ -1,5 +1,4 @@
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
-#include "FastLED_Pixel_Buffer.h"
 
 // ---- P3 LED Matrix Panel ----
 // HUB75E pinout
@@ -27,38 +26,35 @@
 // #define CLK 16
 // #define LAT 4
 
-#define PANEL_WIDTH 64
-#define PANEL_HEIGHT 32
+#define PANEL_RES_X 64
+#define PANEL_RES_Y 32
 #define PANELS_NUMBER 2
-#define SCREEN_WIDTH PANEL_WIDTH* PANELS_NUMBER
-#define SCREEN_HEIGHT PANEL_HEIGHT
+#define SCREEN_WIDTH PANEL_RES_X* PANELS_NUMBER
+#define SCREEN_HEIGHT PANEL_RES_Y
 
 class DisplayController {
 private:
 	MatrixPanel_I2S_DMA* matrix;
-	VirtualMatrixPanel_FastLED_Pixel_Buffer* FastLED_Pixel_Buff;
 	const int panelWidth, panelHeight;
 
 public:
-	DisplayController(): panelWidth(PANEL_WIDTH), panelHeight(PANEL_HEIGHT) {
-		// ------ Setup P3 LED Matrix Panel ------
+	DisplayController(): panelWidth(PANEL_RES_X), panelHeight(PANEL_RES_Y) {
 		HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER);
+		mxconfig.double_buff = true; // Turn of double buffer
+		// mxconfig.clkphase = true;
 		matrix = new MatrixPanel_I2S_DMA(mxconfig);
 		matrix->clearScreen();
 		delay(500);
 		if (!matrix->begin())
 			Serial.println("****** I2S memory allocation failed ***********");
-		FastLED_Pixel_Buff = new VirtualMatrixPanel_FastLED_Pixel_Buffer((*matrix), 1, PANELS_NUMBER, panelWidth, panelHeight, true, false);
-		if (!FastLED_Pixel_Buff->allocateMemory())
-			Serial.println("****** Unable to find enough memory for the FastLED pixel buffer! ***********");
 	}
 
 	void clearScreen() {
-		FastLED_Pixel_Buff->dimAll(200);
+		matrix->clearScreen();
 	}
 
 	void render() {
-		FastLED_Pixel_Buff->show();
+		matrix->flipDMABuffer();
 	}
 
 	/**
@@ -96,8 +92,8 @@ public:
 				uint8_t r, g, b;
 				uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j); // read the bytes from program memory
 				getColorMap(pixel, i + offsetY, r, g, b);
-				FastLED_Pixel_Buff->drawPixel(offsetX + j, offsetY + i, r, g, b);
-				FastLED_Pixel_Buff->drawPixel(-offsetX + panelWidth + j2, offsetY + i, r, g, b);
+				matrix->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
+				matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetY + i, r, g, b);
 			}
 		}
 	}
@@ -122,8 +118,8 @@ public:
 		uint8_t r, g, b;
 		for (int i = 0; i < 64; i++) {
 			getColorMap(255, i, r, g, b);
-			FastLED_Pixel_Buff->drawPixel(0, i, r, g, b);
-			FastLED_Pixel_Buff->drawPixel(SCREEN_WIDTH - 1, i, r, g, b);
+			matrix->drawPixelRGB888(0, i, r, g, b);
+			matrix->drawPixelRGB888(SCREEN_WIDTH - 1, i, r, g, b);
 		}
 	}
 };
