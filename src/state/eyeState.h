@@ -32,7 +32,6 @@ public:
             arrowFace();
             if (millis() - resetBoop_ >= 2000) {
                 resetBoop_ = millis();
-                Serial.print("Reseting.. \n");
                 currentState = IDLE;
             }
             break;

@@ -56,7 +56,7 @@ public:
 
 		// Begin 
 		BLE.advertise();
-		Serial.println(("Bluetooth® device active, waiting for connections..."));
+		Serial.println("Bluetooth® device active, waiting for connections...");
 	}
 
 	void start() {
