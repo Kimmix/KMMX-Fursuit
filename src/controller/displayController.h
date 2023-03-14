@@ -44,7 +44,7 @@ public:
 		// mxconfig.clkphase = true;
 		matrix = new MatrixPanel_I2S_DMA(mxconfig);
 		matrix->clearScreen();
-		delay(500);
+		delay(200);
 		if (!matrix->begin())
 			Serial.println("****** I2S memory allocation failed ***********");
 	}
