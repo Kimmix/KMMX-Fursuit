@@ -11,12 +11,12 @@ bool isBoop;
 DisplayController display;
 EyeState eyeState(&display);
 MouthState mouthState(&display);
-// BluetoothController ble(&display);
+BluetoothController ble(&display);
 
 void setup() {
 	Serial.begin(115200);
 	while (!Serial);
-	// ble.init();
+	ble.init();
 	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(IR_PIN, INPUT);
 	randomSeed(analogRead(0));
@@ -24,7 +24,6 @@ void setup() {
 
 
 void loop() {
-	// ble.update();
 	display.render();
 	display.clearScreen();
 	display.drawColorTest();
@@ -36,4 +35,5 @@ void loop() {
 	}
 	eyeState.update();
 	mouthState.update();
+	ble.update();
 }

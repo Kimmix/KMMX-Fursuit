@@ -4,33 +4,29 @@
 #define BLE_CHARACTERISTIC_UUID "49a36bb2-1c66-4e5c-8ff3-28e55a64beb3"
 
 BLEService service(BLE_SERVICE_UUID);
-BLECharacteristic brightnessCharacteristic(BLE_CHARACTERISTIC_UUID, BLERead | BLEWrite, 0);
+BLEByteCharacteristic brightnessCharacteristic(BLE_CHARACTERISTIC_UUID, BLERead | BLEWrite);
 
 class BluetoothController {
-private:
-    DisplayController* display;
-
-    int brightnessValue;
-    bool isConnected;
-
 public:
     BluetoothController(DisplayController* displayPtr = nullptr): display(displayPtr) {}
 
     void init() {
-        isConnected = false;
         Serial.println("Booting BLE...");
         delay(500);
         if (!BLE.begin()) {
             Serial.println("failed to initialize BLE!");
             while (1);
         }
-        Serial.println("initialize BLE...");
-
-        // Define the BLE service and characteristic
-        service.addCharacteristic(brightnessCharacteristic);
-        BLE.addService(service);
         BLE.setDeviceName("KMMX");
         BLE.setLocalName("KMMX-BLE");
+
+        // Define the BLE service and characteristic
+        BLE.setAdvertisedService(service);
+        service.addCharacteristic(brightnessCharacteristic);
+
+        BLE.addService(service);
+        BLE.setEventHandler(BLEConnected, BluetoothController::blePeripheralConnectHandler);
+        BLE.setEventHandler(BLEDisconnected, BluetoothController::blePeripheralDisconnectHandler);
 
         // Start advertising the BLE service
         BLE.advertise();
@@ -38,36 +34,37 @@ public:
     }
 
     void update() {
-        BLEDevice central = BLE.central();
-        if (central) {
-            isConnected = true;
-            digitalWrite(LED_BUILTIN, HIGH);
-            brightnessValue = display->getBrightnessValue();
-            while (central.connected()) {
-                if (brightnessCharacteristic.written()) {
-                    // Read the new brightness value from the characteristic
-                    brightnessValue = brightnessCharacteristic.value()[0];
-                    // Do something with the new brightness value, e.g. set the display brightness
-                    // setBrightness(brightnessValue);
-                    display->setBrightnessValue(brightnessValue);
-                }
-
-                // Notify the central device of the current brightness value
-                brightnessCharacteristic.writeValue(brightnessValue);
-            }
-
-            // Disconnect from the central device
-            central.disconnect();
-            isConnected = false;
-            digitalWrite(LED_BUILTIN, LOW);
+        BLE.poll();  // Start BLE
+        if (brightnessCharacteristic.written()) {
+            Serial.print("Characteristic event, written: ");
+            // display->setBrightnessValue(brightnessCharacteristic.value());
         }
     }
 
-    bool getIsConnected() {
-        return isConnected;
-    }
+private:
+    DisplayController* display;
 
     int getBrightnessValue() {
-        return brightnessValue;
+        return display->getBrightnessValue();
     }
+
+    // On bluetooth connected
+    static void blePeripheralConnectHandler(BLEDevice central) {
+        Serial.print("Connected event, central: ");
+        Serial.println(central.address());
+        digitalWrite(LED_BUILTIN, HIGH);
+    }
+    // On bluetooth disconnected
+    static void blePeripheralDisconnectHandler(BLEDevice central) {
+        Serial.print("Disconnected event, central: ");
+        Serial.println(central.address());
+        digitalWrite(LED_BUILTIN, LOW);
+    }
+    // void switchCharacteristicWritten(BLEDevice central,
+    //     BLECharacteristic characteristic) {
+    //     Serial.print("Characteristic event, written: ");
+    //     Serial.println(brightnessCharacteristic.value()[0]);
+    //     // Serial.print(brightnessCharacteristic.value()[0]);
+    //     // display->setBrightnessValue(brightnessCharacteristic.value());
+    // }
 };

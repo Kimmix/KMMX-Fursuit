@@ -44,7 +44,6 @@ public:
 		mxconfig.double_buff = true; // Turn of double buffer
 		// mxconfig.clkphase = true;
 		matrix = new MatrixPanel_I2S_DMA(mxconfig);
-		matrix->clearScreen();
 		delay(500);
 		if (!matrix->begin())
 			Serial.println("****** I2S memory allocation failed ***********");
@@ -74,6 +73,8 @@ public:
 		}
 		panelBrightness = value;
 		matrix->setBrightness8(panelBrightness);
+		delay(500);
+		// matrix->clearScreen();
 	}
 
 	/**
