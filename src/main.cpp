@@ -16,10 +16,10 @@ MouthState mouthState(&display);
 void setup() {
 	Serial.begin(115200);
 	while (!Serial);
-	Serial.println("starting...");
 	// ble.init();
 	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(IR_PIN, INPUT);
+	randomSeed(analogRead(0));
 }
 
 
