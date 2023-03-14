@@ -24,7 +24,7 @@ void setup() {
 
 
 void loop() {
-	// ble.update();
+	ble.update();
 	display.render();
 	display.clearScreen();
 	display.drawColorTest();
