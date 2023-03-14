@@ -1,17 +1,17 @@
 #include <Arduino.h>
 #include "Icons.h"
-#include "controller/BluetoothController.h"
-#include "controller/displayController.h"
+#include "Devices/LEDMatrixDisplay.h"
+#include "Devices/Bluetooth.h"
 #include "state/eyeState.h"
 #include "state/mouthState.h"
 
 #define IR_PIN 36
 bool isBoop;
 
-BluetoothController ble;
 DisplayController display;
 EyeState eyeState(&display);
 MouthState mouthState(&display);
+BluetoothController ble(&display);
 
 void setup() {
 	Serial.begin(115200);
@@ -36,8 +36,4 @@ void loop() {
 	}
 	eyeState.update();
 	mouthState.update();
-}
-
-void setBrightness(int value) {
-	// Set the display brightness to the new value
 }

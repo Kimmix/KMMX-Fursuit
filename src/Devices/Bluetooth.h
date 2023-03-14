@@ -4,18 +4,19 @@
 #define BLE_CHARACTERISTIC_UUID "49a36bb2-1c66-4e5c-8ff3-28e55a64beb3"
 
 BLEService service(BLE_SERVICE_UUID);
-BLECharacteristic brightnessCharacteristic(BLE_CHARACTERISTIC_UUID, BLEWrite | BLEWrite, 0);
+BLECharacteristic brightnessCharacteristic(BLE_CHARACTERISTIC_UUID, BLERead | BLEWrite, 0);
 
 class BluetoothController {
 private:
+    DisplayController* display;
+
     int brightnessValue;
     bool isConnected;
 
 public:
-    BluetoothController() {}
+    BluetoothController(DisplayController* displayPtr = nullptr): display(displayPtr) {}
 
     void init() {
-        brightnessValue = 0;
         isConnected = false;
         Serial.println("Booting BLE...");
         delay(500);
@@ -41,12 +42,14 @@ public:
         if (central) {
             isConnected = true;
             digitalWrite(LED_BUILTIN, HIGH);
+            brightnessValue = display->getBrightnessValue();
             while (central.connected()) {
                 if (brightnessCharacteristic.written()) {
                     // Read the new brightness value from the characteristic
                     brightnessValue = brightnessCharacteristic.value()[0];
                     // Do something with the new brightness value, e.g. set the display brightness
                     // setBrightness(brightnessValue);
+                    display->setBrightnessValue(brightnessValue);
                 }
 
                 // Notify the central device of the current brightness value
@@ -62,5 +65,9 @@ public:
 
     bool getIsConnected() {
         return isConnected;
+    }
+
+    int getBrightnessValue() {
+        return brightnessValue;
     }
 };

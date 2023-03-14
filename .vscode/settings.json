@@ -2,6 +2,7 @@
   "files.associations": {
     "new": "cpp",
     "string": "cpp",
-    "cstddef": "cpp"
+    "cstddef": "cpp",
+    "algorithm": "cpp"
   }
 }

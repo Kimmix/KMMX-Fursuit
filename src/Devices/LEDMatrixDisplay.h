@@ -36,6 +36,7 @@ class DisplayController {
 private:
 	MatrixPanel_I2S_DMA* matrix;
 	const int panelWidth, panelHeight;
+	uint8_t panelBrightness = 128;
 
 public:
 	DisplayController(): panelWidth(PANEL_RES_X), panelHeight(PANEL_RES_Y) {
@@ -44,7 +45,7 @@ public:
 		// mxconfig.clkphase = true;
 		matrix = new MatrixPanel_I2S_DMA(mxconfig);
 		matrix->clearScreen();
-		delay(200);
+		delay(500);
 		if (!matrix->begin())
 			Serial.println("****** I2S memory allocation failed ***********");
 	}
@@ -54,7 +55,23 @@ public:
 	}
 
 	void render() {
+		matrix->setBrightness8(panelBrightness);
 		matrix->flipDMABuffer();
+	}
+
+	int getBrightnessValue() {
+		return panelBrightness;
+	}
+
+	void setBrightnessValue(uint8_t value) {
+		// Ensure that the brightness value is between 0 and 255
+		if (value < 0) {
+			value = 0;
+		}
+		else if (value > 255) {
+			value = 255;
+		}
+		panelBrightness = value;
 	}
 
 	/**
