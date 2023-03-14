@@ -24,8 +24,8 @@ void setup() {
 
 
 void loop() {
+	ble.update();
 	display.render();
-	display.clearScreen();
 	display.drawColorTest();
 	display.drawNose(noseDefault);
 	isBoop = !digitalRead(IR_PIN);
@@ -35,5 +35,4 @@ void loop() {
 	}
 	eyeState.update();
 	mouthState.update();
-	ble.update();
 }

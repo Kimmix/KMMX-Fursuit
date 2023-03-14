@@ -51,10 +51,6 @@ public:
 		matrix->clearScreen();
 	}
 
-	void clearScreen() {
-		matrix->clearScreen();
-	}
-
 	void render() {
 		matrix->flipDMABuffer();
 	}
@@ -73,8 +69,6 @@ public:
 		}
 		panelBrightness = value;
 		matrix->setBrightness8(panelBrightness);
-		delay(500);
-		// matrix->clearScreen();
 	}
 
 	/**

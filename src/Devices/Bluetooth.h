@@ -36,8 +36,7 @@ public:
     void update() {
         BLE.poll();  // Start BLE
         if (brightnessCharacteristic.written()) {
-            Serial.print("Characteristic event, written: ");
-            // display->setBrightnessValue(brightnessCharacteristic.value());
+            display->setBrightnessValue(brightnessCharacteristic.value());
         }
     }
 
