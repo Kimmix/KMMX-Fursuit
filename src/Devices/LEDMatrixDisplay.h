@@ -82,9 +82,10 @@ public:
 	void getColorMap(const uint8_t lightness, const int row, uint8_t& r, uint8_t& g, uint8_t& b) {
 		const int index = row * 3;
 		if (row >= 0 && index < sizeof(accColor)) { // add a check for valid range
-			r = (lightness * accColor[index]) >> 8;
-			g = (lightness * accColor[index + 1]) >> 8;
-			b = (lightness * accColor[index + 2]) >> 8;
+			uint16_t factor = lightness << 8; // multiply by 256 (i.e., 2^8) using bit shift
+			r = (factor * accColor[index]) >> 16; // divide by 65536 (i.e., 2^16) using bit shift
+			g = (factor * accColor[index + 1]) >> 16;
+			b = (factor * accColor[index + 2]) >> 16;
 		}
 		else {
 			// handle the case where row is out of range
@@ -101,9 +102,9 @@ public:
 	 * @param offset_y Y offset of the image
 	 */
 	void drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY) {
+		uint8_t r, g, b;
 		for (int i = 0; i < imageHeight; i++) {
 			for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
-				uint8_t r, g, b;
 				uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j); // read the bytes from program memory
 				getColorMap(pixel, i + offsetY, r, g, b);
 				matrix->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
