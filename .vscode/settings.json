@@ -1,8 +1,0 @@
-{
-  "files.associations": {
-    "new": "cpp",
-    "string": "cpp",
-    "cstddef": "cpp",
-    "algorithm": "cpp"
-  }
-}
