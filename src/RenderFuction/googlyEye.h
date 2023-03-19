@@ -3,18 +3,34 @@
 
 class GooglyEye {
 public:
-    GooglyEye(float x = 0, float y = 0, float drag = 0.996, float g_scale = 4, float eye_radius = 3, float screen_radius = 8, float elastic = 0.90):
-        x(x), y(y), vx(0.0), vy(0.0), last_update(0), drag(drag), g_scale(g_scale), eye_radius(eye_radius), _eye_radius2(eye_radius* eye_radius),
-        screen_radius(screen_radius), _screen_radius2(screen_radius* screen_radius), _inner_radius(screen_radius - eye_radius),
-        _inner_radius2(_inner_radius* _inner_radius), elastic(elastic) {}
+    GooglyEye(float x = 0, float y = 0,
+        float drag = 0.996,   // The amount of drag to apply to the eye movement. 
+        // A higher value will cause the eye to slow down faster.
+        float g_scale = 4,    // The scale factor to apply to the acceleration.
+        // A higher value will cause the eye to move more in response to acceleration.
+        float eye_radius = 3, // The radius of the eye.
+        float screen_radius = 8, // The radius of the screen area.
+        float elastic = 0.90  // The elasticity of the eye. A value of 1.0 means no elasticity, 
+        // while a lower value will cause the eye to bounce back more slowly.
+    ):
+        x(x), y(y), vx(0.0), vy(0.0), last_update(0), drag(drag), g_scale(g_scale),
+        eye_radius(eye_radius),
+        _eye_radius2(eye_radius* eye_radius),
+        screen_radius(screen_radius),
+        _screen_radius2(screen_radius* screen_radius),
+        _inner_radius(screen_radius - eye_radius),
+        _inner_radius2(_inner_radius* _inner_radius),
+        elastic(elastic) {}
+
     float x, y;
+
     void update(float ax, float ay) {
         float now = millis() / 1000.0;
         float dt = now - last_update;
         last_update = now;
 
-        ax = ax * dt * g_scale;
-        ay = ay * dt * g_scale;
+        ax *= dt * g_scale;
+        ay *= dt * g_scale;
         vx = (vx + ax) * drag;  // y direction is display -x
         vy = (vy + ay) * drag;  // x direction is display +y
 
@@ -33,10 +49,6 @@ public:
         // But check if the eye will pass the screen border
         float d = new_x * new_x + new_y * new_y;
         if (d > _inner_radius2) {
-            //
-            // This is the math from the the Hallowing example that is "hard"
-            // The original code in Arduino has a lot of good comments
-
             // Find the vector from current to new position that crosses screen border
             float dx = new_x - x;
             float dy = new_y - y;
