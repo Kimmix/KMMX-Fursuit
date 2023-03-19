@@ -102,14 +102,16 @@ public:
 	 * @param offset_x X offset of the image
 	 * @param offset_y Y offset of the image
 	 */
-	void drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY) {
+	void drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY, bool drawBlack = true) {
 		uint8_t r, g, b;
 		for (int i = 0; i < imageHeight; i++) {
 			for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
 				uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j); // read the bytes from program memory
 				getColorMap(pixel, i + offsetY, r, g, b);
-				matrix->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
-				matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetY + i, r, g, b);
+				if (drawBlack || (r != 0 || g != 0 || b != 0)) {
+					matrix->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
+					matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetY + i, r, g, b);
+				}
 			}
 		}
 	}
@@ -123,9 +125,7 @@ public:
 	}
 
 	void drawEyePupil(const uint8_t* bitmap, int x, int y) {
-		drawBitmap(bitmap, 6, 6, 14 + x, 5 + y);
-		// matrix->drawPixelRGB888(offsetX + x, offsetY + y, 255, 255, 255);
-		// matrix->drawPixelRGB888(offsetX + panelWidth - x, offsetY + y, 255, 255, 255);
+		drawBitmap(bitmap, 6, 6, 14 + x, 5 + y, false);
 	}
 
 	void drawNose(const uint8_t* bitmap) {
