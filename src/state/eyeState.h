@@ -1,9 +1,13 @@
 #include <Arduino.h>
+#include "../RenderFuction/googlyEye.h"
+
 
 class EyeState {
 public:
-    EyeState(DisplayController* displayPtr = nullptr): display(displayPtr),
-        currentState(IDLE),
+    EyeState(DisplayController* displayPtr = nullptr, MH_BMI160* bmi160Ptr = nullptr):
+        display(displayPtr),
+        bmi160(bmi160Ptr),
+        currentState(GOOGLY),
         nextBlink(0),
         blinkInterval(0),
         nextBoop(0),
@@ -35,6 +39,9 @@ public:
                 currentState = IDLE;
             }
             break;
+        case GOOGLY:
+            googlyEye();
+            break;
         default:
             break;
         }
@@ -49,14 +56,20 @@ public:
     void setBoop() {
         currentState = BOOP;
     }
+    void setGoogly() {
+        currentState = GOOGLY;
+    }
 
 private:
     DisplayController* display;
+    MH_BMI160* bmi160;
+    GooglyEye eye;
 
     enum State {
         IDLE,
         BLINK,
         BOOP,
+        GOOGLY,
     };
 
     State currentState;
@@ -109,5 +122,32 @@ private:
             blinkInterval = millis() + 50;
         }
         display->drawEye(blinkAnimation[currentBlinkFrameIndex]);
+    }
+
+    const int ACC_FILTER = 1;
+    void googlyEye() {
+        // Get accelerometer data
+        int16_t accel[6] = { 0 };
+        bmi160->getAccelGyroData(accel);
+        float ax = static_cast<float>(accel[0]) * 3.14 / 180.0;
+        float ay = static_cast<float>(accel[1]) * 3.14 / 180.0;
+        float az = static_cast<float>(accel[2]) * 3.14 / 180.0;
+
+        // Orient the sensor directions to the display directions
+        float eye_ax = -az;
+        float eye_ay = -ax;
+
+        // Apply accelerometer filter
+        if (eye_ax < ACC_FILTER) {
+            eye_ax = 0;
+        }
+        if (eye_ay < ACC_FILTER) {
+            eye_ay = 0;
+        }
+
+        // Update eye position and draw on display
+        eye.update(eye_ax, eye_ay);
+        display->drawEye(eyeGoogly);
+        display->drawEyePupil(eyePupil, static_cast<int>(eye.x), static_cast<int>(eye.y));
     }
 };

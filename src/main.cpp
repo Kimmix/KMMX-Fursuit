@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <MH_BMI160.h>
 #include "Icons.h"
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/Bluetooth.h"
@@ -8,8 +9,9 @@
 #define IR_PIN 36
 bool isBoop;
 
+MH_BMI160 bmi160;
 DisplayController display;
-EyeState eyeState(&display);
+EyeState eyeState(&display, &bmi160);
 MouthState mouthState(&display);
 BluetoothController ble(&display);
 
@@ -20,6 +22,9 @@ void setup() {
 	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(IR_PIN, INPUT);
 	randomSeed(analogRead(0));
+	delay(100);
+	bmi160.softReset();
+	bmi160.I2cInit(0x69);
 }
 
 

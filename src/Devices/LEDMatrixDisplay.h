@@ -37,6 +37,7 @@ private:
 	MatrixPanel_I2S_DMA* matrix;
 	const int panelWidth, panelHeight;
 	uint8_t panelBrightness = 64;
+	int eyeWidth = 32, eyeHeight = 18;
 
 public:
 	DisplayController(): panelWidth(PANEL_RES_X), panelHeight(PANEL_RES_Y) {
@@ -118,7 +119,13 @@ public:
 	}
 
 	void drawEye(const uint8_t* bitmap) {
-		drawBitmap(bitmap, 32, 18, 6, 0);
+		drawBitmap(bitmap, eyeWidth, eyeHeight, 6, 0);
+	}
+
+	void drawEyePupil(const uint8_t* bitmap, int x, int y) {
+		drawBitmap(bitmap, 6, 6, 14 + x, 5 + y);
+		// matrix->drawPixelRGB888(offsetX + x, offsetY + y, 255, 255, 255);
+		// matrix->drawPixelRGB888(offsetX + panelWidth - x, offsetY + y, 255, 255, 255);
 	}
 
 	void drawNose(const uint8_t* bitmap) {
