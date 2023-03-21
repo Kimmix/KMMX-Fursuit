@@ -13,20 +13,13 @@
 #define TH_MIN 3400
 #define TH_MAX 4400
 
-#define AH_THRESH 1000
-#define EE_THRESH 1500
-#define OH_THRESH 2000
-#define OO_THRESH 2500
-#define TH_THRESH 3000
-
 #define SAMPLE_RATE 8000
-#define NUM_SAMPLES 256
+#define SAMPLES 256
 
 class MouthState {
 public:
-    MouthState(DisplayController* displayPtr = nullptr, Microphone* micPtr = nullptr):
+    MouthState(DisplayController* displayPtr = nullptr):
         display(displayPtr),
-        mic(micPtr),
         currentState(IDLE)
     {}
 
@@ -61,12 +54,12 @@ public:
 
 private:
     DisplayController* display;
-    Microphone* mic;
-    arduinoFFT FFT = arduinoFFT();
 
-    double fft_input[NUM_SAMPLES],
-        fft_output[NUM_SAMPLES];
-    int loudness_thresholds[4] = { 1000, 2000, 3000, 4000 };
+    double fft_input[SAMPLES],
+        fft_output[SAMPLES],
+        loudness_thresholds[4] = { 500, 1000, 1500, 2000 };
+    arduinoFFT FFT = arduinoFFT(fft_input, fft_output, SAMPLES, SAMPLE_RATE);
+
 
     enum State {
         IDLE,
@@ -75,32 +68,35 @@ private:
     };
 
     State currentState;
-
+    unsigned long microseconds;
+    unsigned long sampling_period_us;
     void talking() {
         // Read microphone input and fill fft_input array with samples
-        int16_t buffer[NUM_SAMPLES];
-        mic->read(buffer, NUM_SAMPLES);
-        for (int16_t i = 0; i < NUM_SAMPLES; ++i) {
-            Serial.print(buffer[i]);
-            Serial.print("\t");
-        }
-        Serial.println();
+        // int16_t buffer[SAMPLES];
+        // mic->read(buffer, SAMPLES);
+        for (int i = 0; i < SAMPLES; i++) {
+            microseconds = millis();
+            fft_input[i] = analogRead(39);
+            fft_output[i] = 0;
 
-        FFT.Windowing(fft_input, NUM_SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-        FFT.Compute(fft_input, fft_output, NUM_SAMPLES, FFT_FORWARD);
-        FFT.ComplexToMagnitude(fft_input, fft_output, NUM_SAMPLES);
+            while (millis() < (microseconds + sampling_period_us)) {}
+        }
+        // FFT.DCRemoval();
+        FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+        FFT.Compute(FFT_FORWARD);
+        FFT.ComplexToMagnitude();
+        // double f, v;
+        // FFT.MajorPeak(&f, &v);
+        // Serial.println(); Serial.print((int)(f / SAMPLE_RATE * 32 * 2)); Serial.print(" ");
+        // Serial.print(f, 6); Serial.print(", "); Serial.println(v, 6);Serial.println("\n\r");
 
         // Compute amplitude of frequency ranges for each viseme
-        double ah_amplitude = 0;
-        double ee_amplitude = 0;
-        double oh_amplitude = 0;
-        double oo_amplitude = 0;
-        double th_amplitude = 0;
+        double ah_amplitude = 0, ee_amplitude = 0,
+            oh_amplitude = 0, oo_amplitude = 0, th_amplitude = 0;
 
-        for (int i = 0; i < NUM_SAMPLES / 2; i++) {
-            double freq = i * ((SAMPLE_RATE / 2.0) / (NUM_SAMPLES / 2.0));
-            double amplitude = fft_output[i];
-            Serial.println(amplitude);
+        for (int i = 0; i < SAMPLES / 2; i++) {
+            double freq = i * ((SAMPLE_RATE / 2.0) / (SAMPLES / 2.0));
+            double amplitude = abs(fft_output[i]);
             if (freq >= AH_MIN && freq <= AH_MAX) {
                 ah_amplitude += amplitude;
             }
@@ -119,60 +115,56 @@ private:
         }
 
         // Determine which viseme to display based on amplitude and threshold values
-        String viseme = "none";
-        if (ah_amplitude > AH_THRESH) {
-            viseme = "ah";
-        }
-        else if (ee_amplitude > EE_THRESH) {
+        String viseme = "ah";
+        double viseme_amplitude = ah_amplitude;
+        if (ee_amplitude > viseme_amplitude) {
             viseme = "ee";
+            viseme_amplitude = ee_amplitude;
         }
-        else if (oh_amplitude > OH_THRESH) {
+        if (oh_amplitude > viseme_amplitude) {
             viseme = "oh";
+            viseme_amplitude = oh_amplitude;
         }
-        else if (oo_amplitude > OO_THRESH) {
+        if (oo_amplitude > viseme_amplitude) {
             viseme = "oo";
+            viseme_amplitude = oo_amplitude;
         }
-        else if (th_amplitude > TH_THRESH) {
+        if (th_amplitude > viseme_amplitude) {
             viseme = "th";
         }
 
         // Compute loudness level based on average amplitude
-        double avg_amplitude = (ah_amplitude + ee_amplitude + oh_amplitude + oo_amplitude + th_amplitude) / 5.0;
+        double avg_amplitude = abs(ah_amplitude + ee_amplitude + oh_amplitude + oo_amplitude + th_amplitude) / 5.0;
         int loudness_level = 0;
         for (int i = 0; i < 4; i++) {
             if (avg_amplitude > loudness_thresholds[i]) {
                 loudness_level = i + 1;
             }
         }
+        // Serial.print("AH:");
+        // Serial.print(ah_amplitude);
+        // Serial.print(",");
+        // Serial.print("EE:");
+        // Serial.print(ee_amplitude);
+        // Serial.print(",");
+        // Serial.print("OH:");
+        // Serial.print(oh_amplitude);
+        // Serial.print(",");
+        // Serial.print("OO:");
+        // Serial.print(oo_amplitude);
+        // Serial.print(",");
+        // Serial.print("TH:");
+        // Serial.print(th_amplitude);
+        // Serial.print(",");
+        // Serial.print("AVG_AMP:");
+        // Serial.println(avg_amplitude);
+        // Serial.print(",");
 
         // Print results
-        // Serial.print("Viseme: ");
-        // Serial.print(viseme);
-        // Serial.print(" | Loudness: ");
-        // Serial.print(loudness_level);
-        // Serial.println(" dB");
-    }
-    void test() {
-        int16_t buffer[NUM_SAMPLES];
-        size_t bytes_read;
-        esp_err_t result = i2s_read(I2S_PORT, &buffer, NUM_SAMPLES * 2, &bytes_read, portMAX_DELAY);
-
-        if (result == ESP_OK)
-        {
-            // Read I2S data buffer
-            int16_t samples_read = bytes_read / 8;
-            if (samples_read > 0) {
-                float mean = 0;
-                for (int16_t i = 0; i < samples_read; ++i) {
-                    mean += (buffer[i]);
-                }
-
-                // Average the data reading
-                mean /= samples_read;
-
-                // Print to serial plotter
-                Serial.println(mean);
-            }
-        }
+        Serial.print("Viseme: ");
+        Serial.print(viseme);
+        Serial.print("| Loudness:");
+        Serial.print(loudness_level);
+        Serial.println(" dB");
     }
 };

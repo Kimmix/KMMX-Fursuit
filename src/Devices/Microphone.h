@@ -6,7 +6,7 @@
 #define I2S_SCK 32
 
 #define SAMPLE_RATE 8000
-#define NUM_SAMPLES 256
+#define SAMPLES 256
 
 // Use I2S Processor 0
 #define I2S_PORT I2S_NUM_0
@@ -28,7 +28,7 @@ public:
           .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_STAND_I2S),
           .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
           .dma_buf_count = 8,
-          .dma_buf_len = NUM_SAMPLES / 2,
+          .dma_buf_len = SAMPLES / 2,
           .use_apll = false
         };
         // Set I2S pin configuration
