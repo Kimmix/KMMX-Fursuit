@@ -3,6 +3,7 @@
 #include "Icons.h"
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/Bluetooth.h"
+#include "Devices/Microphone.h"
 #include "state/eyeState.h"
 #include "state/mouthState.h"
 
@@ -11,8 +12,10 @@ bool isBoop;
 
 MH_BMI160 bmi160;
 DisplayController display;
+Microphone mic;
+
 EyeState eyeState(&display, &bmi160);
-MouthState mouthState(&display);
+MouthState mouthState(&display, &mic);
 BluetoothController ble(&display);
 
 void setup() {
@@ -25,6 +28,8 @@ void setup() {
 	delay(100);
 	bmi160.softReset();
 	bmi160.I2cInit(0x69);
+	delay(100);
+	mic.begin();
 }
 
 
@@ -36,7 +41,7 @@ void loop() {
 	isBoop = !digitalRead(IR_PIN);
 	if (isBoop) {
 		eyeState.setBoop();
-		mouthState.setBoop();
+		mouthState.setTalk();
 	}
 	eyeState.update();
 	mouthState.update();
