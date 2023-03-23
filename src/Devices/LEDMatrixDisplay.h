@@ -56,6 +56,10 @@ public:
 		matrix->flipDMABuffer();
 	}
 
+	void clearScreen() {
+		matrix->clearScreen();
+	}
+
 	int getBrightnessValue() {
 		return panelBrightness;
 	}

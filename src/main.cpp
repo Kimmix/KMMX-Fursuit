@@ -33,6 +33,8 @@ void setup() {
 void loop() {
 	ble.update();
 	display.render();
+	// delay(25);
+	// display.clearScreen();
 	display.drawColorTest();
 	display.drawNose(noseDefault);
 	isBoop = !digitalRead(IR_PIN);

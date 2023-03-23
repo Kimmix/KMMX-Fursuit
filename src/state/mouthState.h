@@ -102,15 +102,22 @@ private:
 
     unsigned long microseconds;
     unsigned long sampling_period_us;
+
+    // smoothing factor between 0 and 1
+    const float alpha = 0.2;
+    float smoothedValue = 0;
+
     void talking() {
-        double min_amplitude = INFINITY;
         double max_amplitude = 0;
         // Read microphone input and fill fft_input array with samples
         // int16_t buffer[SAMPLES];
         // mic->read(buffer, SAMPLES);
         for (int i = 0; i < SAMPLES; i++) {
             microseconds = millis();
-            fft_input[i] = analogRead(39);
+
+            // apply exponential smoothing
+            smoothedValue = alpha * analogRead(39) + (1 - alpha) * smoothedValue;
+            fft_input[i] = smoothedValue;
             fft_output[i] = 0;
 
             while (millis() < (microseconds + sampling_period_us)) {}
@@ -146,9 +153,6 @@ private:
             if (freq >= TH_MIN && freq <= TH_MAX) {
                 th_amplitude += amplitude;
             }
-            if (amplitude < min_amplitude) {
-                min_amplitude = amplitude;
-            }
             if (amplitude > max_amplitude) {
                 max_amplitude = amplitude;
             }
@@ -156,7 +160,7 @@ private:
 
         // Compute loudness level based on average amplitude
         double avg_amplitude = abs(ah_amplitude + ee_amplitude + oh_amplitude + oo_amplitude + th_amplitude) / 5.0;
-        double dynamic_threshold = (max_amplitude + min_amplitude) / 2;
+        double dynamic_threshold = max_amplitude / 2;
         int loudness_level = 0;
         if (avg_amplitude > dynamic_threshold * 2) {
             loudness_level = 2;
