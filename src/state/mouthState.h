@@ -3,7 +3,6 @@
 #include <driver/i2s.h>
 #include "mouthBitmap.h"
 
-
 #define AH_MIN 600
 #define AH_MAX 1200
 #define EE_MIN 1000
@@ -13,7 +12,7 @@
 #define OO_MIN 2600
 #define OO_MAX 3600
 #define TH_MIN 3400
-#define TH_MAX 4400
+#define TH_MAX 5000
 
 #define SAMPLE_RATE 8000
 #define SAMPLES 256
@@ -97,8 +96,8 @@ private:
             return ooViseme[level];
         case TH:
             return thViseme[level];
-        }
-    }
+        };
+    };
 
     unsigned long microseconds;
     unsigned long sampling_period_us;
@@ -109,6 +108,7 @@ private:
 
     void talking() {
         double max_amplitude = 0;
+        double min_amplitude = 0;
         // Read microphone input and fill fft_input array with samples
         // int16_t buffer[SAMPLES];
         // mic->read(buffer, SAMPLES);
@@ -126,8 +126,8 @@ private:
         FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
         FFT.Compute(FFT_FORWARD);
         FFT.ComplexToMagnitude();
-        // double f, v;
-        // FFT.MajorPeak(&f, &v);
+        double f, v;
+        FFT.MajorPeak(&f, &v);
         // Serial.println(); Serial.print((int)(f / SAMPLE_RATE * 32 * 2)); Serial.print(" ");
         // Serial.print(f, 6); Serial.print(", "); Serial.println(v, 6);Serial.println("\n\r");
 
@@ -153,19 +153,27 @@ private:
             if (freq >= TH_MIN && freq <= TH_MAX) {
                 th_amplitude += amplitude;
             }
-            if (amplitude > max_amplitude) {
-                max_amplitude = amplitude;
-            }
+            // if (amplitude > max_amplitude) {
+            //     max_amplitude = amplitude;
+            // }
         }
+        // Normalizing
+        ah_amplitude *= 0.4;
+        ee_amplitude *= 0.5;
+        oh_amplitude *= 1.2;
+        oo_amplitude *= 2.0;
+        th_amplitude *= 1.6;
+
+        max_amplitude = max(max(max(max(ah_amplitude, ee_amplitude), oh_amplitude), oo_amplitude), th_amplitude);
+        min_amplitude = min(min(min(min(ah_amplitude, ee_amplitude), oh_amplitude), oo_amplitude), th_amplitude);
 
         // Compute loudness level based on average amplitude
-        double avg_amplitude = abs(ah_amplitude + ee_amplitude + oh_amplitude + oo_amplitude + th_amplitude) / 5.0;
-        double dynamic_threshold = max_amplitude / 2;
+        double avg_amplitude = (ah_amplitude + ee_amplitude + oh_amplitude + oo_amplitude + th_amplitude) / 5.0;
         int loudness_level = 0;
-        if (avg_amplitude > dynamic_threshold * 2) {
+        if (avg_amplitude > max_amplitude * 2) {
             loudness_level = 2;
         }
-        else if (avg_amplitude > dynamic_threshold) {
+        else if (avg_amplitude > max_amplitude) {
             loudness_level = 1;
         }
 
@@ -204,10 +212,10 @@ private:
         Serial.print(th_amplitude);
         Serial.print(",");
         Serial.print("AVG_AMP:");
-        Serial.print(avg_amplitude);
-        Serial.print(",");
-        Serial.print("threshold:");
-        Serial.println(dynamic_threshold);
+        Serial.println(avg_amplitude);
+        // Serial.print(",");
+        // Serial.print("threshold:");
+        // Serial.println(max_amplitude);
 
         // Print results
         // Serial.print("Viseme: ");
@@ -217,6 +225,11 @@ private:
         // Serial.println(" dB");
 
         // Final render
-        display->drawMouth(visemeOutput(viseme, loudness_level));
+        if (max_amplitude - min_amplitude > 2000) {
+            display->drawMouth(visemeOutput(viseme, loudness_level));
+        }
+        else {
+            display->drawMouth(mouthDefault);
+        }
     }
 };
