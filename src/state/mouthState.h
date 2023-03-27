@@ -126,10 +126,6 @@ private:
         FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
         FFT.Compute(FFT_FORWARD);
         FFT.ComplexToMagnitude();
-        double f, v;
-        FFT.MajorPeak(&f, &v);
-        // Serial.println(); Serial.print((int)(f / SAMPLE_RATE * 32 * 2)); Serial.print(" ");
-        // Serial.print(f, 6); Serial.print(", "); Serial.println(v, 6);Serial.println("\n\r");
 
         // Compute amplitude of frequency ranges for each viseme
         double ah_amplitude = 0, ee_amplitude = 0,
@@ -153,9 +149,6 @@ private:
             if (freq >= TH_MIN && freq <= TH_MAX) {
                 th_amplitude += amplitude;
             }
-            // if (amplitude > max_amplitude) {
-            //     max_amplitude = amplitude;
-            // }
         }
         // Normalizing
         ah_amplitude *= 0.4;
@@ -164,16 +157,15 @@ private:
         oo_amplitude *= 2.0;
         th_amplitude *= 1.6;
 
+        // Compute loudness level based on average amplitude
         max_amplitude = max(max(max(max(ah_amplitude, ee_amplitude), oh_amplitude), oo_amplitude), th_amplitude);
         min_amplitude = min(min(min(min(ah_amplitude, ee_amplitude), oh_amplitude), oo_amplitude), th_amplitude);
-
-        // Compute loudness level based on average amplitude
         double avg_amplitude = (ah_amplitude + ee_amplitude + oh_amplitude + oo_amplitude + th_amplitude) / 5.0;
         int loudness_level = 0;
-        if (avg_amplitude > max_amplitude * 2) {
+        if (max_amplitude > avg_amplitude * 2) {
             loudness_level = 2;
         }
-        else if (avg_amplitude > max_amplitude) {
+        else if (max_amplitude > avg_amplitude * 1.5) {
             loudness_level = 1;
         }
 
@@ -196,40 +188,68 @@ private:
             viseme = TH;
         }
 
-        Serial.print("AH:");
-        Serial.print(ah_amplitude);
-        Serial.print(",");
-        Serial.print("EE:");
-        Serial.print(ee_amplitude);
-        Serial.print(",");
-        Serial.print("OH:");
-        Serial.print(oh_amplitude);
-        Serial.print(",");
-        Serial.print("OO:");
-        Serial.print(oo_amplitude);
-        Serial.print(",");
-        Serial.print("TH:");
-        Serial.print(th_amplitude);
-        Serial.print(",");
-        Serial.print("AVG_AMP:");
-        Serial.println(avg_amplitude);
-        // Serial.print(",");
-        // Serial.print("threshold:");
+        // Serial.print("AH:");
+        // Serial.print(ah_amplitude);
+        // Serial.print(",EE:");
+        // Serial.print(ee_amplitude);
+        // Serial.print(",OH:");
+        // Serial.print(oh_amplitude);
+        // Serial.print(",OO:");
+        // Serial.print(oo_amplitude);
+        // Serial.print(",TH:");
+        // Serial.print(th_amplitude);
+        // Serial.print(",AVG_AMP:");
+        // Serial.println(avg_amplitude);
+        // Serial.print(",MAX_AMP:");
         // Serial.println(max_amplitude);
 
         // Print results
-        // Serial.print("Viseme: ");
-        // Serial.print(viseme);
-        // Serial.print("| Loudness:");
-        // Serial.print(loudness_level);
-        // Serial.println(" dB");
+        Serial.print("Viseme:");
+        Serial.print(viseme);
+        Serial.print(",Loudness:");
+        Serial.println(loudness_level);
 
         // Final render
-        if (max_amplitude - min_amplitude > 2000) {
-            display->drawMouth(visemeOutput(viseme, loudness_level));
+        if (max_amplitude - min_amplitude > 2000 ) {
+            display->drawMouth(visemeOutput(holdViseme(viseme), decayLoudness(loudness_level)));
         }
         else {
             display->drawMouth(mouthDefault);
         }
+    }
+
+    int previous_input = 0;    // Initialize previous input variable to 0
+    unsigned long decay_start_time = 0;   // Initialize decay start time to 0
+    const double decay_rate = 0.1;   // Set the decay rate (adjust as needed)
+    int decayLoudness(int input) {
+        if (input >= previous_input) {   // If the new input is greater than or equal to the previous input
+            previous_input = input;    // Update the previous input to the new input
+            decay_start_time = 0;   // Reset the decay start time
+        }
+        else {    // If the new input is less than the previous input
+            if (decay_start_time == 0) {   // If this is the first time the input has decayed
+                decay_start_time = millis();   // Set the decay start time to the current time
+            }
+            else {    // If the input is currently decaying
+                unsigned long decay_elapsed_time = millis() - decay_start_time;   // Calculate the elapsed decay time
+                int decayed_input = previous_input - (decay_rate * decay_elapsed_time / 1000);   // Calculate the decayed input
+                if (decayed_input < input) {   // If the decayed input is less than the new input
+                    previous_input = input;    // Update the previous input to the new input
+                    decay_start_time = 0;   // Reset the decay start time
+                }
+                else {    // If the decayed input is greater than or equal to the new input
+                    previous_input = decayed_input;    // Update the previous input to the decayed input
+                }
+            }
+        }
+        return previous_input;   // Return the current input value
+    }
+    Viseme lastViseme;
+    Viseme holdViseme(Viseme input) {
+        if (input != 0) {
+            return input;
+        }
+        lastViseme = input;
+        return lastViseme;
     }
 };
