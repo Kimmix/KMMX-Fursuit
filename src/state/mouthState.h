@@ -33,7 +33,7 @@ public:
             break;
         case BOOP:
             display->drawMouth(mouthOpen);
-            currentState = IDLE;
+            currentState = TALKING;
             break;
         case TALKING:
             talking();

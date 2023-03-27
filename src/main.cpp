@@ -40,7 +40,7 @@ void loop() {
 	isBoop = !digitalRead(IR_PIN);
 	if (isBoop) {
 		eyeState.setBoop();
-		mouthState.setTalk();
+		mouthState.setBoop();
 	}
 	eyeState.update();
 	mouthState.update();
