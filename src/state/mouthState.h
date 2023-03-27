@@ -152,10 +152,10 @@ private:
         }
         // Normalizing
         ah_amplitude *= 0.4;
-        ee_amplitude *= 0.5;
-        oh_amplitude *= 1.2;
+        ee_amplitude *= 0.6;
+        oh_amplitude *= 1.8;
         oo_amplitude *= 2.0;
-        th_amplitude *= 1.6;
+        th_amplitude *= 2.3;
 
         // Compute loudness level based on average amplitude
         max_amplitude = max(max(max(max(ah_amplitude, ee_amplitude), oh_amplitude), oo_amplitude), th_amplitude);
@@ -199,15 +199,15 @@ private:
         // Serial.print(",TH:");
         // Serial.print(th_amplitude);
         // Serial.print(",AVG_AMP:");
-        // Serial.println(avg_amplitude);
+        // Serial.print(avg_amplitude);
         // Serial.print(",MAX_AMP:");
         // Serial.println(max_amplitude);
 
         // Print results
-        Serial.print("Viseme:");
-        Serial.print(viseme);
-        Serial.print(",Loudness:");
-        Serial.println(loudness_level);
+        // Serial.print("Viseme:");
+        // Serial.print(viseme);
+        // Serial.print(",Loudness:");
+        // Serial.println(loudness_level);
 
         // Final render
         if (max_amplitude - min_amplitude > 2000 ) {
@@ -220,7 +220,7 @@ private:
 
     int previous_input = 0;    // Initialize previous input variable to 0
     unsigned long decay_start_time = 0;   // Initialize decay start time to 0
-    const double decay_rate = 0.1;   // Set the decay rate (adjust as needed)
+    const double decay_rate = 0.5;   // Set the decay rate (adjust as needed)
     int decayLoudness(int input) {
         if (input >= previous_input) {   // If the new input is greater than or equal to the previous input
             previous_input = input;    // Update the previous input to the new input
