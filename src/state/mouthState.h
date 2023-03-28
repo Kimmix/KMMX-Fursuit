@@ -12,7 +12,7 @@
 #define OO_MIN 2600
 #define OO_MAX 3600
 #define TH_MIN 3400
-#define TH_MAX 5000
+#define TH_MAX 4000
 
 #define SAMPLE_RATE 8000
 #define SAMPLES 256
