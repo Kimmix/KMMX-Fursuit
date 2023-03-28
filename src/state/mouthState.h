@@ -100,7 +100,7 @@ private:
     };
 
     unsigned long microseconds;
-    unsigned long sampling_period_us = round(1000000 * (1.0 / SAMPLE_RATE));
+    unsigned int sampling_period_us = round(1000 * (1.0 / SAMPLE_RATE));
 
     // smoothing factor between 0 and 1
     const float alpha = 0.2;
@@ -126,12 +126,15 @@ private:
         FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
         FFT.Compute(FFT_FORWARD);
         FFT.ComplexToMagnitude();
+        // double peak = FFT.MajorPeak();
+        // Serial.print("xp - ");
+        // Serial.println(peak);
 
         // Compute amplitude of frequency ranges for each viseme
         double ah_amplitude = 0, ee_amplitude = 0,
             oh_amplitude = 0, oo_amplitude = 0, th_amplitude = 0;
 
-        for (int i = 0; i < SAMPLES / 2; i++) {
+        for (int i = 4; i < SAMPLES / 2; i++) {
             double freq = i * ((SAMPLE_RATE / 2.0) / (SAMPLES / 2.0));
             double amplitude = abs(fft_output[i]);
             if (freq >= AH_MIN && freq <= AH_MAX) {
@@ -210,7 +213,7 @@ private:
         // Serial.println(loudness_level);
 
         // Final render
-        if (max_amplitude - min_amplitude > 2000 ) {
+        if (max_amplitude - min_amplitude > 2000) {
             display->drawMouth(visemeOutput(holdViseme(viseme), decayLoudness(loudness_level)));
         }
         else {
