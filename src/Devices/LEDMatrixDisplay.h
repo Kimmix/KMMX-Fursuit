@@ -42,10 +42,10 @@ private:
 public:
 	DisplayController(): panelWidth(PANEL_RES_X), panelHeight(PANEL_RES_Y) {
 		HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER);
-		mxconfig.double_buff = true; // Turn of double buffer
+		// mxconfig.double_buff = true; // Turn of double buffer
 		// mxconfig.clkphase = true;
 		matrix = new MatrixPanel_I2S_DMA(mxconfig);
-		delay(500);
+		delay(200);
 		if (!matrix->begin())
 			Serial.println("****** I2S memory allocation failed ***********");
 		matrix->setBrightness8(panelBrightness);

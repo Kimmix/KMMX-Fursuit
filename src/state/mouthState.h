@@ -21,7 +21,7 @@ class MouthState {
 public:
     MouthState(DisplayController* displayPtr = nullptr):
         display(displayPtr),
-        currentState(IDLE)
+        currentState(TALKING)
     {}
 
     void update() {
@@ -116,13 +116,13 @@ private:
             microseconds = millis();
 
             // apply exponential smoothing
-            smoothedValue = alpha * analogRead(39) + (1 - alpha) * smoothedValue;
+            smoothedValue = alpha * analogRead(13) + (1 - alpha) * smoothedValue;
             fft_input[i] = smoothedValue;
             fft_output[i] = 0;
 
             while (millis() < (microseconds + sampling_period_us)) {}
         }
-        // FFT.DCRemoval();
+        FFT.DCRemoval();
         FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
         FFT.Compute(FFT_FORWARD);
         FFT.ComplexToMagnitude();
@@ -154,7 +154,7 @@ private:
             }
         }
         // Normalizing
-        ah_amplitude *= 0.4;
+        ah_amplitude *= 0.5;
         ee_amplitude *= 0.6;
         oh_amplitude *= 1.8;
         oo_amplitude *= 2.0;

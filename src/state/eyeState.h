@@ -4,10 +4,10 @@
 
 class EyeState {
 public:
-    EyeState(DisplayController* displayPtr = nullptr, MH_BMI160* bmi160Ptr = nullptr):
+    EyeState(DisplayController* displayPtr = nullptr):
         display(displayPtr),
-        bmi160(bmi160Ptr),
-        currentState(GOOGLY),
+        // bmi160(bmi160Ptr),
+        currentState(IDLE),
         nextBlink(0),
         blinkInterval(0),
         nextBoop(0),
@@ -25,7 +25,7 @@ public:
         case IDLE:
             display->drawEye(eyeDefault);
             if (millis() >= nextBlink) {
-                nextBlink = millis() + (1000 * random(4, 12));
+                nextBlink = millis() + (1000 * random(1, 12));
                 currentState = BLINK;
             }
             break;
@@ -62,7 +62,6 @@ public:
 
 private:
     DisplayController* display;
-    MH_BMI160* bmi160;
     GooglyEye eye;
 
     enum State {
@@ -105,46 +104,49 @@ private:
     int blinkAnimationLength = 4;
     int blinkStep, currentBlinkFrameIndex;
     void blink() {
-        if (blinkStep < blinkAnimationLength - 1) {
-            blinkStep++;
-            currentBlinkFrameIndex++;
-        }
-        else if (blinkStep >= blinkAnimationLength - 1 && blinkStep < (blinkAnimationLength * 2) - 1) {
-            blinkStep++;
-            currentBlinkFrameIndex--;
-        }
-        if (blinkStep == (blinkAnimationLength * 2) - 1) {
-            blinkStep = 0;
-            currentBlinkFrameIndex = 0;
-            currentState = IDLE; // Blink complete, reset to idle
+        if (millis() >= blinkInterval) {
+            if (blinkStep < blinkAnimationLength - 1) {
+                blinkStep++;
+                currentBlinkFrameIndex++;
+            }
+            else if (blinkStep >= blinkAnimationLength - 1 && blinkStep < (blinkAnimationLength * 2) - 1) {
+                blinkStep++;
+                currentBlinkFrameIndex--;
+            }
+            if (blinkStep == (blinkAnimationLength * 2) - 1) {
+                blinkStep = 0;
+                currentBlinkFrameIndex = 0;
+                currentState = IDLE; // Blink complete, reset to idle
+            }
+            blinkInterval = millis() + 50;
         }
         display->drawEye(blinkAnimation[currentBlinkFrameIndex]);
     }
 
     const int ACC_FILTER = 1;
     void googlyEye() {
-        // Get accelerometer data
-        int16_t accel[6] = { 0 };
-        bmi160->getAccelGyroData(accel);
-        float ax = static_cast<float>(accel[0]) * 3.14 / 180.0;
-        float ay = static_cast<float>(accel[1]) * 3.14 / 180.0;
-        float az = static_cast<float>(accel[2]) * 3.14 / 180.0;
+        // // Get accelerometer data
+        // int16_t accel[6] = { 0 };
+        // bmi160->getAccelGyroData(accel);
+        // float ax = static_cast<float>(accel[0]) * 3.14 / 180.0;
+        // float ay = static_cast<float>(accel[1]) * 3.14 / 180.0;
+        // float az = static_cast<float>(accel[2]) * 3.14 / 180.0;
 
-        // Orient the sensor directions to the display directions
-        float eye_ax = -az;
-        float eye_ay = -ax;
+        // // Orient the sensor directions to the display directions
+        // float eye_ax = -az;
+        // float eye_ay = -ax;
 
-        // Apply accelerometer filter
-        if (eye_ax < ACC_FILTER) {
-            eye_ax = 0;
-        }
-        if (eye_ay < ACC_FILTER) {
-            eye_ay = 0;
-        }
+        // // Apply accelerometer filter
+        // if (eye_ax < ACC_FILTER) {
+        //     eye_ax = 0;
+        // }
+        // if (eye_ay < ACC_FILTER) {
+        //     eye_ay = 0;
+        // }
 
-        // Update eye position and draw on display
-        eye.update(eye_ax, eye_ay);
-        display->drawEye(eyeGoogly);
-        display->drawEyePupil(eyePupil, static_cast<int>(eye.x), static_cast<int>(eye.y));
+        // // Update eye position and draw on display
+        // eye.update(eye_ax, eye_ay);
+        // display->drawEye(eyeGoogly);
+        // display->drawEyePupil(eyePupil, static_cast<int>(eye.x), static_cast<int>(eye.y));
     }
 };
