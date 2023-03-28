@@ -100,7 +100,7 @@ private:
     };
 
     unsigned long microseconds;
-    unsigned long sampling_period_us;
+    unsigned long sampling_period_us = round(1000000 * (1.0 / SAMPLE_RATE));
 
     // smoothing factor between 0 and 1
     const float alpha = 0.2;
