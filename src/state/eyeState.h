@@ -98,10 +98,10 @@ private:
         display->drawEye(oFaceAnimation[currentOFaceIndex]);
     }
 
-    const uint8_t* blinkAnimation[4] = {
-        eyeBlink1, eyeBlink2, eyeBlink3, eyeBlink3
+    const uint8_t* blinkAnimation[3] = {
+        eyeBlink1, eyeBlink2, eyeBlink3
     };
-    int blinkAnimationLength = 4;
+    int blinkAnimationLength = 3;
     int blinkStep, currentBlinkFrameIndex;
     void blink() {
         if (millis() >= blinkInterval) {
@@ -118,7 +118,7 @@ private:
                 currentBlinkFrameIndex = 0;
                 currentState = IDLE; // Blink complete, reset to idle
             }
-            blinkInterval = millis() + 50;
+            blinkInterval = millis() + 40;
         }
         display->drawEye(blinkAnimation[currentBlinkFrameIndex]);
     }
