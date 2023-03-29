@@ -1,9 +1,9 @@
 #include <driver/i2s.h>
 
 // Connections to I2S microphone
-#define I2S_WS GPIO_NUM_44
-#define I2S_SD GPIO_NUM_17
-#define I2S_SCK GPIO_NUM_43
+#define I2S_SD GPIO_NUM_33
+#define I2S_WS GPIO_NUM_32
+#define I2S_SCK GPIO_NUM_35
 
 #define SAMPLE_RATE 8000
 #define SAMPLES 256

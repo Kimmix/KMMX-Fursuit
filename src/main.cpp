@@ -2,20 +2,24 @@
 #include <esp_random.h>
 #include "Icons.h"
 #include "Devices/LEDMatrixDisplay.h"
+#include "Devices/LIS3DH.h"
 #include "Devices/Bluetooth.h"
 #include "Devices/Microphone.h"
 #include "state/eyeState.h"
 #include "state/mouthState.h"
 
-#define IR_PIN 36
+#define IR_PIN 2
+// #define I2C_SDA 21
+// #define I2C_SCL 22
 bool isBoop;
 
+LIS3DH lis;
 DisplayController display;
 Microphone microphone;
 
-EyeState eyeState(&display);
+EyeState eyeState(&display, &lis);
 MouthState mouthState(&display, &microphone);
-// BluetoothController ble(&display);
+BluetoothController ble(&display);
 
 TaskHandle_t Task1;
 void Task1code(void* parameter) {
@@ -29,21 +33,24 @@ void Task1code(void* parameter) {
 
 void setup() {
 	Serial.begin(115200);
-	while (!Serial);
+	Serial.println("Staring..");
+	while (!Serial) delay(10);
+	delay(100);
 	microphone.init();
+	// lis.init();
 	// ble.init();
 	// pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(IR_PIN, INPUT);
-	randomSeed(analogRead(14));
+	randomSeed(analogRead(A0));
 	xTaskCreatePinnedToCore(Task1code, "Task1", 10000, NULL, 0, &Task1, 0);
 }
 
 uint16_t fps = 0;
 unsigned long fps_timer;
 void loop() {
-	// ble.update();
-	// display.render();
-	// display.clearScreen();
+	ble.update();
+	display.render();
+	display.clearScreen();
 	display.drawColorTest();
 	display.drawNose(noseDefault);
 	isBoop = !digitalRead(IR_PIN);
