@@ -98,37 +98,31 @@ private:
     double real[SAMPLES],
         imaginary[SAMPLES];
 
+    unsigned long microseconds;
+    unsigned int sampling_period_us = round(1000 * (1.0 / SAMPLE_RATE));
+    // smoothing factor between 0 and 1
+    const float alpha = 0.2;
+    float smoothedValue = 0;
+
     void talking() {
         // Read microphone input and fill fft_input array with samples
-        int16_t buffer[SAMPLES];
-        microphone->read(buffer, SAMPLES);
-        for (int i = 0; i < SAMPLES; i++) {
-            real[i] = buffer[i] / 32768.0;
-            imaginary[i] = 0;
-        }
-
-        // Get I2S data and place in data buffer
-        // size_t bytesIn = 0;
-        // esp_err_t result = i2s_read(I2S_PORT, &buffer, SAMPLES * 2, &bytesIn, portMAX_DELAY);
-
-        // if (result == ESP_OK)
-        // {
-        //     // Read I2S data buffer
-        //     int16_t samples_read = bytesIn / 8;
-        //     if (samples_read > 0) {
-        //         float mean = 0;
-        //         for (int16_t i = 0; i < samples_read; ++i) {
-        //             mean += (buffer[i]);
-        //         }
-
-        //         // Average the data reading
-        //         mean /= samples_read;
-
-        //         // Print to serial plotter
-        //         Serial.println(mean);
-        //     }
+        // int16_t buffer[SAMPLES];
+        // microphone->read(buffer, SAMPLES);
+        // for (int i = 0; i < SAMPLES; i++) {
+        //     real[i] = buffer[i] / 32768.0;
+        //     imaginary[i] = 0;
         // }
 
+        for (int i = 0; i < SAMPLES; i++) {
+            microseconds = millis();
+
+            // apply exponential smoothing
+            smoothedValue = alpha * analogRead(13) + (1 - alpha) * smoothedValue;
+            real[i] = smoothedValue;
+            imaginary[i] = 0;
+
+            while (millis() < (microseconds + sampling_period_us)) {}
+        }
 
         FFT.DCRemoval();
         FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
