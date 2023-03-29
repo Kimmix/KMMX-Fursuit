@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <esp_random.h>
 #include "Icons.h"
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/Bluetooth.h"

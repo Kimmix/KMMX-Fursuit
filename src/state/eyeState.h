@@ -10,6 +10,7 @@ public:
         currentState(IDLE),
         nextBlink(0),
         blinkInterval(0),
+        nextFace(0),
         nextBoop(0),
         resetBoop_(0),
         boopAnimationFrame(0),
@@ -23,9 +24,9 @@ public:
         // Serial.print("\n");
         switch (currentState) {
         case IDLE:
-            display->drawEye(eyeDefault);
+            display->drawEye(defaultAnimation[defaultFaceIndex]);
             if (millis() >= nextBlink) {
-                nextBlink = millis() + (1000 * random(1, 12));
+                nextBlink = millis() + (1000 * (esp_random() % 10));
                 currentState = BLINK;
             }
             break;
@@ -75,8 +76,15 @@ private:
     unsigned long
         nextBlink,
         blinkInterval,
+        nextFace,
         nextBoop,
         resetBoop_;
+
+    short defaultFaceIndex = 0;
+    const uint8_t* defaultAnimation[3] = { eyeDefault, eyeUp, eyeDown };
+    void changeDefaultFace() {
+        defaultFaceIndex = esp_random() % 3;
+    }
 
     const uint8_t* boopAnimation[2] = { eyeV1, eyeV2 };
     short boopAnimationFrame;
@@ -93,7 +101,7 @@ private:
     void oFace() {
         if (millis() >= nextBoop) {
             nextBoop = millis() + 200;
-            currentOFaceIndex = random(0, 3);
+            currentOFaceIndex = esp_random() % 3;
         }
         display->drawEye(oFaceAnimation[currentOFaceIndex]);
     }
@@ -116,6 +124,7 @@ private:
             if (blinkStep == (blinkAnimationLength * 2) - 1) {
                 blinkStep = 0;
                 currentBlinkFrameIndex = 0;
+                changeDefaultFace();
                 currentState = IDLE; // Blink complete, reset to idle
             }
             blinkInterval = millis() + 40;
