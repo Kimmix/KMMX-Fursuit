@@ -26,7 +26,7 @@ public:
         case IDLE:
             display->drawEye(defaultAnimation[defaultFaceIndex]);
             if (millis() >= nextBlink) {
-                nextBlink = millis() + (1000 * (esp_random() % 10));
+                nextBlink = millis() + (500 * (esp_random() % 25));
                 currentState = BLINK;
             }
             break;
@@ -83,7 +83,12 @@ private:
     short defaultFaceIndex = 0;
     const uint8_t* defaultAnimation[3] = { eyeDefault, eyeUp, eyeDown };
     void changeDefaultFace() {
-        defaultFaceIndex = esp_random() % 3;
+        if ((esp_random() % 10) <= 3) {
+            defaultFaceIndex = (esp_random() % 2) + 1;
+        }
+        else {
+            defaultFaceIndex = 0;
+        }
     }
 
     const uint8_t* boopAnimation[2] = { eyeV1, eyeV2 };
