@@ -11,21 +11,6 @@
 // CLK| LAT
 // OE | GND
 
-// Default library pin configuration for the reference you can redefine only ones you need later on object creation
-// #define R1 25
-// #define G1 26
-// #define BL1 27
-// #define R2 14
-// #define G2 12
-// #define BL2 13
-// #define CH_A 23
-// #define CH_B 19
-// #define CH_C 5
-// #define CH_D 17
-// #define CH_E -1 // assign to any available pin if using panels with 1/32 scan
-// #define CLK 16
-// #define LAT 4
-
 #define PANEL_RES_X 64
 #define PANEL_RES_Y 32
 #define PANELS_NUMBER 2

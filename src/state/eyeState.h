@@ -146,7 +146,7 @@ private:
 
         // // Update eye position and draw on display
         // eye.update(eye_ax, eye_ay);
-        // display->drawEye(eyeGoogly);
+        display->drawEye(eyeGoogly);
         // display->drawEyePupil(eyePupil, static_cast<int>(eye.x), static_cast<int>(eye.y));
     }
 };
