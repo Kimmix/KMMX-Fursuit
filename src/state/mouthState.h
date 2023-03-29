@@ -22,7 +22,7 @@ public:
     MouthState(DisplayController* displayPtr = nullptr, Microphone* microphonePtr = nullptr):
         display(displayPtr),
         microphone(microphonePtr),
-        currentState(TALKING)
+        currentState(IDLE)
     {}
 
     void update() {
