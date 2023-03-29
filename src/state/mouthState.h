@@ -19,8 +19,9 @@
 
 class MouthState {
 public:
-    MouthState(DisplayController* displayPtr = nullptr):
+    MouthState(DisplayController* displayPtr = nullptr, Microphone* microphonePtr = nullptr):
         display(displayPtr),
+        microphone(microphonePtr),
         currentState(TALKING)
     {}
 
@@ -55,13 +56,8 @@ public:
 
 private:
     DisplayController* display;
-
-    double fft_input[SAMPLES],
-        fft_output[SAMPLES],
-        loudness_thresholds[4] = { 500, 1000, 1500, 2000 };
-    int levelofLoudness = 3;
-    arduinoFFT FFT = arduinoFFT(fft_input, fft_output, SAMPLES, SAMPLE_RATE);
-
+    Microphone* microphone;
+    arduinoFFT FFT = arduinoFFT(real, imaginary, SAMPLES, SAMPLE_RATE);
 
     enum State {
         IDLE,
@@ -99,29 +95,41 @@ private:
         };
     };
 
-    unsigned long microseconds;
-    unsigned int sampling_period_us = round(1000 * (1.0 / SAMPLE_RATE));
-
-    // smoothing factor between 0 and 1
-    const float alpha = 0.2;
-    float smoothedValue = 0;
+    double real[SAMPLES],
+        imaginary[SAMPLES];
 
     void talking() {
-        double max_amplitude = 0;
-        double min_amplitude = 0;
         // Read microphone input and fill fft_input array with samples
-        // int16_t buffer[SAMPLES];
-        // mic->read(buffer, SAMPLES);
+        int16_t buffer[SAMPLES];
+        microphone->read(buffer, SAMPLES);
         for (int i = 0; i < SAMPLES; i++) {
-            microseconds = millis();
-
-            // apply exponential smoothing
-            smoothedValue = alpha * analogRead(13) + (1 - alpha) * smoothedValue;
-            fft_input[i] = smoothedValue;
-            fft_output[i] = 0;
-
-            while (millis() < (microseconds + sampling_period_us)) {}
+            real[i] = buffer[i] / 32768.0;
+            imaginary[i] = 0;
         }
+
+        // Get I2S data and place in data buffer
+        // size_t bytesIn = 0;
+        // esp_err_t result = i2s_read(I2S_PORT, &buffer, SAMPLES * 2, &bytesIn, portMAX_DELAY);
+
+        // if (result == ESP_OK)
+        // {
+        //     // Read I2S data buffer
+        //     int16_t samples_read = bytesIn / 8;
+        //     if (samples_read > 0) {
+        //         float mean = 0;
+        //         for (int16_t i = 0; i < samples_read; ++i) {
+        //             mean += (buffer[i]);
+        //         }
+
+        //         // Average the data reading
+        //         mean /= samples_read;
+
+        //         // Print to serial plotter
+        //         Serial.println(mean);
+        //     }
+        // }
+
+
         FFT.DCRemoval();
         FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
         FFT.Compute(FFT_FORWARD);
@@ -136,7 +144,7 @@ private:
 
         for (int i = 4; i < SAMPLES / 2; i++) {
             double freq = i * ((SAMPLE_RATE / 2.0) / (SAMPLES / 2.0));
-            double amplitude = abs(fft_output[i]);
+            double amplitude = abs(imaginary[i]);
             if (freq >= AH_MIN && freq <= AH_MAX) {
                 ah_amplitude += amplitude;
             }
@@ -154,13 +162,14 @@ private:
             }
         }
         // Normalizing
-        ah_amplitude *= 0.5;
-        ee_amplitude *= 0.6;
-        oh_amplitude *= 1.8;
-        oo_amplitude *= 2.0;
-        th_amplitude *= 2.3;
+        // ah_amplitude *= 0.5;
+        // ee_amplitude *= 0.6;
+        // oh_amplitude *= 1.8;
+        // oo_amplitude *= 2.0;
+        // th_amplitude *= 2.3;
 
         // Compute loudness level based on average amplitude
+        double max_amplitude = 0, min_amplitude = 0;
         max_amplitude = max(max(max(max(ah_amplitude, ee_amplitude), oh_amplitude), oo_amplitude), th_amplitude);
         min_amplitude = min(min(min(min(ah_amplitude, ee_amplitude), oh_amplitude), oo_amplitude), th_amplitude);
         double avg_amplitude = (ah_amplitude + ee_amplitude + oh_amplitude + oo_amplitude + th_amplitude) / 5.0;
@@ -200,7 +209,7 @@ private:
         // Serial.print(",OO:");
         // Serial.print(oo_amplitude);
         // Serial.print(",TH:");
-        // Serial.print(th_amplitude);
+        // Serial.println(th_amplitude);
         // Serial.print(",AVG_AMP:");
         // Serial.print(avg_amplitude);
         // Serial.print(",MAX_AMP:");

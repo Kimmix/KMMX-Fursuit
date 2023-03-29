@@ -2,6 +2,7 @@
 #include "Icons.h"
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/Bluetooth.h"
+#include "Devices/Microphone.h"
 #include "state/eyeState.h"
 #include "state/mouthState.h"
 
@@ -9,9 +10,10 @@
 bool isBoop;
 
 DisplayController display;
+Microphone microphone;
 
 EyeState eyeState(&display);
-MouthState mouthState(&display);
+MouthState mouthState(&display, &microphone);
 // BluetoothController ble(&display);
 
 TaskHandle_t Task1;
@@ -27,6 +29,7 @@ void Task1code(void* parameter) {
 void setup() {
 	Serial.begin(115200);
 	while (!Serial);
+	microphone.init();
 	// ble.init();
 	// pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(IR_PIN, INPUT);
