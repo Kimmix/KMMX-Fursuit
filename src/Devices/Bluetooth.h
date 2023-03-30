@@ -51,13 +51,13 @@ private:
     static void blePeripheralConnectHandler(BLEDevice central) {
         Serial.print("Connected event, central: ");
         Serial.println(central.address());
-        digitalWrite(LED_BUILTIN, HIGH);
+        // digitalWrite(LED_BUILTIN, HIGH);
     }
     // On bluetooth disconnected
     static void blePeripheralDisconnectHandler(BLEDevice central) {
         Serial.print("Disconnected event, central: ");
         Serial.println(central.address());
-        digitalWrite(LED_BUILTIN, LOW);
+        // digitalWrite(LED_BUILTIN, LOW);
     }
     // void switchCharacteristicWritten(BLEDevice central,
     //     BLECharacteristic characteristic) {

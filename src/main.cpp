@@ -1,40 +1,61 @@
 #include <Arduino.h>
-#include <MH_BMI160.h>
-#include "Icons.h"
+#include <esp_random.h>
+#include "Bitmaps/Icons.h"
 #include "Devices/LEDMatrixDisplay.h"
+#include "Devices/LIS3DH.h"
 #include "Devices/Bluetooth.h"
-#include "state/eyeState.h"
-#include "state/mouthState.h"
+#include "Devices/I2SMicrophone.h"
+#include "Controller/eyeController.h"
+#include "Controller/mouthController.h"
 
-#define IR_PIN 36
+#define IR_PIN GPIO_NUM_2
+#define RANDOM_PIN A0
 bool isBoop;
 
-MH_BMI160 bmi160;
+LIS3DH lis;
 DisplayController display;
+Microphone microphone;
 
-EyeState eyeState(&display, &bmi160);
-MouthState mouthState(&display);
+EyeState eyeState(&display, &lis);
+MouthState mouthState(&display, &microphone);
 BluetoothController ble(&display);
+
+TaskHandle_t controlMouth;
+void asyncRender(void* parameter) {
+	while (true) {
+		if (isBoop) {
+			mouthState.setBoop();
+		}
+		mouthState.update();
+	}
+}
+
+uint16_t fps = 0;
+unsigned long fps_timer;
+void showFPS() {
+	++fps;
+	if (millis() > fps_timer) {
+		Serial.printf_P(PSTR("Effect fps: %d\n"), fps);
+		fps_timer = millis() + 1000;
+		fps = 0;
+	}
+}
 
 void setup() {
 	Serial.begin(115200);
-	while (!Serial);
-	ble.init();
-	pinMode(LED_BUILTIN, OUTPUT);
+	while (!Serial) delay(10);
+	Serial.println("Staring..");
+	microphone.init();
+	// lis.init();
+	// ble.init();
+	// pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(IR_PIN, INPUT);
-	randomSeed(analogRead(0));
-	delay(100);
-	bmi160.softReset();
-	bmi160.I2cInit(0x69);
-	delay(100);
+	randomSeed(analogRead(RANDOM_PIN));
+	xTaskCreatePinnedToCore(asyncRender, "Render Mouth", 10000, NULL, 0, &controlMouth, 0);
 }
-
 
 void loop() {
 	ble.update();
-	display.render();
-	// delay(25);
-	// display.clearScreen();
 	display.drawColorTest();
 	display.drawNose(noseDefault);
 	isBoop = !digitalRead(IR_PIN);
@@ -43,5 +64,5 @@ void loop() {
 		mouthState.setBoop();
 	}
 	eyeState.update();
-	mouthState.update();
+	// showFPS();
 }

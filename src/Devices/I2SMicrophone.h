@@ -1,9 +1,9 @@
 #include <driver/i2s.h>
 
 // Connections to I2S microphone
-#define I2S_WS 44
-#define I2S_SD 17
-#define I2S_SCK 43
+#define I2S_SD GPIO_NUM_33
+#define I2S_WS GPIO_NUM_32
+#define I2S_SCK GPIO_NUM_35
 
 #define SAMPLE_RATE 8000
 #define SAMPLES 256
@@ -15,10 +15,9 @@ class Microphone {
 public:
     Microphone() {};
 
-    void begin() {
+    void init() {
         delay(500);
         Serial.println("Configuring I2S...");
-        esp_err_t err;
         // Set up I2S Processor configuration
         const i2s_config_t i2s_config = {
           .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX),
@@ -28,8 +27,8 @@ public:
           .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_STAND_I2S),
           .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
           .dma_buf_count = 8,
-          .dma_buf_len = SAMPLES / 2,
-          .use_apll = false
+          .dma_buf_len = SAMPLES,
+        //   .use_apll = false
         };
         // Set I2S pin configuration
         const i2s_pin_config_t pin_config = {
@@ -38,6 +37,7 @@ public:
           .data_out_num = -1,
           .data_in_num = I2S_SD
         };
+        esp_err_t err;
         err = i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
         if (err != ESP_OK) {
             Serial.printf("Failed installing driver: %d\n", err);
@@ -49,6 +49,7 @@ public:
             while (true);
         }
         Serial.println("I2S driver installed.");
+        delay(500);
     };
 
     void read(int16_t* buffer, size_t num_samples) {

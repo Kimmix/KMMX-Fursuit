@@ -1,7 +1,5 @@
-#include <Arduino.h>
 #include <arduinoFFT.h>
-#include <driver/i2s.h>
-#include "mouthBitmap.h"
+#include "Bitmaps/mouthBitmap.h"
 
 #define AH_MIN 600
 #define AH_MAX 1200
@@ -19,8 +17,9 @@
 
 class MouthState {
 public:
-    MouthState(DisplayController* displayPtr = nullptr):
+    MouthState(DisplayController* displayPtr = nullptr, Microphone* microphonePtr = nullptr):
         display(displayPtr),
+        microphone(microphonePtr),
         currentState(IDLE)
     {}
 
@@ -55,13 +54,8 @@ public:
 
 private:
     DisplayController* display;
-
-    double fft_input[SAMPLES],
-        fft_output[SAMPLES],
-        loudness_thresholds[4] = { 500, 1000, 1500, 2000 };
-    int levelofLoudness = 3;
-    arduinoFFT FFT = arduinoFFT(fft_input, fft_output, SAMPLES, SAMPLE_RATE);
-
+    Microphone* microphone;
+    arduinoFFT FFT = arduinoFFT(real, imaginary, SAMPLES, SAMPLE_RATE);
 
     enum State {
         IDLE,
@@ -70,6 +64,7 @@ private:
     };
     State currentState;
 
+    // ---- Viseme ----
     enum Viseme {
         AH,
         EE,
@@ -77,13 +72,11 @@ private:
         OO,
         TH
     };
-    // ---- Viseme ----
     const uint8_t* ahViseme[3] = { AH1, AH2, AH3 };
     const uint8_t* eeViseme[3] = { EE1, EE2, EE3 };
     const uint8_t* ohViseme[3] = { OH1, OH2, OH3 };
     const uint8_t* ooViseme[3] = { OO1, OO2, OO3 };
     const uint8_t* thViseme[3] = { TH1, TH2, TH3 };
-
     const uint8_t* visemeOutput(Viseme viseme, int level) {
         switch (viseme) {
         case AH:
@@ -99,30 +92,35 @@ private:
         };
     };
 
+    double real[SAMPLES],
+        imaginary[SAMPLES];
     unsigned long microseconds;
     unsigned int sampling_period_us = round(1000 * (1.0 / SAMPLE_RATE));
-
-    // smoothing factor between 0 and 1
-    const float alpha = 0.2;
+    
+    const float alpha = 0.2; // smoothing factor between 0 and 1
     float smoothedValue = 0;
 
     void talking() {
-        double max_amplitude = 0;
-        double min_amplitude = 0;
-        // Read microphone input and fill fft_input array with samples
+        // Read analog microphone input and fill fft_input array with samples
         // int16_t buffer[SAMPLES];
-        // mic->read(buffer, SAMPLES);
+        // microphone->read(buffer, SAMPLES);
+        // for (int i = 0; i < SAMPLES; i++) {
+        //     real[i] = buffer[i] / 32768.0;
+        //     imaginary[i] = 0;
+        // }
+
         for (int i = 0; i < SAMPLES; i++) {
             microseconds = millis();
 
             // apply exponential smoothing
-            smoothedValue = alpha * analogRead(39) + (1 - alpha) * smoothedValue;
-            fft_input[i] = smoothedValue;
-            fft_output[i] = 0;
+            smoothedValue = alpha * analogRead(13) + (1 - alpha) * smoothedValue;
+            real[i] = smoothedValue;
+            imaginary[i] = 0;
 
             while (millis() < (microseconds + sampling_period_us)) {}
         }
-        // FFT.DCRemoval();
+
+        FFT.DCRemoval();
         FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
         FFT.Compute(FFT_FORWARD);
         FFT.ComplexToMagnitude();
@@ -136,7 +134,7 @@ private:
 
         for (int i = 4; i < SAMPLES / 2; i++) {
             double freq = i * ((SAMPLE_RATE / 2.0) / (SAMPLES / 2.0));
-            double amplitude = abs(fft_output[i]);
+            double amplitude = abs(imaginary[i]);
             if (freq >= AH_MIN && freq <= AH_MAX) {
                 ah_amplitude += amplitude;
             }
@@ -154,13 +152,14 @@ private:
             }
         }
         // Normalizing
-        ah_amplitude *= 0.4;
-        ee_amplitude *= 0.6;
-        oh_amplitude *= 1.8;
-        oo_amplitude *= 2.0;
-        th_amplitude *= 2.3;
+        // ah_amplitude *= 0.5;
+        // ee_amplitude *= 0.6;
+        // oh_amplitude *= 1.8;
+        // oo_amplitude *= 2.0;
+        // th_amplitude *= 2.3;
 
         // Compute loudness level based on average amplitude
+        double max_amplitude = 0, min_amplitude = 0;
         max_amplitude = max(max(max(max(ah_amplitude, ee_amplitude), oh_amplitude), oo_amplitude), th_amplitude);
         min_amplitude = min(min(min(min(ah_amplitude, ee_amplitude), oh_amplitude), oo_amplitude), th_amplitude);
         double avg_amplitude = (ah_amplitude + ee_amplitude + oh_amplitude + oo_amplitude + th_amplitude) / 5.0;
@@ -200,7 +199,7 @@ private:
         // Serial.print(",OO:");
         // Serial.print(oo_amplitude);
         // Serial.print(",TH:");
-        // Serial.print(th_amplitude);
+        // Serial.println(th_amplitude);
         // Serial.print(",AVG_AMP:");
         // Serial.print(avg_amplitude);
         // Serial.print(",MAX_AMP:");

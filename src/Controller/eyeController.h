@@ -1,15 +1,15 @@
-#include <Arduino.h>
 #include "../RenderFuction/googlyEye.h"
-
+#include "Bitmaps/eyeBitmap.h"
 
 class EyeState {
 public:
-    EyeState(DisplayController* displayPtr = nullptr, MH_BMI160* bmi160Ptr = nullptr):
+    EyeState(DisplayController* displayPtr = nullptr, LIS3DH* lisPtr = nullptr):
         display(displayPtr),
-        bmi160(bmi160Ptr),
+        lis(lisPtr),
         currentState(GOOGLY),
         nextBlink(0),
         blinkInterval(0),
+        nextFace(0),
         nextBoop(0),
         resetBoop_(0),
         boopAnimationFrame(0),
@@ -23,9 +23,9 @@ public:
         // Serial.print("\n");
         switch (currentState) {
         case IDLE:
-            display->drawEye(eyeDefault);
+            display->drawEye(defaultAnimation[defaultFaceIndex]);
             if (millis() >= nextBlink) {
-                nextBlink = millis() + (1000 * random(4, 12));
+                nextBlink = millis() + (500 * (esp_random() % 25));
                 currentState = BLINK;
             }
             break;
@@ -62,7 +62,7 @@ public:
 
 private:
     DisplayController* display;
-    MH_BMI160* bmi160;
+    LIS3DH* lis;
     GooglyEye eye;
 
     enum State {
@@ -76,8 +76,20 @@ private:
     unsigned long
         nextBlink,
         blinkInterval,
+        nextFace,
         nextBoop,
         resetBoop_;
+
+    short defaultFaceIndex = 0;
+    const uint8_t* defaultAnimation[3] = { eyeDefault, eyeUp, eyeDown };
+    void changeDefaultFace() {
+        if ((esp_random() % 10) <= 3) {
+            defaultFaceIndex = (esp_random() % 2) + 1;
+        }
+        else {
+            defaultFaceIndex = 0;
+        }
+    }
 
     const uint8_t* boopAnimation[2] = { eyeV1, eyeV2 };
     short boopAnimationFrame;
@@ -94,29 +106,33 @@ private:
     void oFace() {
         if (millis() >= nextBoop) {
             nextBoop = millis() + 200;
-            currentOFaceIndex = random(0, 3);
+            currentOFaceIndex = esp_random() % 3;
         }
         display->drawEye(oFaceAnimation[currentOFaceIndex]);
     }
 
-    const uint8_t* blinkAnimation[4] = {
-        eyeBlink1, eyeBlink2, eyeBlink3, eyeBlink3
+    const uint8_t* blinkAnimation[3] = {
+        eyeBlink1, eyeBlink2, eyeBlink3
     };
-    int blinkAnimationLength = 4;
+    int blinkAnimationLength = 3;
     int blinkStep, currentBlinkFrameIndex;
     void blink() {
-        if (blinkStep < blinkAnimationLength - 1) {
-            blinkStep++;
-            currentBlinkFrameIndex++;
-        }
-        else if (blinkStep >= blinkAnimationLength - 1 && blinkStep < (blinkAnimationLength * 2) - 1) {
-            blinkStep++;
-            currentBlinkFrameIndex--;
-        }
-        if (blinkStep == (blinkAnimationLength * 2) - 1) {
-            blinkStep = 0;
-            currentBlinkFrameIndex = 0;
-            currentState = IDLE; // Blink complete, reset to idle
+        if (millis() >= blinkInterval) {
+            if (blinkStep < blinkAnimationLength - 1) {
+                blinkStep++;
+                currentBlinkFrameIndex++;
+            }
+            else if (blinkStep >= blinkAnimationLength - 1 && blinkStep < (blinkAnimationLength * 2) - 1) {
+                blinkStep++;
+                currentBlinkFrameIndex--;
+            }
+            if (blinkStep == (blinkAnimationLength * 2) - 1) {
+                blinkStep = 0;
+                currentBlinkFrameIndex = 0;
+                changeDefaultFace();
+                currentState = IDLE; // Blink complete, reset to idle
+            }
+            blinkInterval = millis() + 40;
         }
         display->drawEye(blinkAnimation[currentBlinkFrameIndex]);
     }
@@ -124,11 +140,14 @@ private:
     const int ACC_FILTER = 1;
     void googlyEye() {
         // Get accelerometer data
-        int16_t accel[6] = { 0 };
-        bmi160->getAccelGyroData(accel);
-        float ax = static_cast<float>(accel[0]) * 3.14 / 180.0;
-        float ay = static_cast<float>(accel[1]) * 3.14 / 180.0;
-        float az = static_cast<float>(accel[2]) * 3.14 / 180.0;
+        sensors_event_t event = lis->readAccel();
+        float ax = static_cast<float>(event.acceleration.x);
+        float ay = static_cast<float>(event.acceleration.y);
+        float az = static_cast<float>(event.acceleration.z);
+        Serial.print("\t\tX: "); Serial.print(event.acceleration.x);
+        Serial.print(" \tY: "); Serial.print(event.acceleration.y);
+        Serial.print(" \tZ: "); Serial.print(event.acceleration.z);
+        Serial.println(" m/s^2 ");
 
         // Orient the sensor directions to the display directions
         float eye_ax = -az;
