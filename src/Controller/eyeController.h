@@ -1,6 +1,5 @@
-#include <Arduino.h>
 #include "../RenderFuction/googlyEye.h"
-
+#include "Bitmaps/eyeBitmap.h"
 
 class EyeState {
 public:

@@ -1,16 +1,15 @@
 #include <Arduino.h>
 #include <esp_random.h>
-#include "Icons.h"
+#include "Bitmaps/Icons.h"
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/LIS3DH.h"
 #include "Devices/Bluetooth.h"
-#include "Devices/Microphone.h"
-#include "state/eyeState.h"
-#include "state/mouthState.h"
+#include "Devices/I2SMicrophone.h"
+#include "Controller/eyeController.h"
+#include "Controller/mouthController.h"
 
-#define IR_PIN 2
-// #define I2C_SDA 21
-// #define I2C_SCL 22
+#define IR_PIN GPIO_NUM_2
+#define RANDOM_PIN A0
 bool isBoop;
 
 LIS3DH lis;
@@ -21,8 +20,8 @@ EyeState eyeState(&display, &lis);
 MouthState mouthState(&display, &microphone);
 BluetoothController ble(&display);
 
-TaskHandle_t Task1;
-void Task1code(void* parameter) {
+TaskHandle_t controlMouth;
+void asyncRender(void* parameter) {
 	while (true) {
 		if (isBoop) {
 			mouthState.setBoop();
@@ -31,26 +30,32 @@ void Task1code(void* parameter) {
 	}
 }
 
+uint16_t fps = 0;
+unsigned long fps_timer;
+void showFPS() {
+	++fps;
+	if (millis() > fps_timer) {
+		Serial.printf_P(PSTR("Effect fps: %d\n"), fps);
+		fps_timer = millis() + 1000;
+		fps = 0;
+	}
+}
+
 void setup() {
 	Serial.begin(115200);
-	Serial.println("Staring..");
 	while (!Serial) delay(10);
-	delay(100);
+	Serial.println("Staring..");
 	microphone.init();
 	// lis.init();
 	// ble.init();
 	// pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(IR_PIN, INPUT);
-	randomSeed(analogRead(A0));
-	xTaskCreatePinnedToCore(Task1code, "Task1", 10000, NULL, 0, &Task1, 0);
+	randomSeed(analogRead(RANDOM_PIN));
+	xTaskCreatePinnedToCore(asyncRender, "Render Mouth", 10000, NULL, 0, &controlMouth, 0);
 }
 
-uint16_t fps = 0;
-unsigned long fps_timer;
 void loop() {
 	ble.update();
-	display.render();
-	display.clearScreen();
 	display.drawColorTest();
 	display.drawNose(noseDefault);
 	isBoop = !digitalRead(IR_PIN);
@@ -59,10 +64,5 @@ void loop() {
 		mouthState.setBoop();
 	}
 	eyeState.update();
-	// ++fps;
-	// if (fps_timer + 1000 < millis()) {
-	// 	Serial.printf_P(PSTR("Effect fps: %d\n"), fps);
-	// 	fps_timer = millis();
-	// 	fps = 0;
-	// }
+	// showFPS();
 }

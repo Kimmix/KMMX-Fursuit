@@ -1,7 +1,5 @@
-#include <Arduino.h>
 #include <arduinoFFT.h>
-#include <driver/i2s.h>
-#include "mouthBitmap.h"
+#include "Bitmaps/mouthBitmap.h"
 
 #define AH_MIN 600
 #define AH_MAX 1200
@@ -66,6 +64,7 @@ private:
     };
     State currentState;
 
+    // ---- Viseme ----
     enum Viseme {
         AH,
         EE,
@@ -73,13 +72,11 @@ private:
         OO,
         TH
     };
-    // ---- Viseme ----
     const uint8_t* ahViseme[3] = { AH1, AH2, AH3 };
     const uint8_t* eeViseme[3] = { EE1, EE2, EE3 };
     const uint8_t* ohViseme[3] = { OH1, OH2, OH3 };
     const uint8_t* ooViseme[3] = { OO1, OO2, OO3 };
     const uint8_t* thViseme[3] = { TH1, TH2, TH3 };
-
     const uint8_t* visemeOutput(Viseme viseme, int level) {
         switch (viseme) {
         case AH:
@@ -97,15 +94,14 @@ private:
 
     double real[SAMPLES],
         imaginary[SAMPLES];
-
     unsigned long microseconds;
     unsigned int sampling_period_us = round(1000 * (1.0 / SAMPLE_RATE));
-    // smoothing factor between 0 and 1
-    const float alpha = 0.2;
+    
+    const float alpha = 0.2; // smoothing factor between 0 and 1
     float smoothedValue = 0;
 
     void talking() {
-        // Read microphone input and fill fft_input array with samples
+        // Read analog microphone input and fill fft_input array with samples
         // int16_t buffer[SAMPLES];
         // microphone->read(buffer, SAMPLES);
         // for (int i = 0; i < SAMPLES; i++) {

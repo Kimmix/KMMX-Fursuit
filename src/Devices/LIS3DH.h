@@ -1,7 +1,7 @@
 #include <Adafruit_LIS3DH.h>
 
-#define I2C_SDA 12
-#define I2C_SCL 13
+#define I2C_SDA GPIO_NUM_12
+#define I2C_SCL GPIO_NUM_13
 
 class LIS3DH {
 public:
