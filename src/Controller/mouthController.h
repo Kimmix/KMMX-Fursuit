@@ -94,12 +94,12 @@ private:
 
     double real[SAMPLES],
         imaginary[SAMPLES];
-
-    void getAnalogSample(double *vReal, double *vImagine, bool isSmooth) {
+    const float alpha = 0.15; // smoothing factor between 0 and 1
+    // Read analog microphone input and fill fft_input array with samples
+    void getAnalogSample(double* vReal, double* vImagine, bool isSmooth) {
         unsigned int sampling_period_us = round(1000 * (1.0 / SAMPLE_RATE));
         unsigned long microseconds;
         float smoothedValue = 0;
-        const float alpha = 0.2; // smoothing factor between 0 and 1
         for (int i = 0; i < SAMPLES; i++) {
             microseconds = millis();
             if (isSmooth) {
@@ -114,15 +114,24 @@ private:
         }
     };
 
-    void talking() {
-        // Read analog microphone input and fill fft_input array with samples
+    void getDigtalSample(double* vReal, double* vImagine, bool isSmooth) {
         int16_t buffer[SAMPLES];
-        microphone->read(buffer, SAMPLES);
+        microphone->read(buffer);
+        float smoothedValue = 0;
         for (int i = 0; i < SAMPLES; i++) {
-            real[i] = buffer[i];
-            imaginary[i] = 0;
+            if (isSmooth) {
+                smoothedValue = alpha * buffer[i] + (1 - alpha) * smoothedValue; // apply exponential smoothing
+                vReal[i] = smoothedValue;
+            }
+            else {
+                vReal[i] = buffer[i];
+            }
+            vImagine[i] = 0;
         }
+    }
 
+    void talking() {
+        getDigtalSample(real, imaginary, true);
         // getAnalogSample(real, imaginary, false);
         FFT.DCRemoval();
         FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
@@ -156,11 +165,11 @@ private:
             }
         }
         // Normalizing
-        // ah_amplitude *= 0.5;
-        // ee_amplitude *= 0.6;
-        // oh_amplitude *= 1.8;
-        // oo_amplitude *= 2.0;
-        // th_amplitude *= 2.3;
+        ah_amplitude *= 0.5;
+        ee_amplitude *= 0.6;
+        oh_amplitude *= 1.8;
+        oo_amplitude *= 2.0;
+        th_amplitude *= 2.3;
 
         Viseme viseme = AH;
         double viseme_amplitude = ah_amplitude;
@@ -185,26 +194,26 @@ private:
         int loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
 
         // Final render
-        if (max_amplitude - min_amplitude > 500) {
+        if (max_amplitude - min_amplitude > 300) {
             display->drawMouth(visemeOutput(holdViseme(viseme), decayLoudness(loudness_level)));
         }
         else {
             display->drawMouth(mouthDefault);
         }
-        Serial.print("AH:");
-        Serial.print(ah_amplitude);
-        Serial.print(",EE:");
-        Serial.print(ee_amplitude);
-        Serial.print(",OH:");
-        Serial.print(oh_amplitude);
-        Serial.print(",OO:");
-        Serial.print(oo_amplitude);
-        Serial.print(",TH:");
-        Serial.print(th_amplitude);
-        Serial.print(",AVG_AMP:");
-        Serial.print(avg_amplitude);
-        Serial.print(",MAX_AMP:");
-        Serial.println(max_amplitude);
+        // Serial.print("AH:");
+        // Serial.print(ah_amplitude);
+        // Serial.print(",EE:");
+        // Serial.print(ee_amplitude);
+        // Serial.print(",OH:");
+        // Serial.print(oh_amplitude);
+        // Serial.print(",OO:");
+        // Serial.print(oo_amplitude);
+        // Serial.print(",TH:");
+        // Serial.println(th_amplitude);
+        // Serial.print(",AVG_AMP:");
+        // Serial.print(avg_amplitude);
+        // Serial.print(",MAX_AMP:");
+        // Serial.println(max_amplitude);
 
         // Print results
         // Serial.print("Viseme:");

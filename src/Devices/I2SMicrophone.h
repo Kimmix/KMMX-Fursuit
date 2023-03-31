@@ -26,7 +26,7 @@ public:
           .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
           .dma_buf_count = 8,
           .dma_buf_len = SAMPLES,
-        //   .use_apll = false
+          .use_apll = false
         };
         // Set I2S pin configuration
         const i2s_pin_config_t pin_config = {
@@ -46,11 +46,11 @@ public:
             Serial.printf("Failed setting pin: %d\n", err);
             while (true);
         }
-        Serial.println("I2S driver installed.");
+        Serial.println("I2S Mic driver installed.");
     };
 
-    void read(int16_t* buffer, size_t num_samples) {
+    void read(int16_t* buffer) {
         size_t bytes_read;
-        i2s_read(I2S_PORT, (void*)buffer, num_samples * 2, &bytes_read, portMAX_DELAY);
+        i2s_read(I2S_PORT, (void*)buffer, SAMPLES * 2, &bytes_read, portMAX_DELAY);
     };
 };

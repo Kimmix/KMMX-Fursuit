@@ -15,7 +15,7 @@ public:
         Serial.println("LIS3DH found!");
         Serial.print("Range = "); Serial.print(2 << lis.getRange());
         Serial.println("G");
-
+        // lis.setDataRate(LIS3DH_DATARATE_POWERDOWN);
         Serial.print("Data rate set to: ");
         switch (lis.getDataRate()) {
         case LIS3DH_DATARATE_1_HZ: Serial.println("1 Hz"); break;
