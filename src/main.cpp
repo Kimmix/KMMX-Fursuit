@@ -8,8 +8,8 @@
 #include "Controller/eyeController.h"
 #include "Controller/mouthController.h"
 
-#define IR_PIN 35
-#define RANDOM_PIN 36
+#define IR_PIN GPIO_NUM_35
+#define RANDOM_PIN GPIO_NUM_36
 bool isBoop;
 
 LIS3DH lis;
@@ -43,9 +43,9 @@ void asyncRender(void* parameter) {
 
 void setup() {
 	Serial.begin(115200);
-	while (!Serial) delay(10);
+	while (!Serial) delay(1000);
 	Serial.println("Staring..");
-	// microphone.init();
+	microphone.init();
 	lis.init();
 	// ble.init();
 	// pinMode(LED_BUILTIN, OUTPUT);

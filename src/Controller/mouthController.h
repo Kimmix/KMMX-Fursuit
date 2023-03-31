@@ -32,7 +32,7 @@ public:
             break;
         case BOOP:
             display->drawMouth(mouthOpen);
-            currentState = IDLE;
+            currentState = TALKING;
             break;
         case TALKING:
             talking();
@@ -119,7 +119,7 @@ private:
         int16_t buffer[SAMPLES];
         microphone->read(buffer, SAMPLES);
         for (int i = 0; i < SAMPLES; i++) {
-            real[i] = buffer[i] / 32768.0;
+            real[i] = buffer[i];
             imaginary[i] = 0;
         }
 
@@ -185,26 +185,26 @@ private:
         int loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
 
         // Final render
-        if (max_amplitude - min_amplitude > 2000) {
+        if (max_amplitude - min_amplitude > 500) {
             display->drawMouth(visemeOutput(holdViseme(viseme), decayLoudness(loudness_level)));
         }
         else {
             display->drawMouth(mouthDefault);
         }
-        // Serial.print("AH:");
-        // Serial.print(ah_amplitude);
-        // Serial.print(",EE:");
-        // Serial.print(ee_amplitude);
-        // Serial.print(",OH:");
-        // Serial.print(oh_amplitude);
-        // Serial.print(",OO:");
-        // Serial.print(oo_amplitude);
-        // Serial.print(",TH:");
-        // Serial.println(th_amplitude);
-        // Serial.print(",AVG_AMP:");
-        // Serial.print(avg_amplitude);
-        // Serial.print(",MAX_AMP:");
-        // Serial.println(max_amplitude);
+        Serial.print("AH:");
+        Serial.print(ah_amplitude);
+        Serial.print(",EE:");
+        Serial.print(ee_amplitude);
+        Serial.print(",OH:");
+        Serial.print(oh_amplitude);
+        Serial.print(",OO:");
+        Serial.print(oo_amplitude);
+        Serial.print(",TH:");
+        Serial.print(th_amplitude);
+        Serial.print(",AVG_AMP:");
+        Serial.print(avg_amplitude);
+        Serial.print(",MAX_AMP:");
+        Serial.println(max_amplitude);
 
         // Print results
         // Serial.print("Viseme:");
@@ -213,9 +213,9 @@ private:
         // Serial.println(loudness_level);
     }
 
-    void calculateAmplitude(double ah, double ee, double oh, double oo, double th, double& maxAmp, double& minAmp, double& avgAmp) {
+    void calculateAmplitude(double ah, double ee, double oh, double oo, double th, double& minAmp, double& maxAmp, double& avgAmp) {
         minAmp = min(min(min(min(ah, ee), oh), oo), th);
-        maxAmp = min(min(min(min(ah, ee), oh), oo), th);
+        maxAmp = max(max(max(max(ah, ee), oh), oo), th);
         avgAmp = (ah + ee + oh + oo + th) / 5.0;
     }
     // Compute loudness level based on average amplitude

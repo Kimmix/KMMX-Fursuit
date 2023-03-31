@@ -1,9 +1,9 @@
 #include <driver/i2s.h>
 
 // Connections to I2S microphone
-#define I2S_SD 33
-#define I2S_WS 32
-#define I2S_SCK 34
+#define I2S_SD GPIO_NUM_34
+#define I2S_WS GPIO_NUM_33
+#define I2S_SCK GPIO_NUM_32
 
 #define SAMPLE_RATE 8000
 #define SAMPLES 256
@@ -16,8 +16,6 @@ public:
     Microphone() {};
 
     void init() {
-        delay(500);
-        Serial.println("Configuring I2S...");
         // Set up I2S Processor configuration
         const i2s_config_t i2s_config = {
           .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX),
@@ -49,7 +47,6 @@ public:
             while (true);
         }
         Serial.println("I2S driver installed.");
-        delay(500);
     };
 
     void read(int16_t* buffer, size_t num_samples) {
