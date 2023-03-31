@@ -32,7 +32,7 @@ public:
             break;
         case BOOP:
             display->drawMouth(mouthOpen);
-            currentState = TALKING;
+            currentState = IDLE;
             break;
         case TALKING:
             talking();
@@ -94,32 +94,36 @@ private:
 
     double real[SAMPLES],
         imaginary[SAMPLES];
-    unsigned long microseconds;
-    unsigned int sampling_period_us = round(1000 * (1.0 / SAMPLE_RATE));
-    
-    const float alpha = 0.2; // smoothing factor between 0 and 1
-    float smoothedValue = 0;
+
+    void getAnalogSample(double *vReal, double *vImagine, bool isSmooth) {
+        unsigned int sampling_period_us = round(1000 * (1.0 / SAMPLE_RATE));
+        unsigned long microseconds;
+        float smoothedValue = 0;
+        const float alpha = 0.2; // smoothing factor between 0 and 1
+        for (int i = 0; i < SAMPLES; i++) {
+            microseconds = millis();
+            if (isSmooth) {
+                smoothedValue = alpha * analogRead(13) + (1 - alpha) * smoothedValue; // apply exponential smoothing
+                vReal[i] = smoothedValue;
+            }
+            else {
+                vReal[i] = analogRead(13);
+            }
+            vImagine[i] = 0;
+            while (millis() < (microseconds + sampling_period_us)) {}
+        }
+    };
 
     void talking() {
         // Read analog microphone input and fill fft_input array with samples
-        // int16_t buffer[SAMPLES];
-        // microphone->read(buffer, SAMPLES);
-        // for (int i = 0; i < SAMPLES; i++) {
-        //     real[i] = buffer[i] / 32768.0;
-        //     imaginary[i] = 0;
-        // }
-
+        int16_t buffer[SAMPLES];
+        microphone->read(buffer, SAMPLES);
         for (int i = 0; i < SAMPLES; i++) {
-            microseconds = millis();
-
-            // apply exponential smoothing
-            smoothedValue = alpha * analogRead(13) + (1 - alpha) * smoothedValue;
-            real[i] = smoothedValue;
+            real[i] = buffer[i] / 32768.0;
             imaginary[i] = 0;
-
-            while (millis() < (microseconds + sampling_period_us)) {}
         }
 
+        // getAnalogSample(real, imaginary, false);
         FFT.DCRemoval();
         FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
         FFT.Compute(FFT_FORWARD);
@@ -158,20 +162,6 @@ private:
         // oo_amplitude *= 2.0;
         // th_amplitude *= 2.3;
 
-        // Compute loudness level based on average amplitude
-        double max_amplitude = 0, min_amplitude = 0;
-        max_amplitude = max(max(max(max(ah_amplitude, ee_amplitude), oh_amplitude), oo_amplitude), th_amplitude);
-        min_amplitude = min(min(min(min(ah_amplitude, ee_amplitude), oh_amplitude), oo_amplitude), th_amplitude);
-        double avg_amplitude = (ah_amplitude + ee_amplitude + oh_amplitude + oo_amplitude + th_amplitude) / 5.0;
-        int loudness_level = 0;
-        if (max_amplitude > avg_amplitude * 2) {
-            loudness_level = 2;
-        }
-        else if (max_amplitude > avg_amplitude * 1.5) {
-            loudness_level = 1;
-        }
-
-        // Determine which viseme to display based on amplitude and threshold values
         Viseme viseme = AH;
         double viseme_amplitude = ah_amplitude;
         if (ee_amplitude > viseme_amplitude) {
@@ -190,6 +180,17 @@ private:
             viseme = TH;
         }
 
+        double min_amplitude, max_amplitude, avg_amplitude;
+        calculateAmplitude(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude, min_amplitude, max_amplitude, avg_amplitude);
+        int loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
+
+        // Final render
+        if (max_amplitude - min_amplitude > 2000) {
+            display->drawMouth(visemeOutput(holdViseme(viseme), decayLoudness(loudness_level)));
+        }
+        else {
+            display->drawMouth(mouthDefault);
+        }
         // Serial.print("AH:");
         // Serial.print(ah_amplitude);
         // Serial.print(",EE:");
@@ -210,48 +211,56 @@ private:
         // Serial.print(viseme);
         // Serial.print(",Loudness:");
         // Serial.println(loudness_level);
-
-        // Final render
-        if (max_amplitude - min_amplitude > 2000) {
-            display->drawMouth(visemeOutput(holdViseme(viseme), decayLoudness(loudness_level)));
-        }
-        else {
-            display->drawMouth(mouthDefault);
-        }
     }
 
-    int previous_input = 0;    // Initialize previous input variable to 0
-    unsigned long decay_start_time = 0;   // Initialize decay start time to 0
-    const double decay_rate = 0.5;   // Set the decay rate (adjust as needed)
-    int decayLoudness(int input) {
-        if (input >= previous_input) {   // If the new input is greater than or equal to the previous input
-            previous_input = input;    // Update the previous input to the new input
-            decay_start_time = 0;   // Reset the decay start time
-        }
-        else {    // If the new input is less than the previous input
-            if (decay_start_time == 0) {   // If this is the first time the input has decayed
-                decay_start_time = millis();   // Set the decay start time to the current time
-            }
-            else {    // If the input is currently decaying
-                unsigned long decay_elapsed_time = millis() - decay_start_time;   // Calculate the elapsed decay time
-                int decayed_input = previous_input - (decay_rate * decay_elapsed_time / 1000);   // Calculate the decayed input
-                if (decayed_input < input) {   // If the decayed input is less than the new input
-                    previous_input = input;    // Update the previous input to the new input
-                    decay_start_time = 0;   // Reset the decay start time
-                }
-                else {    // If the decayed input is greater than or equal to the new input
-                    previous_input = decayed_input;    // Update the previous input to the decayed input
-                }
-            }
-        }
-        return previous_input;   // Return the current input value
+    void calculateAmplitude(double ah, double ee, double oh, double oo, double th, double& maxAmp, double& minAmp, double& avgAmp) {
+        minAmp = min(min(min(min(ah, ee), oh), oo), th);
+        maxAmp = min(min(min(min(ah, ee), oh), oo), th);
+        avgAmp = (ah + ee + oh + oo + th) / 5.0;
     }
-    Viseme lastViseme;
+    // Compute loudness level based on average amplitude
+    int calculateLoudness(double max, double avg) {
+        if (max > avg * 2) {
+            return 2;
+        }
+        else if (max > avg * 1.5) {
+            return 1;
+        }
+        return 0;
+    };
+
+    Viseme previousViseme;
     Viseme holdViseme(Viseme input) {
         if (input != 0) {
             return input;
         }
-        lastViseme = input;
-        return lastViseme;
+        previousViseme = input;
+        return previousViseme;
+    }
+    int previousLoudness = 0;    // Initialize previous input variable to 0
+    unsigned long decayStartTime = 0;   // Initialize decay start time to 0
+    const double decayRate = 0.5;   // Set the decay rate (adjust as needed)
+    int decayLoudness(int input) {
+        if (input >= previousLoudness) {   // If the new input is greater than or equal to the previous input
+            previousLoudness = input;    // Update the previous input to the new input
+            decayStartTime = 0;   // Reset the decay start time
+        }
+        else {    // If the new input is less than the previous input
+            if (decayStartTime == 0) {   // If this is the first time the input has decayed
+                decayStartTime = millis();   // Set the decay start time to the current time
+            }
+            else {    // If the input is currently decaying
+                unsigned long decay_elapsed_time = millis() - decayStartTime;   // Calculate the elapsed decay time
+                int decayed_input = previousLoudness - (decayRate * decay_elapsed_time / 1000);   // Calculate the decayed input
+                if (decayed_input < input) {   // If the decayed input is less than the new input
+                    previousLoudness = input;    // Update the previous input to the new input
+                    decayStartTime = 0;   // Reset the decay start time
+                }
+                else {    // If the decayed input is greater than or equal to the new input
+                    previousLoudness = decayed_input;    // Update the previous input to the decayed input
+                }
+            }
+        }
+        return previousLoudness;   // Return the current input value
     }
 };

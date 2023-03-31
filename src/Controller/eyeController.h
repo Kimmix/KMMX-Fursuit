@@ -144,10 +144,10 @@ private:
         float ax = static_cast<float>(event.acceleration.x);
         float ay = static_cast<float>(event.acceleration.y);
         float az = static_cast<float>(event.acceleration.z);
-        Serial.print("\t\tX: "); Serial.print(event.acceleration.x);
-        Serial.print(" \tY: "); Serial.print(event.acceleration.y);
-        Serial.print(" \tZ: "); Serial.print(event.acceleration.z);
-        Serial.println(" m/s^2 ");
+        // Serial.print("\t\tX: "); Serial.print(event.acceleration.x);
+        // Serial.print(" \tY: "); Serial.print(event.acceleration.y);
+        // Serial.print(" \tZ: "); Serial.print(event.acceleration.z);
+        // Serial.println(" m/s^2 ");
 
         // Orient the sensor directions to the display directions
         float eye_ax = -az;

@@ -1,15 +1,13 @@
 #include <Adafruit_LIS3DH.h>
 
-#define I2C_SDA GPIO_NUM_12
-#define I2C_SCL GPIO_NUM_13
+// #define I2C_SDA GPIO_NUM_12
+// #define I2C_SCL GPIO_NUM_13
 
 class LIS3DH {
 public:
     void init() {
         Serial.println("LIS3DH test!");
-        delay(1000);
-        I2C.begin(I2C_SDA, I2C_SCL);
-        delay(1000);
+        // I2C.begin(I2C_SDA, I2C_SCL);
         if (!lis.begin(0x19)) {   // change this to 0x19 for alternative i2c address
             Serial.println("Couldnt LIS3DH");
             while (1) yield();
@@ -39,6 +37,6 @@ public:
         return event;
     }
 private:
-    TwoWire I2C = TwoWire(0);
-    Adafruit_LIS3DH lis = Adafruit_LIS3DH(&I2C);
+    // TwoWire I2C = TwoWire(0);
+    Adafruit_LIS3DH lis = Adafruit_LIS3DH();
 };

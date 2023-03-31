@@ -8,8 +8,8 @@
 #include "Controller/eyeController.h"
 #include "Controller/mouthController.h"
 
-#define IR_PIN GPIO_NUM_2
-#define RANDOM_PIN A0
+#define IR_PIN 35
+#define RANDOM_PIN 36
 bool isBoop;
 
 LIS3DH lis;
@@ -18,17 +18,7 @@ Microphone microphone;
 
 EyeState eyeState(&display, &lis);
 MouthState mouthState(&display, &microphone);
-BluetoothController ble(&display);
-
-TaskHandle_t controlMouth;
-void asyncRender(void* parameter) {
-	while (true) {
-		if (isBoop) {
-			mouthState.setBoop();
-		}
-		mouthState.update();
-	}
-}
+// BluetoothController ble(&display);
 
 uint16_t fps = 0;
 unsigned long fps_timer;
@@ -41,12 +31,22 @@ void showFPS() {
 	}
 }
 
+TaskHandle_t controlMouth;
+void asyncRender(void* parameter) {
+	while (true) {
+		if (isBoop) {
+			mouthState.setBoop();
+		}
+		mouthState.update();
+	}
+}
+
 void setup() {
 	Serial.begin(115200);
 	while (!Serial) delay(10);
 	Serial.println("Staring..");
-	microphone.init();
-	// lis.init();
+	// microphone.init();
+	lis.init();
 	// ble.init();
 	// pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(IR_PIN, INPUT);
@@ -55,13 +55,12 @@ void setup() {
 }
 
 void loop() {
-	ble.update();
+	// ble.update();
 	display.drawColorTest();
 	display.drawNose(noseDefault);
 	isBoop = !digitalRead(IR_PIN);
 	if (isBoop) {
 		eyeState.setBoop();
-		mouthState.setBoop();
 	}
 	eyeState.update();
 	// showFPS();
