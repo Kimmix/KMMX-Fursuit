@@ -18,7 +18,7 @@ Microphone microphone;
 
 EyeState eyeState(&display, &lis);
 MouthState mouthState(&display, &microphone);
-// BluetoothController ble(&display);
+BluetoothController ble(&display);
 
 uint16_t fps = 0;
 unsigned long fps_timer;
@@ -48,7 +48,6 @@ void setup() {
 	microphone.init();
 	lis.init();
 	// ble.init();
-	// pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(IR_PIN, INPUT);
 	randomSeed(analogRead(RANDOM_PIN));
 	xTaskCreatePinnedToCore(asyncRender, "Render Mouth", 10000, NULL, 0, &controlMouth, 0);

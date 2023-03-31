@@ -12,7 +12,7 @@ public:
 
     void init() {
         Serial.println("Booting BLE...");
-        delay(500);
+        // pinMode(LED_BUILTIN, OUTPUT);
         if (!BLE.begin()) {
             Serial.println("failed to initialize BLE!");
             while (1);
