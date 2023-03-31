@@ -43,8 +43,7 @@ void asyncRender(void* parameter) {
 
 void setup() {
 	Serial.begin(115200);
-	while (!Serial) delay(1000);
-	Serial.println("Staring..");
+	while (!Serial) delay(100);
 	microphone.init();
 	lis.init();
 	// ble.init();

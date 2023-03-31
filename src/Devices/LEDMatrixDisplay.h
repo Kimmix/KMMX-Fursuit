@@ -34,7 +34,6 @@ public:
 			Serial.println("****** I2S memory allocation failed ***********");
 		matrix->setBrightness8(panelBrightness);
 		matrix->clearScreen();
-		delay(500);
 	}
 
 	void render() {
