@@ -13,13 +13,12 @@ public:
             while (1) yield();
         }
         Serial.println("LIS3DH found!");
+        // lis.setRange(LIS3DH_RANGE_4_G);
         // lis.setDataRate(LIS3DH_DATARATE_POWERDOWN);
     }
 
-    sensors_event_t readAccel() {
-        sensors_event_t event;
-        lis.getEvent(&event);
-        return event;
+    void readAccel(sensors_event_t* event) {
+        lis.getEvent(event);
     }
 private:
     // TwoWire I2C = TwoWire(0);

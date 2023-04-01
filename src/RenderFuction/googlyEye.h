@@ -25,8 +25,8 @@ public:
     float x, y;
 
     void update(float ax, float ay) {
-        float now = millis() / 1000.0;
-        float dt = now - last_update;
+        unsigned long now = millis() / 1000;
+        unsigned long dt = now - last_update;
         last_update = now;
 
         ax *= dt * g_scale;

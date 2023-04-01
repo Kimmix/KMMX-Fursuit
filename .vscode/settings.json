@@ -9,6 +9,7 @@
         "string_view": "cpp",
         "initializer_list": "cpp",
         "random": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "cmath": "cpp"
     }
 }
