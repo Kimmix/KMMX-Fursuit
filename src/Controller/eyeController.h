@@ -6,7 +6,7 @@ public:
     EyeState(DisplayController* displayPtr = nullptr, LIS3DH* lisPtr = nullptr):
         display(displayPtr),
         lis(lisPtr),
-        currentState(GOOGLY),
+        currentState(IDLE),
         nextBlink(0),
         blinkInterval(0),
         nextFace(0),
