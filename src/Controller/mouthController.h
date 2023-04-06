@@ -90,6 +90,7 @@ private:
         case TH:
             return thViseme[level];
         };
+        return NULL;
     };
 
     double real[SAMPLES],
