@@ -1,4 +1,6 @@
-// Original from: https://github.com/adafruit/Adafruit_Learning_System_Guides/blob/main/Hallowing_Googly_Eye/Hallowing_Googly_Eye.ino
+// Original logic from: https://github.com/adafruit/Adafruit_Learning_System_Guides/blob/main/Hallowing_Googly_Eye/Hallowing_Googly_Eye.ino
+// SPDX-FileCopyrightText: 2018 Phillip Burgess for Adafruit Industries
+// SPDX-License-Identifier: MIT
 #include <Arduino.h>
 
 #define G_SCALE     40.0   // Accel scale; no science, just looks good
