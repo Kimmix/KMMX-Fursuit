@@ -21,7 +21,7 @@ public:
         lis.getEvent(event);
     }
 
-    void readAccel(float &x, float &y, float &z) {
+    void readAccelG(float &x, float &y, float &z) {
         lis.read();
         x = lis.x_g;
         y = lis.y_g;

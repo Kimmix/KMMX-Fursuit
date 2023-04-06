@@ -140,17 +140,14 @@ private:
     const float ACC_FILTER = 1;
     void googlyEye() {
         float x,y,z;
-        lis->readAccel(x,y,z);
-        float ax = x;
-        float ay = y;
-        float az = z;
+        lis->readAccelG(x,y,z);
         // Serial.print("X:"); Serial.print(ax);
         // Serial.print(",Y:"); Serial.print(ay);
         // Serial.print(",Z:"); Serial.println(az);
 
         // Orient the sensor directions to the display directions
-        float eye_ax = -ay;
-        float eye_ay = -ax;
+        float eye_ax = -y;
+        float eye_ay = -x;
 
         // Update eye position and draw on display
         eye.update(eye_ax, eye_ay);
