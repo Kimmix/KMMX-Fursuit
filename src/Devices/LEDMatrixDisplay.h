@@ -48,6 +48,42 @@ public:
 		return panelBrightness;
 	}
 
+	int getResX() {
+		return PANEL_RES_X;
+	}
+
+	uint16_t color565(uint8_t r, uint8_t g, uint8_t b) {
+		return matrix->color565(r, g, b);
+	}
+
+	void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
+		matrix->drawRect(x, y, w, h, color);
+	}
+
+	void drawPixel(int16_t x, int16_t y, uint16_t color) {
+		matrix->drawPixel(x, y, color);
+	}
+
+	void setTextColor(uint16_t color) {
+		matrix->setTextColor(color);
+	}
+
+	void setCursor(int16_t x, int16_t y) {
+		matrix->setCursor(x, y);
+	}
+
+	void print(char str[]) {
+		matrix->print(str);
+	}
+
+	void print(int n) {
+		matrix->print(n);
+	}
+
+	void getTextBounds(const String& str, int16_t x, int16_t y, int16_t* x1, int16_t* y1, uint16_t* w, uint16_t* h) {
+		matrix->getTextBounds(str, x, y, x1, y1, w, h);
+	}
+
 	void setBrightnessValue(uint8_t value) {
 		// Ensure that the brightness value is between 0 and 255
 		if (value < 0) {

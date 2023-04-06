@@ -5,6 +5,7 @@
 #include "Devices/LIS3DH.h"
 #include "Devices/Bluetooth.h"
 #include "Devices/I2SMicrophone.h"
+#include "RenderFuction/tetrisgame.h"
 #include "Controller/eyeController.h"
 #include "Controller/mouthController.h"
 
@@ -19,6 +20,7 @@ Microphone microphone;
 EyeState eyeState(&display, &lis);
 MouthState mouthState(&display, &microphone);
 BluetoothController ble(&display);
+Teris teris(&display);
 
 uint16_t fps = 0;
 unsigned long fps_timer;
@@ -55,7 +57,7 @@ void setup() {
 void loop() {
 	// ble.update();
 	// display.render();
-	display.drawColorTest();
+	// display.drawColorTest();
 	display.drawNose(noseDefault);
 	isBoop = !digitalRead(IR_PIN);
 	if (isBoop) {
