@@ -6,7 +6,7 @@ public:
     EyeState(DisplayController* displayPtr = nullptr, LIS3DH* lisPtr = nullptr):
         display(displayPtr),
         lis(lisPtr),
-        currentState(IDLE),
+        currentState(GOOGLY),
         nextBlink(0),
         blinkInterval(0),
         nextFace(0),
@@ -139,28 +139,18 @@ private:
 
     const float ACC_FILTER = 1;
     void googlyEye() {
-        // Get accelerometer data
-        sensors_event_t event;
-        lis->readAccel(&event);
-        float ax = event.acceleration.x;
-        float ay = event.acceleration.y;
-        float az = event.acceleration.z;
-        Serial.print("\t\tX: "); Serial.print(event.acceleration.x);
-        Serial.print(" \tY: "); Serial.print(event.acceleration.y);
-        Serial.print(" \tZ: "); Serial.print(event.acceleration.z);
-        Serial.println(" m/s^2 ");
+        float x,y,z;
+        lis->readAccel(x,y,z);
+        float ax = x;
+        float ay = y;
+        float az = z;
+        // Serial.print("X:"); Serial.print(ax);
+        // Serial.print(",Y:"); Serial.print(ay);
+        // Serial.print(",Z:"); Serial.println(az);
 
         // Orient the sensor directions to the display directions
         float eye_ax = -ay;
         float eye_ay = -ax;
-
-        // Apply accelerometer filter
-        if (abs(eye_ax) < ACC_FILTER) {
-            eye_ax = 0;
-        }
-        if (abs(eye_ay) < ACC_FILTER) {
-            eye_ay = 0;
-        }
 
         // Update eye position and draw on display
         eye.update(eye_ax, eye_ay);

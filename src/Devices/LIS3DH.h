@@ -17,8 +17,15 @@ public:
         // lis.setDataRate(LIS3DH_DATARATE_POWERDOWN);
     }
 
-    void readAccel(sensors_event_t* event) {
+    void readAccelEvent(sensors_event_t* event) {
         lis.getEvent(event);
+    }
+
+    void readAccel(float &x, float &y, float &z) {
+        lis.read();
+        x = lis.x_g;
+        y = lis.y_g;
+        z = lis.z_g;
     }
 private:
     // TwoWire I2C = TwoWire(0);
