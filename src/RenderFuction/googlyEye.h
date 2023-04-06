@@ -164,8 +164,6 @@ public:
                 y2 = 64 - (int)yNew + PUPIL_SIZE / 2 - 1;
             }
         }
-        Serial.print("X:"); Serial.print(xNew);
-        Serial.print(",Y:"); Serial.println(yNew);
 
         x = xNew;  // Save new position, velocity
         y = yNew;
@@ -173,7 +171,7 @@ public:
         vy = vyNew;
 
         // Clip update rect.  This shouldn't be necessary, but it looks
-    // like very occasionally an off-limits situation may occur, so...
+        // like very occasionally an off-limits situation may occur, so...
         if (x1 < 0)   x1 = 0;
         if (y1 < 0)   y1 = 0;
         if (x2 > 127) x2 = 127;
