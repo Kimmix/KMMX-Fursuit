@@ -40,7 +40,7 @@ public:
             }
             break;
         case GOOGLY:
-            googlyEye();
+            renderGooglyEye();
             break;
         default:
             break;
@@ -63,7 +63,7 @@ public:
 private:
     DisplayController* display;
     LIS3DH* lis;
-    GooglyEye eye;
+    GooglyEye googlyEye;
 
     enum State {
         IDLE,
@@ -138,7 +138,7 @@ private:
     }
 
     const float ACC_FILTER = 1;
-    void googlyEye() {
+    void renderGooglyEye() {
         float x,y,z;
         lis->readAccelG(x,y,z);
         // Serial.print("X:"); Serial.print(ax);
@@ -149,9 +149,9 @@ private:
         float eye_ax = -y;
         float eye_ay = -x;
 
-        // Update eye position and draw on display
-        eye.update(eye_ax, eye_ay);
+        // Update googlyEye position and draw on display
         display->drawEye(eyeGoogly);
-        display->drawEyePupil(eyePupil, eye.x, eye.y);
+        googlyEye.update(eye_ax, eye_ay);
+        display->drawEyePupil(eyePupil, googlyEye.x, googlyEye.y);
     }
 };
