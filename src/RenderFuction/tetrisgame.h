@@ -8,7 +8,7 @@
 #define LEFT_OFFSET -2
 #define TOP_OFFSET 0
 
-#define WORLD_TO_PIXEL 2 //each dot on the game world will be represented by these many pixels.
+#define WORLD_TO_PIXEL 2  // each dot on the game world will be represented by these many pixels.
 
 #define DELAY_BETWEEN_FRAMES 50
 #define DELAY_ON_LINE_CLEAR 100
@@ -16,11 +16,11 @@
 #define NUM_PIECES_TIL_SPEED_CHANGE 20
 
 class Teris {
-public:
-    Teris(DisplayController* displayPtr = nullptr): display(displayPtr) {}
+   public:
+    Teris(DisplayController* displayPtr = nullptr) : display(displayPtr) {}
 
     void init() {
-        strcpy(tetromino[0], "..X...X...X...X."); // Tetronimos 4x4
+        strcpy(tetromino[0], "..X...X...X...X.");  // Tetronimos 4x4
         strcpy(tetromino[1], "..X..XX...X.....");
         strcpy(tetromino[2], ".....XX..XX.....");
         strcpy(tetromino[3], "..X..XX..X......");
@@ -37,13 +37,11 @@ public:
             if (!isPaused) {
                 gameTiming();
                 gameLogic();
-            }
-            else {
-                delay(DELAY_BETWEEN_FRAMES); //stopping pulsing of LEDS
+            } else {
+                delay(DELAY_BETWEEN_FRAMES);  // stopping pulsing of LEDS
             }
             displayLogic();
-        }
-        else {
+        } else {
             delay(DELAY_BETWEEN_FRAMES);
             gameInput();
             displayLogic(true);
@@ -53,7 +51,7 @@ public:
         }
     }
 
-private:
+   private:
     DisplayController* display;
 
     uint16_t myRED = display->color565(255, 73, 113);
@@ -69,7 +67,7 @@ private:
     // [1-7] are tetromino colours
     // [8] is the colour a completed line changes to before disappearing
     // [9] is the walls of the board.
-    uint16_t gameColours[10] = { myBLACK, myRED, myGREEN, myBLUE, myWHITE, myYELLOW, myCYAN, myMAGENTA, myYELLOW, myMAGENTA };
+    uint16_t gameColours[10] = {myBLACK, myRED, myGREEN, myBLUE, myWHITE, myYELLOW, myCYAN, myMAGENTA, myYELLOW, myMAGENTA};
 
     bool bGameOver = false;
 
@@ -108,25 +106,21 @@ private:
     char* pField = nullptr;
 
     void gameLogic() {
-
-        //Handle updating lines cleared last tick
+        // Handle updating lines cleared last tick
         clearLines();
 
         nCurrentX += (moveRight && DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX + 1, nCurrentY)) ? 1 : 0;
         nCurrentX -= (moveLeft && DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX - 1, nCurrentY)) ? 1 : 0;
         nCurrentY += (dropDown && DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX, nCurrentY + 1)) ? 1 : 0;
 
-        if (rotatePiece)
-        {
+        if (rotatePiece) {
             nCurrentRotation += (bRotateHold && DoesPieceFit(nCurrentPiece, nCurrentRotation + 1, nCurrentX, nCurrentY)) ? 1 : 0;
             bRotateHold = false;
-        }
-        else
+        } else
             bRotateHold = true;
 
         // Force the piece down the playfield if it's time
-        if (bForceDown)
-        {
+        if (bForceDown) {
             // Update difficulty every 50 pieces
             nSpeedCount = 0;
             nPieceCount++;
@@ -135,9 +129,8 @@ private:
 
             // Test if piece can be moved down
             if (DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX, nCurrentY + 1))
-                nCurrentY++; // It can, so do it!
-            else
-            {
+                nCurrentY++;  // It can, so do it!
+            else {
                 // It can't! Lock the piece in place
                 for (int px = 0; px < 4; px++)
                     for (int py = 0; py < 4; py++)
@@ -146,21 +139,18 @@ private:
 
                 // Check for lines
                 for (int py = 0; py < 4; py++)
-                    if (nCurrentY + py < nFieldHeight - 1)
-                    {
+                    if (nCurrentY + py < nFieldHeight - 1) {
                         bool bLine = true;
                         for (int px = 1; px < nFieldWidth - 1; px++)
                             bLine &= (pField[(nCurrentY + py) * nFieldWidth + px]) != 0;
 
-                        if (bLine)
-                        {
+                        if (bLine) {
                             // Remove Line, set to =
                             for (int px = 1; px < nFieldWidth - 1; px++)
                                 pField[(nCurrentY + py) * nFieldWidth + px] = 8;
-                            //vLines.push_back(nCurrentY + py);
+                            // vLines.push_back(nCurrentY + py);
                             completedLinesIndex[numCompletedLines] = nCurrentY + py;
                             numCompletedLines++;
-
                         }
                     }
 
@@ -176,40 +166,36 @@ private:
         }
     }
 
-    int Rotate(int px, int py, int r)
-    {
+    int Rotate(int px, int py, int r) {
         int pi = 0;
-        switch (r % 4)
-        {
-        case 0: // 0 degrees        // 0  1  2  3
-            pi = py * 4 + px;         // 4  5  6  7
-            break;                    // 8  9 10 11
-            //12 13 14 15
+        switch (r % 4) {
+            case 0:                // 0 degrees        // 0  1  2  3
+                pi = py * 4 + px;  // 4  5  6  7
+                break;             // 8  9 10 11
+                // 12 13 14 15
 
-        case 1: // 90 degrees       //12  8  4  0
-            pi = 12 + py - (px * 4);  //13  9  5  1
-            break;                    //14 10  6  2
-            //15 11  7  3
+            case 1:                       // 90 degrees       //12  8  4  0
+                pi = 12 + py - (px * 4);  // 13  9  5  1
+                break;                    // 14 10  6  2
+                // 15 11  7  3
 
-        case 2: // 180 degrees      //15 14 13 12
-            pi = 15 - (py * 4) - px;  //11 10  9  8
-            break;                    // 7  6  5  4
-            // 3  2  1  0
+            case 2:                       // 180 degrees      //15 14 13 12
+                pi = 15 - (py * 4) - px;  // 11 10  9  8
+                break;                    // 7  6  5  4
+                // 3  2  1  0
 
-        case 3: // 270 degrees      // 3  7 11 15
-            pi = 3 - py + (px * 4);   // 2  6 10 14
-            break;                    // 1  5  9 13
-        }                             // 0  4  8 12
+            case 3:                      // 270 degrees      // 3  7 11 15
+                pi = 3 - py + (px * 4);  // 2  6 10 14
+                break;                   // 1  5  9 13
+        }                                // 0  4  8 12
 
         return pi;
     }
 
-    bool DoesPieceFit(int nTetromino, int nRotation, int nPosX, int nPosY)
-    {
+    bool DoesPieceFit(int nTetromino, int nRotation, int nPosX, int nPosY) {
         // All Field cells >0 are occupied
         for (int px = 0; px < 4; px++)
-            for (int py = 0; py < 4; py++)
-            {
+            for (int py = 0; py < 4; py++) {
                 // Get index into piece
                 int pi = Rotate(px, py, nRotation);
 
@@ -220,13 +206,11 @@ private:
                 // not necessarily mean a fail, as the long vertical piece
                 // can have cells that lie outside the boundary, so we'll
                 // just ignore them
-                if (nPosX + px >= 0 && nPosX + px < nFieldWidth)
-                {
-                    if (nPosY + py >= 0 && nPosY + py < nFieldHeight)
-                    {
+                if (nPosX + px >= 0 && nPosX + px < nFieldWidth) {
+                    if (nPosY + py >= 0 && nPosY + py < nFieldHeight) {
                         // In Bounds so do collision check
                         if (tetromino[nTetromino][pi] != L'.' && pField[fi] != 0)
-                            return false; // fail on first hit
+                            return false;  // fail on first hit
                     }
                 }
             }
@@ -254,13 +238,10 @@ private:
     }
 
     void clearLines() {
-        if (numCompletedLines > 0)
-        {
+        if (numCompletedLines > 0) {
             delay(DELAY_ON_LINE_CLEAR);
-            for (int i = 0; i < numCompletedLines; i++)
-            {
-                for (int px = 1; px < nFieldWidth - 1; px++)
-                {
+            for (int i = 0; i < numCompletedLines; i++) {
+                for (int px = 1; px < nFieldWidth - 1; px++) {
                     for (int py = completedLinesIndex[i]; py > 0; py--)
                         pField[py * nFieldWidth + px] = pField[(py - 1) * nFieldWidth + px];
                     pField[px] = 0;
@@ -273,14 +254,12 @@ private:
     uint16_t getFieldColour(int index, bool isDeathScreen) {
         if (isDeathScreen && pField[index] != 0) {
             return myRED;
-        }
-        else {
+        } else {
             return gameColours[pField[index]];
         }
     }
 
     void displayLogic(bool isDeathScreen = false) {
-
         display->render();
         int realX;
         int realY;
@@ -289,16 +268,14 @@ private:
 
         // Draw Field
         for (int x = 0; x < nFieldWidth; x++)
-            for (int y = 0; y < nFieldHeight; y++)
-            {
+            for (int y = 0; y < nFieldHeight; y++) {
                 realX = (x * WORLD_TO_PIXEL) + LEFT_OFFSET;
                 realY = (y * WORLD_TO_PIXEL) + TOP_OFFSET;
                 uint16_t fieldColour = getFieldColour((y * nFieldWidth + x), isDeathScreen);
                 if (fieldColour != myBLACK) {
                     if (WORLD_TO_PIXEL > 1) {
                         display->drawRect(realX, realY, WORLD_TO_PIXEL, WORLD_TO_PIXEL, fieldColour);
-                    }
-                    else {
+                    } else {
                         display->drawPixel(realX, realY, fieldColour);
                     }
                 }
@@ -307,14 +284,12 @@ private:
         // Draw Current Piece
         for (int px = 0; px < 4; px++) {
             for (int py = 0; py < 4; py++) {
-                if (tetromino[nCurrentPiece][Rotate(px, py, nCurrentRotation)] != '.')
-                {
+                if (tetromino[nCurrentPiece][Rotate(px, py, nCurrentRotation)] != '.') {
                     realX = ((nCurrentX + px) * WORLD_TO_PIXEL) + LEFT_OFFSET;
                     realY = ((nCurrentY + py) * WORLD_TO_PIXEL) + TOP_OFFSET;
                     if (WORLD_TO_PIXEL > 1) {
                         display->drawRect(realX, realY, WORLD_TO_PIXEL, WORLD_TO_PIXEL, gameColours[nCurrentPiece + 1]);
-                    }
-                    else {
+                    } else {
                         display->drawPixel(realX, realY, gameColours[nCurrentPiece + 1]);
                     }
                 }
@@ -326,13 +301,12 @@ private:
         if (isPaused) {
             display->setCursor(20, 1);
             display->print("Paws");
-        }
-        else {
+        } else {
             // Display the Score
 
             // As it changes, we need to calculate where
             // the center is
-            int16_t  x1, y1;
+            int16_t x1, y1;
             uint16_t w, h;
             display->getTextBounds(String(nScore), 0, 0, &x1, &y1, &w, &h);
             display->setCursor(nFieldWidth * 2, 5);
@@ -366,10 +340,9 @@ private:
     }
 
     void restartGame() {
-
         bGameOver = false;
-        pField = new char[nFieldWidth * nFieldHeight]; // Create play field buffer
-        for (int x = 0; x < nFieldWidth; x++) // Board Boundary
+        pField = new char[nFieldWidth * nFieldHeight];  // Create play field buffer
+        for (int x = 0; x < nFieldWidth; x++)           // Board Boundary
             for (int y = 0; y < nFieldHeight; y++)
                 pField[y * nFieldWidth + x] = (x == 0 || x == nFieldWidth - 1 || y == nFieldHeight - 1) ? 9 : 0;
 
@@ -377,6 +350,5 @@ private:
         getNewPiece();
 
         nScore = 0;
-
     }
 };

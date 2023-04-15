@@ -4,7 +4,7 @@
 // #define I2C_SCL GPIO_NUM_13
 
 class LIS3DH {
-public:
+   public:
     void init() {
         Serial.println("LIS3DH test!");
         // I2C.begin(I2C_SDA, I2C_SCL);
@@ -17,7 +17,7 @@ public:
         // lis.setDataRate(LIS3DH_DATARATE_POWERDOWN);
     }
 
-    void readAccelEvent(sensors_event_t* event) {
+    void readAccelEvent(sensors_event_t *event) {
         lis.getEvent(event);
     }
 
@@ -27,7 +27,8 @@ public:
         y = lis.y_g;
         z = lis.z_g;
     }
-private:
+
+   private:
     // TwoWire I2C = TwoWire(0);
     Adafruit_LIS3DH lis = Adafruit_LIS3DH();
 };

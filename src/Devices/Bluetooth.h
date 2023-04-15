@@ -7,8 +7,8 @@ BLEService service(BLE_SERVICE_UUID);
 BLEByteCharacteristic brightnessCharacteristic(BLE_CHARACTERISTIC_UUID, BLERead | BLEWrite);
 
 class BluetoothController {
-public:
-    BluetoothController(DisplayController* displayPtr = nullptr): display(displayPtr) {}
+   public:
+    BluetoothController(DisplayController* displayPtr = nullptr) : display(displayPtr) {}
 
     void init() {
         Serial.println("Booting BLE...");
@@ -40,7 +40,7 @@ public:
         }
     }
 
-private:
+   private:
     DisplayController* display;
 
     int getBrightnessValue() {
