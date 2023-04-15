@@ -17,7 +17,9 @@
 
 class Teris {
    public:
-    Teris(DisplayController* displayPtr = nullptr) : display(displayPtr) {}
+    Teris(DisplayController* displayPtr = nullptr,
+          LIS3DH* lisPtr = nullptr) : display(displayPtr),
+                                      lis(lisPtr) {}
 
     void init() {
         strcpy(tetromino[0], "..X...X...X...X.");  // Tetronimos 4x4
@@ -31,7 +33,7 @@ class Teris {
         restartGame();
     }
 
-    void play() {
+    void play(bool& playTeris) {
         if (!bGameOver) {
             gameInput();
             if (!isPaused) {
@@ -45,14 +47,20 @@ class Teris {
             delay(DELAY_BETWEEN_FRAMES);
             gameInput();
             displayLogic(true);
-            if (cButtonPressed) {
+            if (!digitalRead(GPIO_NUM_35)) {
                 restartGame();
+            }
+            lis->getTap();
+            if (lis->isTap()) {
+                display->clearScreen();
+                playTeris = false;
             }
         }
     }
 
    private:
     DisplayController* display;
+    LIS3DH* lis;
 
     uint16_t myRED = display->color565(255, 73, 113);
     uint16_t myGREEN = display->color565(24, 227, 200);
