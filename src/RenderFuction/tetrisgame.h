@@ -5,10 +5,10 @@
 // Game Config Options:
 //--------------------------------
 
-#define LEFT_OFFSET 13
-#define TOP_OFFSET 10
+#define LEFT_OFFSET -2
+#define TOP_OFFSET 0
 
-#define WORLD_TO_PIXEL 3 //each dot on the game world will be represented by these many pixels.
+#define WORLD_TO_PIXEL 2 //each dot on the game world will be represented by these many pixels.
 
 #define DELAY_BETWEEN_FRAMES 50
 #define DELAY_ON_LINE_CLEAR 100
@@ -32,11 +32,9 @@ public:
     }
 
     void play() {
-        if (!bGameOver)
-        {
+        if (!bGameOver) {
             gameInput();
-            if (!isPaused)
-            {
+            if (!isPaused) {
                 gameTiming();
                 gameLogic();
             }
@@ -49,8 +47,7 @@ public:
             delay(DELAY_BETWEEN_FRAMES);
             gameInput();
             displayLogic(true);
-            if (cButtonPressed)
-            {
+            if (cButtonPressed) {
                 restartGame();
             }
         }
@@ -59,20 +56,20 @@ public:
 private:
     DisplayController* display;
 
-    uint16_t myRED = display->color565(255, 0, 0);
-    uint16_t myGREEN = display->color565(0, 255, 0);
-    uint16_t myBLUE = display->color565(0, 0, 255);
-    uint16_t myWHITE = display->color565(255, 255, 255);
-    uint16_t myYELLOW = display->color565(255, 255, 0);
-    uint16_t myCYAN = display->color565(0, 255, 255);
-    uint16_t myMAGENTA = display->color565(255, 0, 255);
+    uint16_t myRED = display->color565(255, 73, 113);
+    uint16_t myGREEN = display->color565(24, 227, 200);
+    uint16_t myBLUE = display->color565(85, 111, 255);
+    uint16_t myWHITE = display->color565(190, 190, 193);
+    uint16_t myYELLOW = display->color565(255, 128, 55);
+    uint16_t myCYAN = display->color565(63, 220, 238);
+    uint16_t myMAGENTA = display->color565(176, 67, 209);
     uint16_t myBLACK = display->color565(0, 0, 0);
 
     // [0] is empty space
     // [1-7] are tetromino colours
     // [8] is the colour a completed line changes to before disappearing
     // [9] is the walls of the board.
-    uint16_t gameColours[10] = { myBLACK, myRED, myGREEN, myBLUE, myWHITE, myYELLOW, myCYAN, myMAGENTA, myRED, myGREEN };
+    uint16_t gameColours[10] = { myBLACK, myRED, myGREEN, myBLUE, myWHITE, myYELLOW, myCYAN, myMAGENTA, myYELLOW, myMAGENTA };
 
     bool bGameOver = false;
 
@@ -88,6 +85,7 @@ private:
 
     int moveThreshold = 30;
 
+    int nNextPiece = 2;
     int nCurrentPiece = 2;
     int nCurrentRotation = 0;
     int nCurrentX = (nFieldWidth / 2) - 2;
@@ -105,8 +103,8 @@ private:
     int numCompletedLines;
 
     char tetromino[7][17];
-    int nFieldWidth = 12;
-    int nFieldHeight = 18;
+    int nFieldWidth = 22;
+    int nFieldHeight = 17;
     char* pField = nullptr;
 
     void gameLogic() {
@@ -236,13 +234,17 @@ private:
         return true;
     }
 
-    void getNewPiece()
-    {
+    void getNewPiece() {
         // Pick New Piece
         nCurrentX = (nFieldWidth / 2) - 2;
         nCurrentY = 0;
         nCurrentRotation = 0;
-        nCurrentPiece = random(7);
+        nCurrentPiece = nNextPiece;
+        nNextPiece = esp_random() % 7;
+        // Serial.print("Current:");
+        // Serial.print(nCurrentPiece);
+        // Serial.print(", Next:");
+        // Serial.println(nNextPiece);
     }
 
     void gameTiming() {
@@ -303,8 +305,8 @@ private:
             }
 
         // Draw Current Piece
-        for (int px = 0; px < 4; px++)
-            for (int py = 0; py < 4; py++)
+        for (int px = 0; px < 4; px++) {
+            for (int py = 0; py < 4; py++) {
                 if (tetromino[nCurrentPiece][Rotate(px, py, nCurrentRotation)] != '.')
                 {
                     realX = ((nCurrentX + px) * WORLD_TO_PIXEL) + LEFT_OFFSET;
@@ -316,6 +318,8 @@ private:
                         display->drawPixel(realX, realY, gameColours[nCurrentPiece + 1]);
                     }
                 }
+            }
+        }
 
         display->setTextColor(myBLUE);
 
@@ -331,11 +335,11 @@ private:
             int16_t  x1, y1;
             uint16_t w, h;
             display->getTextBounds(String(nScore), 0, 0, &x1, &y1, &w, &h);
-            display->setCursor((display->getResX() / 2) - w / 2, 1);
+            display->setCursor(nFieldWidth * 2, 5);
             display->print(nScore);
         }
 
-        display->render();
+        // display->render();
     }
 
     void gameInput() {
