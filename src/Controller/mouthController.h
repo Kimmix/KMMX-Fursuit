@@ -181,26 +181,26 @@ class MouthState {
         // Final render
         display->drawMouth(visemeOutput(holdViseme(viseme), loudness_level));
 
-        Serial.print("AH:");
-        Serial.print(ah_amplitude);
-        Serial.print(",EE:");
-        Serial.print(ee_amplitude);
-        Serial.print(",OH:");
-        Serial.print(oh_amplitude);
-        Serial.print(",OO:");
-        Serial.print(oo_amplitude);
-        Serial.print(",TH:");
-        Serial.print(th_amplitude);
+        // Serial.print("AH:");
+        // Serial.print(ah_amplitude);
+        // Serial.print(",EE:");
+        // Serial.print(ee_amplitude);
+        // Serial.print(",OH:");
+        // Serial.print(oh_amplitude);
+        // Serial.print(",OO:");
+        // Serial.print(oo_amplitude);
+        // Serial.print(",TH:");
+        // Serial.print(th_amplitude);
         // Serial.print(",AVG_AMP:");
         // Serial.print(avg_amplitude);
         // Serial.print(",MAX_AMP:");
         // Serial.println(max_amplitude);
 
         // Print results
-        Serial.print(",Viseme:");
-        Serial.print(viseme * 1000);
-        Serial.print(",Loudness:");
-        Serial.println(loudness_level * 1000);
+        // Serial.print(",Viseme:");
+        // Serial.print(viseme * 1000);
+        // Serial.print(",Loudness:");
+        // Serial.println(loudness_level * 1000);
     }
 
     void calculateAmplitude(double ah, double ee, double oh, double oo, double th, double& minAmp, double& maxAmp, double& avgAmp) {
