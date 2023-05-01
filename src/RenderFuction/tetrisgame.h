@@ -1,4 +1,4 @@
-// Ported from: https://github.com/witnessmenow/ESP32-Trinity/blob/master/examples/Projects/TetrisWithNunchuck/TetrisWithNunchuck.ino
+// * SRC: https://github.com/witnessmenow/ESP32-Trinity/blob/master/examples/Projects/TetrisWithNunchuck/TetrisWithNunchuck.ino
 #include <Arduino.h>
 
 //--------------------------------
