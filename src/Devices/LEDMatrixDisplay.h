@@ -116,6 +116,37 @@ class DisplayController {
         }
     }
 
+    void getBlackWhiteWave(const uint8_t brightness, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {
+        // Compute the black and white wave pattern based on the brightness, row, col, and time inputs
+        double wave = (row + col) * 0.1 + millis() * 0.008;
+        double gray = sin(wave) * 127 + 128;
+        r = g = b = static_cast<uint8_t>(gray);
+
+        // Scale the gray value based on the brightness input
+        double scale = brightness / 255.0;
+        gray = gray * scale;
+
+        // Constrain the gray value to the range [0, 255]
+        r = g = b = constrain(static_cast<uint8_t>(gray), 0, 255);
+    }
+
+    void getColorWave(const uint8_t brightness, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {
+        // Compute the color1 and color2 wave pattern based on the brightness, row, col, and time inputs
+        double wave = (row + col) * 0.4 + millis() * 0.01;
+        double color1 = sin(wave) * 127 + 128;
+        double color2 = sin(wave + PI) * 127 + 128;
+
+        // Scale the color1 and color2 values based on the brightness input
+        double scale = brightness / 255.0;
+        color1 *= scale;
+        color2 *= scale;
+
+        // Constrain the color1 and color2 values to the range [0, 255]
+        r = constrain(static_cast<uint8_t>(color2), 0, 255);
+        g = constrain(static_cast<uint8_t>(color1), 0, 255);
+        b = constrain(static_cast<uint8_t>(color1 + color2), 0, 255);
+    }
+
     /**
      * @brief Draws a bitmap onto the LED matrix
      * @param bitmap Array of 8-bit values representing the image
@@ -129,7 +160,8 @@ class DisplayController {
         for (int i = 0; i < imageHeight; i++) {
             for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
                 uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j);  // read the bytes from program memory
-                getColorMap(pixel, i + offsetY, r, g, b);
+                // getColorMap(pixel, i + offsetY, r, g, b);
+                getColorWave(pixel, i, j + offsetY, r, g, b);
                 if (drawBlack || (r != 0 || g != 0 || b != 0)) {
                     matrix->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
                     matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetY + i, r, g, b);
