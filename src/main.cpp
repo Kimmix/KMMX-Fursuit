@@ -47,14 +47,14 @@ void setup() {
     while (!Serial) delay(100);
     microphone.init();
     lis.init();
-    // ble.init();
+    ble.init();
     pinMode(IR_PIN, INPUT);
     randomSeed(analogRead(RANDOM_PIN));
     xTaskCreatePinnedToCore(asyncRender, "Render Mouth", 10000, NULL, 0, &controlMouth, 0);
 }
 
 void loop() {
-    // ble.update();
+    ble.update();
     // display.render();
     // display.drawColorTest();
     display.drawNose(noseDefault);
