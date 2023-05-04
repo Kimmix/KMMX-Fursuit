@@ -160,8 +160,8 @@ class DisplayController {
         for (int i = 0; i < imageHeight; i++) {
             for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
                 uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j);  // read the bytes from program memory
-                // getColorMap(pixel, i + offsetY, r, g, b);
-                getColorWave(pixel, i, j + offsetY, r, g, b);
+                getColorMap(pixel, i + offsetY, r, g, b);
+                // getColorWave(pixel, i, j + offsetY, r, g, b);
                 if (drawBlack || (r != 0 || g != 0 || b != 0)) {
                     matrix->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
                     matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetY + i, r, g, b);
