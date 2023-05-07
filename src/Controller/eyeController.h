@@ -3,18 +3,17 @@
 
 class EyeState {
    public:
-    EyeState(DisplayController* displayPtr = nullptr, LIS3DH* lisPtr = nullptr) : display(displayPtr),
-                                                                                  lis(lisPtr),
-                                                                                  currentState(GOOGLY),
-                                                                                  nextBlink(0),
-                                                                                  blinkInterval(0),
-                                                                                  nextFace(0),
-                                                                                  nextBoop(0),
-                                                                                  resetBoop_(0),
-                                                                                  boopAnimationFrame(0),
-                                                                                  currentOFaceIndex(0),
-                                                                                  blinkStep(0),
-                                                                                  currentBlinkFrameIndex(0) {}
+    EyeState(DisplayController* displayPtr = nullptr) : display(displayPtr),
+                                                        currentState(GOOGLY),
+                                                        nextBlink(0),
+                                                        blinkInterval(0),
+                                                        nextFace(0),
+                                                        nextBoop(0),
+                                                        resetBoop_(0),
+                                                        boopAnimationFrame(0),
+                                                        currentOFaceIndex(0),
+                                                        blinkStep(0),
+                                                        currentBlinkFrameIndex(0) {}
 
     void update() {
         // Serial.print(currentState);
@@ -132,21 +131,9 @@ class EyeState {
         display->drawEye(blinkAnimation[currentBlinkFrameIndex]);
     }
 
-    const float ACC_FILTER = 1;
     void renderGooglyEye() {
-        float x, y, z;
-        lis->readAccelG(x, y, z);
-        // Serial.print("X:"); Serial.print(ax);
-        // Serial.print(",Y:"); Serial.print(ay);
-        // Serial.print(",Z:"); Serial.println(az);
-
-        // Orient the sensor directions to the display directions
-        float eye_ax = -y;
-        float eye_ay = -x;
-
-        // Update googlyEye position and draw on display
         display->drawEye(eyeGoogly);
-        googlyEye.update(eye_ax, eye_ay);
+        googlyEye.renderEye();
         display->drawEyePupil(eyePupil, googlyEye.x, googlyEye.y);
     }
 };

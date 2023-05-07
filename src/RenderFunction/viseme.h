@@ -214,20 +214,20 @@ class Viseme {
         loudness_level = decayLoudness(loudness_level, max_amplitude, min_amplitude);
 
         //? Debugging
-        Serial.print("AH:");
-        Serial.print(ah_amplitude);
-        Serial.print(",EE:");
-        Serial.print(ee_amplitude);
-        Serial.print(",OH:");
-        Serial.print(oh_amplitude);
-        Serial.print(",OO:");
-        Serial.print(oo_amplitude);
-        Serial.print(",TH:");
-        Serial.print(th_amplitude);
-        Serial.print(",AVG_AMP:");
-        Serial.print(avg_amplitude);
-        Serial.print(",MAX_AMP:");
-        Serial.println(max_amplitude);
+        // Serial.print("AH:");
+        // Serial.print(ah_amplitude);
+        // Serial.print(",EE:");
+        // Serial.print(ee_amplitude);
+        // Serial.print(",OH:");
+        // Serial.print(oh_amplitude);
+        // Serial.print(",OO:");
+        // Serial.print(oo_amplitude);
+        // Serial.print(",TH:");
+        // Serial.print(th_amplitude);
+        // Serial.print(",AVG_AMP:");
+        // Serial.print(avg_amplitude);
+        // Serial.print(",MAX_AMP:");
+        // Serial.println(max_amplitude);
 
         //? Print results
         // Serial.print(",Viseme:");

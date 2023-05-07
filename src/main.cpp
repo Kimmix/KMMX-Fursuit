@@ -3,7 +3,6 @@
 
 #include "Bitmaps/Icons.h"
 #include "Devices/LEDMatrixDisplay.h"
-#include "Devices/LIS3DH.h"
 #include "Devices/Bluetooth.h"
 #include "Controller/eyeController.h"
 #include "Controller/mouthController.h"
@@ -12,10 +11,9 @@
 #define RANDOM_PIN GPIO_NUM_36
 bool isBoop;
 
-LIS3DH lis;
 DisplayController display;
 
-EyeState eyeState(&display, &lis);
+EyeState eyeState(&display);
 MouthState mouthState(&display);
 BluetoothController ble(&display);
 
@@ -43,7 +41,6 @@ void asyncRender(void* parameter) {
 void setup() {
     Serial.begin(115200);
     while (!Serial) delay(400);
-    lis.init();
     ble.init();
     pinMode(IR_PIN, INPUT);
     randomSeed(analogRead(RANDOM_PIN));

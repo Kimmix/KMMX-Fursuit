@@ -1,7 +1,7 @@
 // * SRC: https://github.com/adafruit/Adafruit_Learning_System_Guides/blob/main/Hallowing_Googly_Eye/Hallowing_Googly_Eye.ino
 // SPDX-FileCopyrightText: 2018 Phillip Burgess for Adafruit Industries
 // SPDX-License-Identifier: MIT
-#include <Arduino.h>
+#include "Devices/LIS3DH.h"
 
 #define G_SCALE 40.0     // Accel scale; no science, just looks good
 #define ELASTICITY 0.90  // Edge-bounce coefficient (MUST be <1.0!)
@@ -15,14 +15,12 @@
 
 class GooglyEye {
    private:
+    LIS3DH accelerometer = LIS3DH();
+
     unsigned long lastTime = 0;
     float vx, vy = 0.0;
     bool firstFrame = true;  // Force full-screen update on initial frame
 
-   public:
-    GooglyEye() {}
-
-    float x, y;
     void update(float inputX, float inputY) {
         // Get time since last frame, in floating-point seconds
         unsigned long t = millis();
@@ -172,5 +170,32 @@ class GooglyEye {
         if (y1 < 0) y1 = 0;
         if (x2 > 127) x2 = 127;
         if (y2 > 127) y2 = 127;
+    };
+
+   public:
+    GooglyEye() {}
+
+    float x, y;
+    bool accEnable = false;
+    void renderEye() {
+        if (!accEnable) {
+            accelerometer.init();
+            accelerometer.checkData();
+            accEnable = true;
+        }
+        float accX, accY, accZ;
+        accelerometer.readAccelG(accX, accY, accZ);
+        //? Debugging
+        // Serial.print("X:");
+        // Serial.print(accX);
+        // Serial.print(",Y:");
+        // Serial.print(accY);
+        // Serial.print(",Z:");
+        // Serial.println(accZ);
+
+        // Orient the sensor directions to the display directions
+        float eye_ax = -accY;
+        float eye_ay = -accX;
+        update(eye_ax, eye_ay);
     }
 };
