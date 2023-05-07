@@ -12,11 +12,7 @@ class LIS3DH {
    public:
     void init() {
         // I2C.begin(I2C_SDA, I2C_SCL);
-        if (!lis.begin(0x19)) {
-            Serial.println("Couldnt LIS3DH");
-            while (1) yield();
-        }
-        Serial.println("LIS3DH found!");
+        lis.begin(0x19);
         // lis.setRange(LIS3DH_RANGE_4_G);
         // lis.setDataRate(LIS3DH_DATARATE_POWERDOWN);
 
@@ -24,7 +20,7 @@ class LIS3DH {
         // 1 = single click only interrupt output
         // 2 = double click only interrupt output, detect single click
         // Adjust threshhold, higher numbers are less sensitive
-        lis.setClick(2, CLICKTHRESHHOLD);
+        // lis.setClick(2, CLICKTHRESHHOLD);
     }
 
     void readAccelEvent(sensors_event_t *event) {

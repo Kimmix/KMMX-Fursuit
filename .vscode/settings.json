@@ -10,6 +10,7 @@
         "initializer_list": "cpp",
         "random": "cpp",
         "*.tcc": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "new": "cpp"
     }
 }

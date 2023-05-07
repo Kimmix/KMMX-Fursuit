@@ -20,12 +20,13 @@
 class DisplayController {
    private:
     MatrixPanel_I2S_DMA* matrix;
-    const int panelWidth, panelHeight;
+    const int panelWidth = PANEL_RES_X,
+              panelHeight = PANEL_RES_Y;
     uint8_t panelBrightness = 64;
     int eyeWidth = 32, eyeHeight = 18;
 
    public:
-    DisplayController() : panelWidth(PANEL_RES_X), panelHeight(PANEL_RES_Y) {
+    DisplayController() {
         HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER);
         mxconfig.double_buff = false;  // Turn of double buffer
         // mxconfig.clkphase = true;

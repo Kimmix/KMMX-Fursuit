@@ -11,11 +11,9 @@
 // Use I2S Processor 0
 #define I2S_PORT I2S_NUM_0
 
-class Microphone {
-   public:
-    Microphone(){};
-
-    void init() {
+class I2SMicrophone {
+   private:
+    void i2s_install() {
         // Set up I2S Processor configuration
         const i2s_config_t i2s_config = {
             .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX),
@@ -27,30 +25,40 @@ class Microphone {
             .dma_buf_count = 8,
             .dma_buf_len = SAMPLES,
             .use_apll = false};
+        i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
+    }
+
+    void i2s_setpin() {
         // Set I2S pin configuration
         const i2s_pin_config_t pin_config = {
             .bck_io_num = I2S_SCK,
             .ws_io_num = I2S_WS,
             .data_out_num = -1,
             .data_in_num = I2S_SD};
-        esp_err_t err;
-        err = i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
-        if (err != ESP_OK) {
-            Serial.printf("Failed installing driver: %d\n", err);
-            while (true)
-                ;
-        }
-        err = i2s_set_pin(I2S_PORT, &pin_config);
-        if (err != ESP_OK) {
-            Serial.printf("Failed setting pin: %d\n", err);
-            while (true)
-                ;
-        }
-        Serial.println("I2S Mic driver installed.");
+        i2s_set_pin(I2S_PORT, &pin_config);
+    }
+
+   public:
+    I2SMicrophone() {
+        i2s_install();
+        i2s_setpin();
+        start_i2s();
     };
 
     void read(int16_t* buffer) {
         size_t bytes_read;
         i2s_read(I2S_PORT, (void*)buffer, SAMPLES * 2, &bytes_read, portMAX_DELAY);
     };
+
+    void start_i2s() {
+        // Start I2S microphone
+        i2s_zero_dma_buffer(I2S_NUM_0);
+        i2s_start(I2S_PORT);
+    }
+
+    void stop_i2s() {
+        // Stop I2S microphone
+        i2s_stop(I2S_NUM_0);
+        i2s_driver_uninstall(I2S_NUM_0);
+    }
 };

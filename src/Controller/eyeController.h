@@ -1,4 +1,4 @@
-#include "../RenderFuction/googlyEye.h"
+#include "../RenderFunction/googlyEye.h"
 #include "Bitmaps/eyeBitmap.h"
 
 class EyeState {
