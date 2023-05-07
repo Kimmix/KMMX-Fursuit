@@ -149,7 +149,13 @@ class Viseme {
     };
 
    public:
+    bool microphoneEnable = false;
     const uint8_t* renderViseme() {
+        if (!microphoneEnable) {
+            microphone.init();
+            microphoneEnable = true;
+            Serial.println("******** Start Mic ********");
+        }
         getDigtalSample(real, imaginary, true);
         // getAnalogSample(real, imaginary, false);
         FFT.DCRemoval();

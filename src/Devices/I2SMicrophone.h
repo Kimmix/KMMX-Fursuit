@@ -39,7 +39,7 @@ class I2SMicrophone {
     }
 
    public:
-    I2SMicrophone() {
+    void init() {
         i2s_install();
         i2s_setpin();
         start_i2s();
