@@ -1,21 +1,13 @@
 #include <Arduino.h>
 #include <esp_random.h>
 
-#include "Bitmaps/Icons.h"
-#include "Devices/LEDMatrixDisplay.h"
-#include "Devices/Bluetooth.h"
-#include "Controller/eyeController.h"
-#include "Controller/mouthController.h"
+#include "Controller/controller.h"
 
 #define IR_PIN GPIO_NUM_35
 #define RANDOM_PIN GPIO_NUM_36
 bool isBoop;
 
-DisplayController display;
-
-EyeState eyeState(&display);
-MouthState mouthState(&display);
-BluetoothController ble(&display);
+Controller controller;
 
 uint16_t fps = 0;
 unsigned long fps_timer;
@@ -28,34 +20,30 @@ void showFPS() {
     }
 }
 
-TaskHandle_t controlMouth;
-void asyncRender(void* parameter) {
-    while (true) {
-        if (isBoop) {
-            mouthState.setBoop();
-        }
-        mouthState.update();
-    }
-}
+// TaskHandle_t controlMouth;
+// void asyncRender(void* parameter) {
+//     while (true) {
+//         if (isBoop) {
+//             mouthState.setBoop();
+//         }
+//         mouthState.update();
+//     }
+// }
 
 void setup() {
     Serial.begin(115200);
     while (!Serial) delay(400);
-    ble.init();
+    // ble.init();
     pinMode(IR_PIN, INPUT);
     randomSeed(analogRead(RANDOM_PIN));
-    xTaskCreatePinnedToCore(asyncRender, "Render Mouth", 10000, NULL, 0, &controlMouth, 0);
+    // xTaskCreatePinnedToCore(asyncRender, "Render Mouth", 10000, NULL, 0, &controlMouth, 0);
 }
 
 void loop() {
-    ble.update();
-    // display.render();
-    // display.drawColorTest();
-    display.drawNose(noseDefault);
+    // showFPS();
     isBoop = !digitalRead(IR_PIN);
     if (isBoop) {
-        eyeState.setBoop();
+        controller.faceBoop();
     }
-    eyeState.update();
-    // showFPS();
+    controller.render();
 }
