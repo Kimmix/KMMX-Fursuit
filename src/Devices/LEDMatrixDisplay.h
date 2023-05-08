@@ -17,7 +17,7 @@
 #define SCREEN_WIDTH PANEL_RES_X* PANELS_NUMBER
 #define SCREEN_HEIGHT PANEL_RES_Y
 
-class DisplayController {
+class LEDMatrixDisplay {
    private:
     MatrixPanel_I2S_DMA* matrix;
     const int panelWidth = PANEL_RES_X,
@@ -26,7 +26,7 @@ class DisplayController {
     int eyeWidth = 32, eyeHeight = 18;
 
    public:
-    DisplayController() {
+    LEDMatrixDisplay() {
         HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER);
         mxconfig.double_buff = false;  // Turn of double buffer
         // mxconfig.clkphase = true;

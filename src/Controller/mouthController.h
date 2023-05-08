@@ -3,8 +3,7 @@
 
 class MouthState {
    public:
-    MouthState(DisplayController* displayPtr = nullptr) : display(displayPtr),
-                                                          currentState(IDLE) {}
+    MouthState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
 
     void update() {
         // Serial.print(currentState);
@@ -36,7 +35,7 @@ class MouthState {
     }
 
    private:
-    DisplayController* display;
+    LEDMatrixDisplay* display;
     Viseme viseme;
 
     enum State {
@@ -44,5 +43,5 @@ class MouthState {
         BOOP,
         TALKING,
     };
-    State currentState;
+    State currentState = IDLE;
 };

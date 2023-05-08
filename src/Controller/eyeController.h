@@ -3,17 +3,7 @@
 
 class EyeState {
    public:
-    EyeState(DisplayController* displayPtr = nullptr) : display(displayPtr),
-                                                        currentState(GOOGLY),
-                                                        nextBlink(0),
-                                                        blinkInterval(0),
-                                                        nextFace(0),
-                                                        nextBoop(0),
-                                                        resetBoop_(0),
-                                                        boopAnimationFrame(0),
-                                                        currentOFaceIndex(0),
-                                                        blinkStep(0),
-                                                        currentBlinkFrameIndex(0) {}
+    EyeState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
 
     void update() {
         // Serial.print(currentState);
@@ -58,8 +48,7 @@ class EyeState {
     }
 
    private:
-    DisplayController* display;
-    LIS3DH* lis;
+    LEDMatrixDisplay* display;
     GooglyEye googlyEye;
 
     enum State {
@@ -68,12 +57,11 @@ class EyeState {
         BOOP,
         GOOGLY,
     };
+    State currentState = IDLE;
 
-    State currentState;
     unsigned long
         nextBlink,
         blinkInterval,
-        nextFace,
         nextBoop,
         resetBoop_;
 
@@ -107,10 +95,9 @@ class EyeState {
         display->drawEye(oFaceAnimation[currentOFaceIndex]);
     }
 
-    const uint8_t* blinkAnimation[3] = {
-        eyeBlink1, eyeBlink2, eyeBlink3};
-    int blinkAnimationLength = 3;
-    int blinkStep, currentBlinkFrameIndex;
+    const uint8_t* blinkAnimation[3] = {eyeBlink1, eyeBlink2, eyeBlink3};
+    const short blinkAnimationLength = 3;
+    short blinkStep, currentBlinkFrameIndex;
     void blink() {
         if (millis() >= blinkInterval) {
             if (blinkStep < blinkAnimationLength - 1) {

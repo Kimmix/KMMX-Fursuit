@@ -17,7 +17,7 @@
 
 class Teris {
    public:
-    Teris(DisplayController* displayPtr = nullptr,
+    Teris(LEDMatrixDisplay* displayPtr = nullptr,
           LIS3DH* lisPtr = nullptr) : display(displayPtr),
                                       lis(lisPtr) {}
 
@@ -59,7 +59,7 @@ class Teris {
     }
 
    private:
-    DisplayController* display;
+    LEDMatrixDisplay* display;
     LIS3DH* lis;
 
     uint16_t myRED = display->color565(255, 73, 113);
