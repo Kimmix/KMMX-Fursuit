@@ -1,4 +1,5 @@
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
+#include "Bitmaps/accColor.h"
 
 // ---- P3 LED Matrix Panel ----
 // HUB75E pinout

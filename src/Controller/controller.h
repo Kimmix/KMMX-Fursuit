@@ -1,8 +1,7 @@
-#include "Bitmaps/Icons.h"
-
 #include "Devices/LEDMatrixDisplay.h"
 #include "Controller/eyeController.h"
 #include "Controller/mouthController.h"
+#include "Bitmaps/Icons.h"
 
 class Controller {
    private:
