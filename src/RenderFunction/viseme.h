@@ -16,6 +16,7 @@
 #define SAMPLES 256
 
 #define NOISE_THRESHOLD 300
+#define SMOOTHING_ALPHA 0.5  // smoothing factor between 0 and 1
 
 class Viseme {
    private:
@@ -38,7 +39,7 @@ class Viseme {
     double real[SAMPLES],
         imaginary[SAMPLES];
 
-    const float alpha = 0.2;  // smoothing factor between 0 and 1
+    const float alpha = SMOOTHING_ALPHA;  // smoothing factor between 0 and 1
     // Read analog microphone input and fill fft_input array with samples
     void getAnalogSample(double* vReal, double* vImagine, bool isSmooth) {
         unsigned int sampling_period_us = round(1000 * (1.0 / SAMPLE_RATE));
@@ -60,7 +61,7 @@ class Viseme {
 
     void getDigtalSample(double* vReal, double* vImagine, bool isSmooth) {
         int16_t buffer[SAMPLES];
-        microphone.read(buffer);
+        microphone.read(buffer, SAMPLES);
         float smoothedValue = 0;
         for (int i = 0; i < SAMPLES; i++) {
             if (isSmooth) {
@@ -99,7 +100,7 @@ class Viseme {
     int previousLoudness = 0;                          // Initialize previous input variable to 0
     unsigned long decayStartTime = 0;                  // Initialize decay start time to 0
     const double decayRate = 0.75;                     // Set the decay rate to 0.75
-    const unsigned long decayElapsedThreshold = 4000;  // Set the decay elapsed time threshold to 5 seconds
+    const unsigned long decayElapsedThreshold = 5000;  // Set the decay elapsed time threshold to 5 seconds
     int decayLoudness(int input, double max_amplitude, double min_amplitude) {
         if (max_amplitude - min_amplitude > NOISE_THRESHOLD || previousLoudness > 0) {
             if (input >= previousLoudness) {                                                             // If the new input is greater than or equal to the previous input
@@ -152,7 +153,7 @@ class Viseme {
     bool microphoneEnable = false;
     const uint8_t* renderViseme() {
         if (!microphoneEnable) {
-            microphone.init();
+            microphone.init(SAMPLE_RATE, SAMPLES);
             microphoneEnable = true;
             Serial.println("******** Start Mic ********");
         }
