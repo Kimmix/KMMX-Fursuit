@@ -81,7 +81,7 @@ class Viseme {
     }
     // Compute loudness level based on average amplitude
     int calculateLoudness(double max, double avg) {
-        if (max > avg * 2) {
+        if (max > avg * 1.8) {
             return 2;
         } else if (max > avg * 1.5) {
             return 1;
@@ -99,7 +99,7 @@ class Viseme {
     }
     int previousLoudness = 0;                          // Initialize previous input variable to 0
     unsigned long decayStartTime = 0;                  // Initialize decay start time to 0
-    const double decayRate = 0.75;                     // Set the decay rate to 0.75
+    const double decayRate = 0.95;                     // Set the decay rate to 0.75
     const unsigned long decayElapsedThreshold = 5000;  // Set the decay elapsed time threshold to 5 seconds
     int decayLoudness(int input, double max_amplitude, double min_amplitude) {
         if (max_amplitude - min_amplitude > NOISE_THRESHOLD || previousLoudness > 0) {
