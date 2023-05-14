@@ -10,21 +10,13 @@ class EyeState {
         // Serial.print("\n");
         switch (currentState) {
             case IDLE:
-                display->drawEye(defaultAnimation[defaultFaceIndex]);
-                if (millis() >= nextBlink) {
-                    nextBlink = millis() + (500 * (esp_random() % 25));
-                    currentState = BLINK;
-                }
+                idleFace();
                 break;
             case BLINK:
                 blink();
                 break;
             case BOOP:
-                arrowFace();
-                if (millis() - resetBoop_ >= 2000) {
-                    resetBoop_ = millis();
-                    currentState = IDLE;
-                }
+                boopFace();
                 break;
             case GOOGLY:
                 renderGooglyEye();
@@ -65,6 +57,14 @@ class EyeState {
         nextBoop,
         resetBoop_;
 
+    void idleFace() {
+        display->drawEye(defaultAnimation[defaultFaceIndex]);
+        if (millis() >= nextBlink) {
+            nextBlink = millis() + (500 * (esp_random() % 25));
+            currentState = BLINK;
+        }
+    }
+
     short defaultFaceIndex = 0;
     const uint8_t* defaultAnimation[3] = {eyeDefault, eyeUp, eyeDown};
     void changeDefaultFace() {
@@ -72,6 +72,14 @@ class EyeState {
             defaultFaceIndex = (esp_random() % 2) + 1;
         } else {
             defaultFaceIndex = 0;
+        }
+    }
+
+    void boopFace() {
+        arrowFace();
+        if (millis() - resetBoop_ >= 2000) {
+            resetBoop_ = millis();
+            currentState = IDLE;
         }
     }
 

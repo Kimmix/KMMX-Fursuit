@@ -11,6 +11,7 @@
         "random": "cpp",
         "*.tcc": "cpp",
         "cmath": "cpp",
-        "new": "cpp"
+        "new": "cpp",
+        "list": "cpp"
     }
 }

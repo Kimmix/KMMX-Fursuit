@@ -20,15 +20,13 @@ void showFPS() {
     }
 }
 
-// TaskHandle_t controlMouth;
-// void asyncRender(void* parameter) {
-//     while (true) {
-//         if (isBoop) {
-//             mouthState.setBoop();
-//         }
-//         mouthState.update();
-//     }
-// }
+TaskHandle_t controlMouth;
+void asyncRender(void* parameter) {
+    while (true) {
+        showFPS();
+        controller.render2();
+    }
+}
 
 void setup() {
     Serial.begin(115200);
@@ -36,7 +34,7 @@ void setup() {
     // ble.init();
     pinMode(IR_PIN, INPUT);
     randomSeed(analogRead(RANDOM_PIN));
-    // xTaskCreatePinnedToCore(asyncRender, "Render Mouth", 10000, NULL, 0, &controlMouth, 0);
+    xTaskCreatePinnedToCore(asyncRender, "Render Mouth", 10000, NULL, 0, &controlMouth, 0);
 }
 
 void loop() {

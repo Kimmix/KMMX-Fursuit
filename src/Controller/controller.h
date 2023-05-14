@@ -13,6 +13,8 @@ class Controller {
     void render() {
         display.drawNose(noseDefault);
         eyeState.update();
+    }
+    void render2() {
         mouthState.update();
     }
 
