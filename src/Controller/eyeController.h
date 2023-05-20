@@ -34,6 +34,7 @@ class EyeState {
     }
     void setBoop() {
         currentState = BOOP;
+        resetBoop = millis();
     }
     void setGoogly() {
         currentState = GOOGLY;
@@ -55,7 +56,7 @@ class EyeState {
         nextBlink,
         blinkInterval,
         nextBoop,
-        resetBoop_;
+        resetBoop;
 
     void idleFace() {
         display->drawEye(defaultAnimation[defaultFaceIndex]);
@@ -77,8 +78,7 @@ class EyeState {
 
     void boopFace() {
         arrowFace();
-        if (millis() - resetBoop_ >= 2000) {
-            resetBoop_ = millis();
+        if (millis() - resetBoop >= 1000) {
             currentState = IDLE;
         }
     }

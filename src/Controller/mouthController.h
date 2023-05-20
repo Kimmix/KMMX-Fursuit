@@ -14,7 +14,10 @@ class MouthState {
                 break;
             case BOOP:
                 display->drawMouth(mouthOpen);
-                currentState = TALKING;
+                if (millis() - resetBoop >= 100) {
+                    currentState = TALKING;
+                }
+                // currentState = TALKING;
                 break;
             case TALKING:
                 display->drawMouth(viseme.renderViseme());
@@ -32,6 +35,7 @@ class MouthState {
     }
     void setBoop() {
         currentState = BOOP;
+        resetBoop = millis();
     }
 
    private:
@@ -44,4 +48,5 @@ class MouthState {
         TALKING,
     };
     State currentState = IDLE;
+    unsigned long resetBoop;
 };
