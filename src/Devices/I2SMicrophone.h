@@ -10,7 +10,7 @@
 
 class I2SMicrophone {
    private:
-    void i2s_install(int sampleRate, int samples) {
+    void i2s_install(uint32_t sampleRate, int samples) {
         // Set up I2S Processor configuration
         const i2s_config_t i2s_config = {
             .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX),
@@ -36,7 +36,7 @@ class I2SMicrophone {
     }
 
    public:
-    void init(int sampleRate, int samples) {
+    void init(uint32_t sampleRate, int samples) {
         i2s_install(sampleRate, samples);
         i2s_setpin();
         start_i2s();
