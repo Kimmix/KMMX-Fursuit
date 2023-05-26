@@ -13,7 +13,7 @@
 #define TH_MAX 4000
 
 #define SAMPLE_RATE 8000
-#define SAMPLES 256
+#define SAMPLES 512
 
 #define NOISE_THRESHOLD 300
 #define SMOOTHING_ALPHA 0.5  // smoothing factor between 0 and 1
@@ -82,12 +82,14 @@ class Viseme {
     // Compute loudness level based on average amplitude
     int calculateLoudness(double max, double avg) {
         if (max > avg * 1.8) {
+            return 3;
+        } else if (max > avg * 1.6) {
             return 2;
-        } else if (max > avg * 1.5) {
+        } else if (max > avg * 1.4) {
             return 1;
         }
         return 0;
-    };
+    }
 
     VisemeType previousViseme;
     VisemeType holdViseme(VisemeType input) {
@@ -134,6 +136,7 @@ class Viseme {
         if (level == 0) {
             return mouthDefault;
         }
+        level -= 1;
         switch (viseme) {
             case AH:
                 return ahViseme[level];
