@@ -23,7 +23,7 @@ void showFPS() {
 TaskHandle_t controlMouth;
 void asyncRender(void* parameter) {
     while (true) {
-        showFPS();
+        // showFPS();
         controller.render2();
     }
 }
