@@ -13,7 +13,7 @@
 #define TH_MAX 4000
 
 #define SAMPLE_RATE 8000
-#define SAMPLES 512
+#define SAMPLES 256
 
 #define NOISE_THRESHOLD 300
 #define SMOOTHING_ALPHA 0.5  // smoothing factor between 0 and 1
@@ -194,11 +194,11 @@ class Viseme {
             }
         }
         //? Normalizing
-        ah_amplitude *= 0.5;
-        ee_amplitude *= 0.6;
-        oh_amplitude *= 1.8;
-        oo_amplitude *= 2.0;
-        th_amplitude *= 2.3;
+        ah_amplitude *= 0.8;
+        ee_amplitude *= 1.0;
+        oh_amplitude *= 1.7;
+        oo_amplitude *= 1.5;
+        th_amplitude *= 2.2;
 
         VisemeType viseme = AH;
         double viseme_amplitude = ah_amplitude;
@@ -224,20 +224,22 @@ class Viseme {
         loudness_level = decayLoudness(loudness_level, max_amplitude, min_amplitude);
 
         //? Debugging
-        // Serial.print("AH:");
-        // Serial.print(ah_amplitude);
-        // Serial.print(",EE:");
-        // Serial.print(ee_amplitude);
-        // Serial.print(",OH:");
-        // Serial.print(oh_amplitude);
-        // Serial.print(",OO:");
-        // Serial.print(oo_amplitude);
-        // Serial.print(",TH:");
-        // Serial.print(th_amplitude);
-        // Serial.print(",AVG_AMP:");
-        // Serial.print(avg_amplitude);
-        // Serial.print(",MAX_AMP:");
-        // Serial.println(max_amplitude);
+        Serial.print("NOISE_THRESHOLD:");
+        Serial.print(NOISE_THRESHOLD);
+        Serial.print("AH:");
+        Serial.print(ah_amplitude);
+        Serial.print(",EE:");
+        Serial.print(ee_amplitude);
+        Serial.print(",OH:");
+        Serial.print(oh_amplitude);
+        Serial.print(",OO:");
+        Serial.print(oo_amplitude);
+        Serial.print(",TH:");
+        Serial.print(th_amplitude);
+        Serial.print(",AVG_AMP:");
+        Serial.print(avg_amplitude);
+        Serial.print(",MAX_AMP:");
+        Serial.println(max_amplitude);
 
         //? Print results
         // Serial.print(",Viseme:");
