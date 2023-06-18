@@ -20,6 +20,97 @@
 #define SMOOTHING_ALPHA 0.5  // smoothing factor between 0 and 1
 
 class Viseme {
+   public:
+    bool microphoneEnable = false;
+    const uint8_t* renderViseme() {
+        if (!microphoneEnable) {
+            microphone.init(SAMPLE_RATE, SAMPLES);
+            microphoneEnable = true;
+            Serial.println("******** Start Mic ********");
+        }
+        getDigtalSample(real, imaginary, true);
+        // getAnalogSample(real, imaginary, false);
+        FFT.DCRemoval();
+        FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+        FFT.Compute(FFT_FORWARD);
+        FFT.ComplexToMagnitude();
+        // double peak = FFT.MajorPeak();
+        // Serial.print("xp - ");
+        // Serial.println(peak);
+
+        //? Compute amplitude of frequency ranges for each viseme
+        double ah_amplitude = 0, ee_amplitude = 0,
+               oh_amplitude = 0, oo_amplitude = 0, th_amplitude = 0;
+
+        for (int i = 4; i < SAMPLES / 2; i++) {
+            double freq = i * ((SAMPLE_RATE / 2.0) / (SAMPLES / 2.0));
+            double amplitude = abs(imaginary[i]);
+            if (freq >= AH_MIN && freq <= AH_MAX) {
+                ah_amplitude += amplitude;
+            }
+            if (freq >= EE_MIN && freq <= EE_MAX) {
+                ee_amplitude += amplitude;
+            }
+            if (freq >= OH_MIN && freq <= OH_MAX) {
+                oh_amplitude += amplitude;
+            }
+            if (freq >= OO_MIN && freq <= OO_MAX) {
+                oo_amplitude += amplitude;
+            }
+            if (freq >= TH_MIN && freq <= TH_MAX) {
+                th_amplitude += amplitude;
+            }
+        }
+        //? Normalizing
+        ah_amplitude *= 0.8;
+        ee_amplitude *= 1.0;
+        oh_amplitude *= 1.7;
+        oo_amplitude *= 1.5;
+        th_amplitude *= 2.2;
+
+        VisemeType viseme = AH;
+        double viseme_amplitude = ah_amplitude;
+        if (ee_amplitude > viseme_amplitude) {
+            viseme = EE;
+            viseme_amplitude = ee_amplitude;
+        }
+        if (oh_amplitude > viseme_amplitude) {
+            viseme = OH;
+            viseme_amplitude = oh_amplitude;
+        }
+        if (oo_amplitude > viseme_amplitude) {
+            viseme = OO;
+            viseme_amplitude = oo_amplitude;
+        }
+        if (th_amplitude > viseme_amplitude) {
+            viseme = TH;
+        }
+
+        double min_amplitude, max_amplitude, avg_amplitude;
+        calculateAmplitude(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude, min_amplitude, max_amplitude, avg_amplitude);
+        int loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
+        loudness_level = decayLoudness(loudness_level, max_amplitude, min_amplitude);
+
+        //? Debugging
+        // Serial.print("NOISE_THRESHOLD:");
+        // Serial.print(NOISE_THRESHOLD);
+        // Serial.print("AH:");
+        // Serial.print(ah_amplitude);
+        // Serial.print(",EE:");
+        // Serial.print(ee_amplitude);
+        // Serial.print(",OH:");
+        // Serial.print(oh_amplitude);
+        // Serial.print(",OO:");
+        // Serial.print(oo_amplitude);
+        // Serial.print(",TH:");
+        // Serial.print(th_amplitude);
+        // Serial.print(",AVG_AMP:");
+        // Serial.println(avg_amplitude);
+
+        //! Final render
+        return visemeOutput(viseme, loudness_level);
+    }
+
    private:
     I2SMicrophone microphone = I2SMicrophone();
     arduinoFFT FFT = arduinoFFT(real, imaginary, SAMPLES, SAMPLE_RATE);
@@ -193,95 +284,4 @@ class Viseme {
         {{TH, EE}, "EETHViseme"},
         {{TH, OH}, "OHTHViseme"},
         {{TH, OO}, "OOTHViseme"}};
-
-   public:
-    bool microphoneEnable = false;
-    const uint8_t* renderViseme() {
-        if (!microphoneEnable) {
-            microphone.init(SAMPLE_RATE, SAMPLES);
-            microphoneEnable = true;
-            Serial.println("******** Start Mic ********");
-        }
-        getDigtalSample(real, imaginary, true);
-        // getAnalogSample(real, imaginary, false);
-        FFT.DCRemoval();
-        FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-        FFT.Compute(FFT_FORWARD);
-        FFT.ComplexToMagnitude();
-        // double peak = FFT.MajorPeak();
-        // Serial.print("xp - ");
-        // Serial.println(peak);
-
-        //? Compute amplitude of frequency ranges for each viseme
-        double ah_amplitude = 0, ee_amplitude = 0,
-               oh_amplitude = 0, oo_amplitude = 0, th_amplitude = 0;
-
-        for (int i = 4; i < SAMPLES / 2; i++) {
-            double freq = i * ((SAMPLE_RATE / 2.0) / (SAMPLES / 2.0));
-            double amplitude = abs(imaginary[i]);
-            if (freq >= AH_MIN && freq <= AH_MAX) {
-                ah_amplitude += amplitude;
-            }
-            if (freq >= EE_MIN && freq <= EE_MAX) {
-                ee_amplitude += amplitude;
-            }
-            if (freq >= OH_MIN && freq <= OH_MAX) {
-                oh_amplitude += amplitude;
-            }
-            if (freq >= OO_MIN && freq <= OO_MAX) {
-                oo_amplitude += amplitude;
-            }
-            if (freq >= TH_MIN && freq <= TH_MAX) {
-                th_amplitude += amplitude;
-            }
-        }
-        //? Normalizing
-        ah_amplitude *= 0.8;
-        ee_amplitude *= 1.0;
-        oh_amplitude *= 1.7;
-        oo_amplitude *= 1.5;
-        th_amplitude *= 2.2;
-
-        VisemeType viseme = AH;
-        double viseme_amplitude = ah_amplitude;
-        if (ee_amplitude > viseme_amplitude) {
-            viseme = EE;
-            viseme_amplitude = ee_amplitude;
-        }
-        if (oh_amplitude > viseme_amplitude) {
-            viseme = OH;
-            viseme_amplitude = oh_amplitude;
-        }
-        if (oo_amplitude > viseme_amplitude) {
-            viseme = OO;
-            viseme_amplitude = oo_amplitude;
-        }
-        if (th_amplitude > viseme_amplitude) {
-            viseme = TH;
-        }
-
-        double min_amplitude, max_amplitude, avg_amplitude;
-        calculateAmplitude(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude, min_amplitude, max_amplitude, avg_amplitude);
-        int loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
-        loudness_level = decayLoudness(loudness_level, max_amplitude, min_amplitude);
-
-        //? Debugging
-        // Serial.print("NOISE_THRESHOLD:");
-        // Serial.print(NOISE_THRESHOLD);
-        // Serial.print("AH:");
-        // Serial.print(ah_amplitude);
-        // Serial.print(",EE:");
-        // Serial.print(ee_amplitude);
-        // Serial.print(",OH:");
-        // Serial.print(oh_amplitude);
-        // Serial.print(",OO:");
-        // Serial.print(oo_amplitude);
-        // Serial.print(",TH:");
-        // Serial.print(th_amplitude);
-        // Serial.print(",AVG_AMP:");
-        // Serial.println(avg_amplitude);
-
-        //! Final render
-        return visemeOutput(viseme, loudness_level);
-    }
 };
