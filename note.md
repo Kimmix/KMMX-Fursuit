@@ -1,3 +1,4 @@
+## BLE Controlable
 Feature
     - Toggle BOOP: True/False
     - Toggle GooglyEye: True/False
@@ -34,3 +35,20 @@ Viseme
     Decay
         - decay_rate: 0.95
         - hold_time: 5000
+
+## Viseme combination
+    - AH
+    - EE
+    - OH
+    - OO
+    - TH
+    - AHEE
+    - AHOH
+    - AHOO
+    - AHTH
+    - EEOH
+    - EEOO
+    - EETH
+    - OHOO
+    - OHTH
+    - OOTH
