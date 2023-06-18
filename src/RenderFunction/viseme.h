@@ -1,3 +1,4 @@
+#include <map>
 #include <arduinoFFT.h>
 #include "Devices/I2SMicrophone.h"
 
@@ -30,11 +31,11 @@ class Viseme {
         OO,
         TH
     };
-    const uint8_t* ahViseme[3] = {AH1, AH2, AH3};
-    const uint8_t* eeViseme[3] = {EE1, EE2, EE3};
-    const uint8_t* ohViseme[3] = {OH1, OH2, OH3};
-    const uint8_t* ooViseme[3] = {OO1, OO2, OO3};
-    const uint8_t* thViseme[3] = {TH1, TH2, TH3};
+    const uint8_t* ahViseme[4] = {AH1, AH2, AH3, AH4};
+    const uint8_t* eeViseme[4] = {EE1, EE2, EE3, EE4};
+    const uint8_t* ohViseme[4] = {OH1, OH2, OH3, OH4};
+    const uint8_t* ooViseme[4] = {OO1, OO2, OO3, OO4};
+    const uint8_t* thViseme[4] = {TH1, TH2, TH3, TH4};
 
     double real[SAMPLES],
         imaginary[SAMPLES];
@@ -81,7 +82,9 @@ class Viseme {
     }
     // Compute loudness level based on average amplitude
     int calculateLoudness(double max, double avg) {
-        if (max > avg * 1.8) {
+        if (max > avg * 2.2) {
+            return 4;
+        } else if (max > avg * 1.8) {
             return 3;
         } else if (max > avg * 1.6) {
             return 2;
@@ -137,6 +140,18 @@ class Viseme {
             return mouthDefault;
         }
         level -= 1;
+        // Serial.print("Base:");
+        // Serial.print(4);
+        // Serial.print(",Level:");
+        // Serial.println(level);
+        Serial.print("viseme:");
+        Serial.print(viseme);
+        Serial.print(",previousViseme:");
+        Serial.print(previousViseme);
+        auto combination = visemeCombination.find(std::make_pair(viseme, previousViseme));
+        Serial.print(",combination:");
+        Serial.println(combination->second);
+        previousViseme = viseme;
         switch (viseme) {
             case AH:
                 return ahViseme[level];
@@ -151,6 +166,33 @@ class Viseme {
         };
         return NULL;
     };
+
+    std::map<std::pair<int, int>, String> visemeCombination = {
+        {{AH, AH}, "AHViseme"},
+        {{EE, EE}, "EEViseme"},
+        {{OH, OH}, "OHViseme"},
+        {{OO, OO}, "OOViseme"},
+        {{TH, TH}, "THViseme"},
+        {{AH, EE}, "AHEEViseme"},
+        {{AH, OH}, "AHOHViseme"},
+        {{AH, OO}, "AHOOViseme"},
+        {{AH, TH}, "AHTHViseme"},
+        {{EE, AH}, "AHEEViseme"},
+        {{EE, OH}, "EEOHViseme"},
+        {{EE, OO}, "EEOOViseme"},
+        {{EE, TH}, "EETHViseme"},
+        {{OH, AH}, "AHOHViseme"},
+        {{OH, EE}, "EEOHViseme"},
+        {{OH, OO}, "OHOOViseme"},
+        {{OH, TH}, "OHTHViseme"},
+        {{OO, AH}, "AHOOViseme"},
+        {{OO, EE}, "EEOOViseme"},
+        {{OO, OH}, "OHOOViseme"},
+        {{OO, TH}, "OOTHViseme"},
+        {{TH, AH}, "AHTHViseme"},
+        {{TH, EE}, "EETHViseme"},
+        {{TH, OH}, "OHTHViseme"},
+        {{TH, OO}, "OOTHViseme"}};
 
    public:
     bool microphoneEnable = false;
@@ -224,28 +266,22 @@ class Viseme {
         loudness_level = decayLoudness(loudness_level, max_amplitude, min_amplitude);
 
         //? Debugging
-        Serial.print("NOISE_THRESHOLD:");
-        Serial.print(NOISE_THRESHOLD);
-        Serial.print("AH:");
-        Serial.print(ah_amplitude);
-        Serial.print(",EE:");
-        Serial.print(ee_amplitude);
-        Serial.print(",OH:");
-        Serial.print(oh_amplitude);
-        Serial.print(",OO:");
-        Serial.print(oo_amplitude);
-        Serial.print(",TH:");
-        Serial.print(th_amplitude);
-        Serial.print(",AVG_AMP:");
-        Serial.println(avg_amplitude);
-
-        //? Print results
-        // Serial.print(",Viseme:");
-        // Serial.print(viseme * 1000);
-        // Serial.print(",Loudness:");
-        // Serial.println(loudness_level * 1000);
+        // Serial.print("NOISE_THRESHOLD:");
+        // Serial.print(NOISE_THRESHOLD);
+        // Serial.print("AH:");
+        // Serial.print(ah_amplitude);
+        // Serial.print(",EE:");
+        // Serial.print(ee_amplitude);
+        // Serial.print(",OH:");
+        // Serial.print(oh_amplitude);
+        // Serial.print(",OO:");
+        // Serial.print(oo_amplitude);
+        // Serial.print(",TH:");
+        // Serial.print(th_amplitude);
+        // Serial.print(",AVG_AMP:");
+        // Serial.println(avg_amplitude);
 
         //! Final render
-        return visemeOutput(holdViseme(viseme), loudness_level);
+        return visemeOutput(viseme, loudness_level);
     }
 };
