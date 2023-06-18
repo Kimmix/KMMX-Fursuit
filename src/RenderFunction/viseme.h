@@ -237,9 +237,7 @@ class Viseme {
         Serial.print(",TH:");
         Serial.print(th_amplitude);
         Serial.print(",AVG_AMP:");
-        Serial.print(avg_amplitude);
-        Serial.print(",MAX_AMP:");
-        Serial.println(max_amplitude);
+        Serial.println(avg_amplitude);
 
         //? Print results
         // Serial.print(",Viseme:");
