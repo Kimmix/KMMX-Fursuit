@@ -1,4 +1,4 @@
-#include "Bitmaps/mouthBitmap.h"
+#include "Bitmaps/mouthBitmapNew.h"
 #include "RenderFunction/viseme.h"
 
 class MouthState {
