@@ -16,8 +16,8 @@
 #define SAMPLE_RATE 8000
 #define SAMPLES 256
 
-#define NOISE_THRESHOLD 300
-#define SMOOTHING_ALPHA 0.5  // smoothing factor between 0 and 1
+#define NOISE_THRESHOLD 10000
+#define SMOOTHING_ALPHA 0.2  // smoothing factor between 0 and 1
 
 class Viseme {
    public:
@@ -66,7 +66,7 @@ class Viseme {
         ee_amplitude *= 1.0;
         oh_amplitude *= 1.7;
         oo_amplitude *= 1.5;
-        th_amplitude *= 2.2;
+        th_amplitude *= 2.4;
 
         VisemeType viseme = AH;
         double viseme_amplitude = ah_amplitude;
@@ -92,18 +92,21 @@ class Viseme {
         loudness_level = decayLoudness(loudness_level, max_amplitude, min_amplitude);
 
         //? Debugging
+        // int max_threshold = 20000;
         // Serial.print("NOISE_THRESHOLD:");
         // Serial.print(NOISE_THRESHOLD);
-        // Serial.print("AH:");
-        // Serial.print(ah_amplitude);
+        // Serial.print(",Max_THRESHOLD:");
+        // Serial.print(max_threshold);
+        // Serial.print(",AH:");
+        // Serial.print(ah_amplitude > max_threshold ? max_threshold : ah_amplitude);
         // Serial.print(",EE:");
-        // Serial.print(ee_amplitude);
+        // Serial.print(ee_amplitude > max_threshold ? max_threshold : ee_amplitude);
         // Serial.print(",OH:");
-        // Serial.print(oh_amplitude);
+        // Serial.print(oh_amplitude > max_threshold ? max_threshold : oh_amplitude);
         // Serial.print(",OO:");
-        // Serial.print(oo_amplitude);
+        // Serial.print(oo_amplitude > max_threshold ? max_threshold : oo_amplitude);
         // Serial.print(",TH:");
-        // Serial.print(th_amplitude);
+        // Serial.print(th_amplitude > max_threshold ? max_threshold : th_amplitude);
         // Serial.print(",AVG_AMP:");
         // Serial.println(avg_amplitude);
 
@@ -195,10 +198,10 @@ class Viseme {
     }
     int previousLoudness = 0;                          // Initialize previous input variable to 0
     unsigned long decayStartTime = 0;                  // Initialize decay start time to 0
-    const double decayRate = 0.95;                     // Set the decay rate to 0.75
-    const unsigned long decayElapsedThreshold = 5000;  // Set the decay elapsed time threshold to 5 seconds
+    const double decayRate = 0.75;                     // Set the decay rate to 0.75
+    const unsigned long decayElapsedThreshold = 1000;  // Set the decay elapsed time threshold to 1 seconds
     int decayLoudness(int input, double max_amplitude, double min_amplitude) {
-        if (max_amplitude - min_amplitude > NOISE_THRESHOLD || previousLoudness > 0) {
+        if (max_amplitude > NOISE_THRESHOLD || previousLoudness > 0) {
             if (input >= previousLoudness) {                                                             // If the new input is greater than or equal to the previous input
                 previousLoudness = input;                                                                // Update the previous input to the new input
                 decayStartTime = 0;                                                                      // Reset the decay start time
@@ -208,7 +211,7 @@ class Viseme {
                 } else {                                                                                 // If the input is currently decaying
                     unsigned long decay_elapsed_time = millis() - decayStartTime;                        // Calculate the elapsed decay time
                     if (decay_elapsed_time >= decayElapsedThreshold) {                                   // If the decay elapsed time exceeds the threshold
-                        previousLoudness = input;                                                        // Update the previous input to the new input
+                        previousLoudness = 0;                                                        // Update the previous input to the new input
                         decayStartTime = 0;                                                              // Reset the decay start time
                     } else {                                                                             // If the input is still decaying
                         int decayed_input = previousLoudness - (decayRate * decay_elapsed_time / 1000);  // Calculate the decayed input
@@ -231,10 +234,10 @@ class Viseme {
             return mouthDefault;
         }
         level -= 1;
-        // Serial.print("Base:");
-        // Serial.print(4);
-        // Serial.print(",Level:");
-        // Serial.println(level);
+        Serial.print("Base:");
+        Serial.print(4);
+        Serial.print(",Level:");
+        Serial.println(level);
         Serial.print("viseme:");
         Serial.print(viseme);
         Serial.print(",previousViseme:");
