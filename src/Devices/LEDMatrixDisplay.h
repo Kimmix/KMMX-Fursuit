@@ -177,7 +177,7 @@ class LEDMatrixDisplay {
     }
 
     void drawEye(const uint8_t* bitmap) {
-        drawBitmap(bitmap, eyeWidth, eyeHeight, 6, 0);
+        drawBitmap(bitmap, eyeWidth, eyeHeight, 12, 0);
     }
 
     void drawEyePupil(const uint8_t* bitmap, int x, int y) {
