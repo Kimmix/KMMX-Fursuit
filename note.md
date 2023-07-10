@@ -52,3 +52,12 @@ Viseme
     - OHOO
     - OHTH
     - OOTH
+
+# TO-DO
+- Viseme
+    - Add dynamic noise threhold funtion
+    - Cross viseme
+
+- LEXMatrixDisplay
+    - Update MVC
+    - frame interpolate
