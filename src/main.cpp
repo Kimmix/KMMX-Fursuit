@@ -38,7 +38,7 @@ void setup() {
 }
 
 void loop() {
-    // showFPS();
+    showFPS();
     isBoop = !digitalRead(IR_PIN);
     if (isBoop) {
         controller.faceBoop();

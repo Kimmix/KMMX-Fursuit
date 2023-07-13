@@ -18,6 +18,9 @@
 #define SCREEN_WIDTH PANEL_RES_X* PANELS_NUMBER
 #define SCREEN_HEIGHT PANEL_RES_Y
 
+// Define the number of frames and the transition duration
+#define NUM_FRAMES 4
+
 class LEDMatrixDisplay {
    private:
     MatrixPanel_I2S_DMA* matrix;
@@ -176,8 +179,13 @@ class LEDMatrixDisplay {
         drawBitmap(bitmap, panelWidth, panelHeight, 0, 0);
     }
 
+    // uint8_t* prevEyeFrame;
+    const uint8_t* prevEyeFrame = new uint8_t[eyeWidth * eyeHeight];
     void drawEye(const uint8_t* bitmap) {
-        drawBitmap(bitmap, eyeWidth, eyeHeight, 12, 0);
+        // drawBitmap(bitmap, eyeWidth, eyeHeight, 12, 0);
+        transitionFrames(prevEyeFrame, bitmap, eyeWidth, eyeHeight);
+        // copyFrame(prevEyeFrame, bitmap, eyeWidth, eyeHeight);
+        prevEyeFrame = bitmap;
     }
 
     void drawEyePupil(const uint8_t* bitmap, int x, int y) {
@@ -199,5 +207,64 @@ class LEDMatrixDisplay {
             matrix->drawPixelRGB888(0, i, r, g, b);
             matrix->drawPixelRGB888(SCREEN_WIDTH - 1, i, r, g, b);
         }
+    }
+
+    // Frame interpotion
+    void transitionFrames(const uint8_t* frameA, const uint8_t* frameB, int width, int height) {
+        if (isSameFrame(frameA, frameB, width, height)) {
+            // Render the current frame directly without any transition
+            drawBitmap(frameB, width, height, 12, 0);
+        } else {
+            Serial.println("**************** Not Same face");
+            for (int step = 0; step <= NUM_FRAMES; step++) {
+                // Calculate the interpolation factor (0 to 1)
+                float t = float(step) / NUM_FRAMES;
+                Serial.print("\\\\\\\\\\\\\\\\\\\\\\\\\\");
+                Serial.println(t);
+                // Create an intermediate frame with motion blur effect
+                uint8_t* intermediateFrame = new uint8_t[width * height];
+                if (t == 0) {
+                    // intermediateFrame = frameA;
+                    memcpy(intermediateFrame, frameA, width * height);
+                } else if (t == 1) {
+                    // intermediateFrame = frameB;
+                    memcpy(intermediateFrame, frameB, width * height);
+                } else {
+                    // Serial.println("******************************* Draw interpolateFrames");
+                    interpolateFrames(frameA, frameB, intermediateFrame, width, height, t);
+                }
+                // Render the intermediate frame on the matrix
+                drawBitmap(intermediateFrame, width, height, 12, 0);
+                // Deallocate memory for intermediateFrame
+                delete[] intermediateFrame;
+            }
+        }
+    }
+
+    // Function to check if two frames are the same
+    bool isSameFrame(const uint8_t* frameA, const uint8_t* frameB, int width, int height) {
+        for (int i = 0; i < width * height; i++) {
+            if (frameA[i] != frameB[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Function to interpolate pixel values between two frames
+    void interpolateFrames(const uint8_t* frameA, const uint8_t* frameB, uint8_t* intermediateFrame, int width, int height, float t) {
+        for (int i = 0; i < width * height; i++) {
+            intermediateFrame[i] = interpolatePixels(frameA[i], frameB[i], t);
+        }
+    }
+
+    // Linear interpolation function
+    uint8_t lerp(uint8_t start, uint8_t end, float t) {
+        return start + static_cast<uint8_t>((end - start) * t);
+    }
+
+    uint8_t interpolatePixels(uint8_t pixel1, uint8_t pixel2, float t) {
+        // Perform linear interpolation
+        return (1 - t) * pixel1 + t * pixel2;
     }
 };
