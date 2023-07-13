@@ -121,7 +121,7 @@ class EyeState {
                 changeDefaultFace();
                 currentState = IDLE;  // Blink complete, reset to idle
             }
-            blinkInterval = millis() + 40;
+            blinkInterval = millis() + 50;
         }
         display->drawEye(blinkAnimation[currentBlinkFrameIndex]);
     }

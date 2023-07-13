@@ -19,8 +19,7 @@
 #define SCREEN_HEIGHT PANEL_RES_Y
 
 // Define the number of frames and the transition duration
-#define INTERPOLATION_FACTOR 10
-#define FRAME_RATE 60
+#define INTERPOLATION_FACTOR 5
 
 class LEDMatrixDisplay {
    private:
@@ -212,45 +211,42 @@ class LEDMatrixDisplay {
     }
 
     unsigned long previousFrameTime;
-    unsigned long frameDelay = 16;
+    unsigned long frameDelay = 5;
     // State variables for frame interpolation
     bool isInterpolating = false;
     int interpolationIndex = 0;
     void transitionFrames2(const uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height, int offsetX, int offsetY) {
-        unsigned long currentMillis = millis();
-        // Check if it's time to update the frame
-        // if (currentMillis - previousFrameTime >= frameDelay) {
-        //     previousFrameTime = currentMillis;
-        // }
         drawBitmap(currentFrame, width, height, offsetX, offsetY);
         // Start interpolation if needed
         if (!isInterpolating && !isFrameSame(currentFrame, nextFrame, width, height)) {
             startInterpolation();
         }
-
         // Update interpolation frames
+        uint8_t interpolatedFrame[width * height];
+        memcpy(interpolatedFrame, currentFrame, width * height);
         if (isInterpolating) {
-            Serial.print(interpolationIndex);
-            if (updateInterpolation(currentFrame, nextFrame, width, height, offsetX, offsetY)) {
-                isInterpolating = false;
-                // Shift nextFrame data to currentFrame for the next iteration
-                currentFrame = nextFrame;
+            if (millis() >= previousFrameTime) {
+                if (interpolationIndex < INTERPOLATION_FACTOR) {
+                    interpolateFrames(currentFrame, nextFrame, interpolatedFrame, interpolationIndex, INTERPOLATION_FACTOR, width, height);
+                    interpolationIndex++;
+                } else {
+                    isInterpolating = false;
+                    currentFrame = nextFrame;
+                }
+                previousFrameTime = millis() + frameDelay;
             }
+            Serial.print(interpolationIndex);
+            drawBitmap(interpolatedFrame, width, height, offsetX, offsetY);
         }
     }
+
     void startInterpolation() {
+        Serial.println();
         Serial.println("startInterpolation");
         interpolationIndex = 0;
         isInterpolating = true;
     }
-    bool updateInterpolation(const uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height, int offsetX, int offsetY) {
-        uint8_t interpolatedFrame[width * height];
-        interpolateFrames(currentFrame, nextFrame, interpolatedFrame, interpolationIndex, INTERPOLATION_FACTOR, width, height);
-        drawBitmap(interpolatedFrame, width, height, offsetX, offsetY);
-        interpolationIndex++;
-        // Check if interpolation is complete
-        return (interpolationIndex >= INTERPOLATION_FACTOR);
-    }
+
     void interpolateFrames(const uint8_t* current, const uint8_t* next, uint8_t* interpolated, int index, int totalFrames, int width, int height) {
         for (int i = 0; i < width * height; i++) {
             uint8_t currentPixel = current[i];
