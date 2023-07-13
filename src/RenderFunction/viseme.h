@@ -234,17 +234,17 @@ class Viseme {
             return mouthDefault;
         }
         level -= 1;
-        Serial.print("Base:");
-        Serial.print(4);
-        Serial.print(",Level:");
-        Serial.println(level);
-        Serial.print("viseme:");
-        Serial.print(viseme);
-        Serial.print(",previousViseme:");
-        Serial.print(previousViseme);
+        // Serial.print("Base:");
+        // Serial.print(4);
+        // Serial.print(",Level:");
+        // Serial.println(level);
+        // Serial.print("viseme:");
+        // Serial.print(viseme);
+        // Serial.print(",previousViseme:");
+        // Serial.print(previousViseme);
         auto combination = visemeCombination.find(std::make_pair(viseme, previousViseme));
-        Serial.print(",combination:");
-        Serial.println(combination->second);
+        // Serial.print(",combination:");
+        // Serial.println(combination->second);
         previousViseme = viseme;
         switch (viseme) {
             case AH:
