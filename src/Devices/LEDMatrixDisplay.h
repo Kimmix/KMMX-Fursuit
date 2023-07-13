@@ -20,6 +20,8 @@
 
 // Define the number of frames and the transition duration
 #define NUM_FRAMES 4
+#define INTERPOLATION_FACTOR 5
+#define FRAME_RATE 60
 
 class LEDMatrixDisplay {
    private:
@@ -183,7 +185,7 @@ class LEDMatrixDisplay {
     const uint8_t* prevEyeFrame = new uint8_t[eyeWidth * eyeHeight];
     void drawEye(const uint8_t* bitmap) {
         // drawBitmap(bitmap, eyeWidth, eyeHeight, 12, 0);
-        transitionFrames(prevEyeFrame, bitmap, eyeWidth, eyeHeight);
+        transitionFrames2(prevEyeFrame, bitmap, eyeWidth, eyeHeight);
         // copyFrame(prevEyeFrame, bitmap, eyeWidth, eyeHeight);
         prevEyeFrame = bitmap;
     }
@@ -209,37 +211,87 @@ class LEDMatrixDisplay {
         }
     }
 
-    // Frame interpotion
-    void transitionFrames(const uint8_t* frameA, const uint8_t* frameB, int width, int height) {
-        if (isSameFrame(frameA, frameB, width, height)) {
-            // Render the current frame directly without any transition
-            drawBitmap(frameB, width, height, 12, 0);
-        } else {
-            Serial.println("**************** Not Same face");
-            for (int step = 0; step <= NUM_FRAMES; step++) {
-                // Calculate the interpolation factor (0 to 1)
-                float t = float(step) / NUM_FRAMES;
-                Serial.print("\\\\\\\\\\\\\\\\\\\\\\\\\\");
-                Serial.println(t);
-                // Create an intermediate frame with motion blur effect
-                uint8_t* intermediateFrame = new uint8_t[width * height];
-                if (t == 0) {
-                    // intermediateFrame = frameA;
-                    memcpy(intermediateFrame, frameA, width * height);
-                } else if (t == 1) {
-                    // intermediateFrame = frameB;
-                    memcpy(intermediateFrame, frameB, width * height);
-                } else {
-                    // Serial.println("******************************* Draw interpolateFrames");
-                    interpolateFrames(frameA, frameB, intermediateFrame, width, height, t);
-                }
-                // Render the intermediate frame on the matrix
-                drawBitmap(intermediateFrame, width, height, 12, 0);
-                // Deallocate memory for intermediateFrame
-                delete[] intermediateFrame;
+    //
+    unsigned long previousFrameTime;
+    unsigned long frameDelay = 1000 / FRAME_RATE;
+    // State variables for frame interpolation
+    bool isInterpolating = false;
+    int interpolationIndex = 0;
+    void transitionFrames2(const uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height) {
+        unsigned long currentMillis = millis();
+        // Check if it's time to update the frame
+        if (currentMillis - previousFrameTime >= frameDelay) {
+            previousFrameTime = currentMillis;
+            // Display current frame
+            drawBitmap(currentFrame, width, height, 12, 0);
+            // Start interpolation if needed
+            if (!isInterpolating) {
+                startInterpolation();
+            }
+        }
+
+        // Update interpolation frames
+        if (isInterpolating) {
+            if (updateInterpolation(currentFrame, nextFrame, width, height)) {
+                isInterpolating = false;
+                // Shift nextFrame data to currentFrame for the next iteration
+                currentFrame = nextFrame;
             }
         }
     }
+    void startInterpolation() {
+        interpolationIndex = 0;
+        isInterpolating = true;
+    }
+    bool updateInterpolation(const uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height) {
+        uint8_t interpolatedFrame[width * height];
+        interpolateFrames(currentFrame, nextFrame, interpolatedFrame, interpolationIndex, INTERPOLATION_FACTOR, width, height);
+        // matrix.drawBitmap(0, 0, currentFrame, MATRIX_WIDTH, MATRIX_HEIGHT, LED_ON);
+        drawBitmap(interpolatedFrame, width, height, 12, 0);
+        interpolationIndex++;
+        // Check if interpolation is complete
+        return (interpolationIndex >= INTERPOLATION_FACTOR);
+    }
+    void interpolateFrames(const uint8_t* current, const uint8_t* next, uint8_t* interpolated, int index, int totalFrames, int width, int height) {
+        for (int i = 0; i < width * height; i++) {
+            // Perform linear interpolation for each pixel
+            uint8_t currentPixel = current[i];
+            uint8_t nextPixel = next[i];
+            uint8_t interpolatedPixel = currentPixel + ((nextPixel - currentPixel) * index) / totalFrames;
+            interpolated[i] = interpolatedPixel;
+        }
+    }
+
+    // void transitionFrames(const uint8_t* frameA, const uint8_t* frameB, int width, int height) {
+    //     if (isSameFrame(frameA, frameB, width, height)) {
+    //         // Render the current frame directly without any transition
+    //         drawBitmap(frameB, width, height, 12, 0);
+    //     } else {
+    //         Serial.println("**************** Not Same face");
+    //         for (int step = 0; step <= NUM_FRAMES; step++) {
+    //             // Calculate the interpolation factor (0 to 1)
+    //             float t = float(step) / NUM_FRAMES;
+    //             Serial.print("\\\\\\\\\\\\\\\\\\\\\\\\\\");
+    //             Serial.println(t);
+    //             // Create an intermediate frame with motion blur effect
+    //             uint8_t* intermediateFrame = new uint8_t[width * height];
+    //             if (t == 0) {
+    //                 // intermediateFrame = frameA;
+    //                 memcpy(intermediateFrame, frameA, width * height);
+    //             } else if (t == 1) {
+    //                 // intermediateFrame = frameB;
+    //                 memcpy(intermediateFrame, frameB, width * height);
+    //             } else {
+    //                 // Serial.println("******************************* Draw interpolateFrames");
+    //                 interpolateFrames(frameA, frameB, intermediateFrame, width, height, t);
+    //             }
+    //             // Render the intermediate frame on the matrix
+    //             drawBitmap(intermediateFrame, width, height, 12, 0);
+    //             // Deallocate memory for intermediateFrame
+    //             delete[] intermediateFrame;
+    //         }
+    //     }
+    // }
 
     // Function to check if two frames are the same
     bool isSameFrame(const uint8_t* frameA, const uint8_t* frameB, int width, int height) {
@@ -252,11 +304,11 @@ class LEDMatrixDisplay {
     }
 
     // Function to interpolate pixel values between two frames
-    void interpolateFrames(const uint8_t* frameA, const uint8_t* frameB, uint8_t* intermediateFrame, int width, int height, float t) {
-        for (int i = 0; i < width * height; i++) {
-            intermediateFrame[i] = interpolatePixels(frameA[i], frameB[i], t);
-        }
-    }
+    // void interpolateFrames(const uint8_t* frameA, const uint8_t* frameB, uint8_t* intermediateFrame, int width, int height, float t) {
+    //     for (int i = 0; i < width * height; i++) {
+    //         intermediateFrame[i] = interpolatePixels(frameA[i], frameB[i], t);
+    //     }
+    // }
 
     // Linear interpolation function
     uint8_t lerp(uint8_t start, uint8_t end, float t) {

@@ -16,7 +16,7 @@
 #define SAMPLE_RATE 8000
 #define SAMPLES 256
 
-#define NOISE_THRESHOLD 10000
+#define NOISE_THRESHOLD 400
 #define SMOOTHING_ALPHA 0.2  // smoothing factor between 0 and 1
 
 class Viseme {
