@@ -19,8 +19,7 @@
 #define SCREEN_HEIGHT PANEL_RES_Y
 
 // Define the number of frames and the transition duration
-#define NUM_FRAMES 4
-#define INTERPOLATION_FACTOR 5
+#define INTERPOLATION_FACTOR 10
 #define FRAME_RATE 60
 
 class LEDMatrixDisplay {
@@ -181,25 +180,26 @@ class LEDMatrixDisplay {
         drawBitmap(bitmap, panelWidth, panelHeight, 0, 0);
     }
 
-    // uint8_t* prevEyeFrame;
     const uint8_t* prevEyeFrame = new uint8_t[eyeWidth * eyeHeight];
     void drawEye(const uint8_t* bitmap) {
         // drawBitmap(bitmap, eyeWidth, eyeHeight, 12, 0);
-        transitionFrames2(prevEyeFrame, bitmap, eyeWidth, eyeHeight);
-        // copyFrame(prevEyeFrame, bitmap, eyeWidth, eyeHeight);
+        transitionFrames2(prevEyeFrame, bitmap, eyeWidth, eyeHeight, 12, 0);
         prevEyeFrame = bitmap;
     }
 
     void drawEyePupil(const uint8_t* bitmap, int x, int y) {
-        drawBitmap(bitmap, 6, 6, 14 + x, 5 + y, false);
+        drawBitmap(bitmap, 6, 6, 21 + x, 5 + y, false);
     }
 
     void drawNose(const uint8_t* bitmap) {
         drawBitmap(bitmap, 10, 6, 54, 6);
     }
 
+    const uint8_t* prevMouthFrame = new uint8_t[50 * 14];
     void drawMouth(const uint8_t* bitmap) {
-        drawBitmap(bitmap, 50, 14, 14, 18);
+        // drawBitmap(bitmap, 50, 14, 14, 18);
+        transitionFrames2(prevMouthFrame, bitmap, 50, 14, 14, 18);
+        prevMouthFrame = bitmap;
     }
 
     void drawColorTest() {
@@ -211,19 +211,17 @@ class LEDMatrixDisplay {
         }
     }
 
-    //
     unsigned long previousFrameTime;
     unsigned long frameDelay = 1000 / FRAME_RATE;
     // State variables for frame interpolation
     bool isInterpolating = false;
     int interpolationIndex = 0;
-    void transitionFrames2(const uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height) {
+    void transitionFrames2(const uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height, int offsetX, int offsetY) {
         unsigned long currentMillis = millis();
         // Check if it's time to update the frame
         if (currentMillis - previousFrameTime >= frameDelay) {
             previousFrameTime = currentMillis;
-            // Display current frame
-            drawBitmap(currentFrame, width, height, 12, 0);
+            drawBitmap(currentFrame, width, height, offsetX, offsetY);
             // Start interpolation if needed
             if (!isInterpolating) {
                 startInterpolation();
@@ -232,7 +230,7 @@ class LEDMatrixDisplay {
 
         // Update interpolation frames
         if (isInterpolating) {
-            if (updateInterpolation(currentFrame, nextFrame, width, height)) {
+            if (updateInterpolation(currentFrame, nextFrame, width, height, offsetX, offsetY)) {
                 isInterpolating = false;
                 // Shift nextFrame data to currentFrame for the next iteration
                 currentFrame = nextFrame;
@@ -243,11 +241,10 @@ class LEDMatrixDisplay {
         interpolationIndex = 0;
         isInterpolating = true;
     }
-    bool updateInterpolation(const uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height) {
+    bool updateInterpolation(const uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height, int offsetX, int offsetY) {
         uint8_t interpolatedFrame[width * height];
         interpolateFrames(currentFrame, nextFrame, interpolatedFrame, interpolationIndex, INTERPOLATION_FACTOR, width, height);
-        // matrix.drawBitmap(0, 0, currentFrame, MATRIX_WIDTH, MATRIX_HEIGHT, LED_ON);
-        drawBitmap(interpolatedFrame, width, height, 12, 0);
+        drawBitmap(interpolatedFrame, width, height, offsetX, offsetY);
         interpolationIndex++;
         // Check if interpolation is complete
         return (interpolationIndex >= INTERPOLATION_FACTOR);
@@ -257,9 +254,9 @@ class LEDMatrixDisplay {
             // Perform linear interpolation for each pixel
             uint8_t currentPixel = current[i];
             uint8_t nextPixel = next[i];
+
             uint8_t interpolatedPixel = currentPixel + ((nextPixel - currentPixel) * index) / totalFrames;
             interpolated[i] = interpolatedPixel;
         }
     }
-
 };
