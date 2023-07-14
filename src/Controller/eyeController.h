@@ -61,7 +61,7 @@ class EyeState {
     void idleFace() {
         display->drawEye(defaultAnimation[defaultFaceIndex]);
         if (millis() >= nextBlink) {
-            nextBlink = millis() + (500 * (esp_random() % 25));
+            nextBlink = millis() + (1000 * (esp_random() % 25) + 1);
             currentState = BLINK;
         }
     }
