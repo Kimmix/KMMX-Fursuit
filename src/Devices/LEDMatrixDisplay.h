@@ -19,7 +19,7 @@
 #define SCREEN_HEIGHT PANEL_RES_Y
 
 // Define the number of frames and the transition duration
-#define INTERPOLATION_FACTOR 5
+#define INTERPOLATION_FACTOR 3
 
 class LEDMatrixDisplay {
    private:
@@ -211,12 +211,12 @@ class LEDMatrixDisplay {
     }
 
     unsigned long previousFrameTime;
-    unsigned long frameDelay = 5;
+    unsigned long frameDelay = 10;
     // State variables for frame interpolation
     bool isInterpolating = false;
     int interpolationIndex = 0;
     void transitionFrames2(const uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height, int offsetX, int offsetY) {
-        drawBitmap(currentFrame, width, height, offsetX, offsetY);
+        // drawBitmap(currentFrame, width, height, offsetX, offsetY);
         // Start interpolation if needed
         if (!isInterpolating && !isFrameSame(currentFrame, nextFrame, width, height)) {
             startInterpolation();
@@ -237,6 +237,8 @@ class LEDMatrixDisplay {
             }
             Serial.print(interpolationIndex);
             drawBitmap(interpolatedFrame, width, height, offsetX, offsetY);
+        } else {
+            drawBitmap(currentFrame, width, height, offsetX, offsetY);
         }
     }
 
@@ -257,9 +259,13 @@ class LEDMatrixDisplay {
             // interpolated[i] = interpolatedPixel;
 
             // Cosine Interpolation
-            float t = (float)index / totalFrames;
-            float interpolatedValue = currentPixel + (1 - cos(t * M_PI)) * (nextPixel - currentPixel) / 2;
-            interpolated[i] = (uint8_t)interpolatedValue;
+            // float t = (float)index / totalFrames;
+            // float interpolatedValue = currentPixel + (1 - cos(t * M_PI)) * (nextPixel - currentPixel) / 2;
+            // interpolated[i] = (uint8_t)interpolatedValue;
+
+            // Cross blend the pixel values
+            uint8_t interpolatedPixel = (currentPixel * (totalFrames - index) + nextPixel * index) / totalFrames;
+            interpolated[i] = interpolatedPixel;
         }
     }
     bool isFrameSame(const uint8_t* frame1, const uint8_t* frame2, int width, int height) {
