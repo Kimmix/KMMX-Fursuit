@@ -181,8 +181,7 @@ class LEDMatrixDisplay {
 
     uint8_t* prevEyeFrame = new uint8_t[eyeWidth * eyeHeight];
     void drawEye(const uint8_t* bitmap) {
-        // drawBitmap(bitmap, eyeWidth, eyeHeight, 12, 0);
-        transitionFrames2(prevEyeFrame, bitmap, eyeWidth, eyeHeight, 12, 0);
+        transitionFrames(prevEyeFrame, bitmap, eyeWidth, eyeHeight, 12, 0);
         memcpy(prevEyeFrame, bitmap, 12 * 0);
     }
 
@@ -196,8 +195,7 @@ class LEDMatrixDisplay {
 
     uint8_t* prevMouthFrame = new uint8_t[50 * 14];
     void drawMouth(const uint8_t* bitmap) {
-        // drawBitmap(bitmap, 50, 14, 14, 18);
-        transitionFrames2(prevMouthFrame, bitmap, 50, 14, 14, 18);
+        transitionFrames(prevMouthFrame, bitmap, 50, 14, 14, 18);
         memcpy(prevMouthFrame, bitmap, 50 * 14);
     }
 
@@ -215,8 +213,7 @@ class LEDMatrixDisplay {
     // State variables for frame interpolation
     bool isInterpolating = false;
     int interpolationIndex = 0;
-    void transitionFrames2(uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height, int offsetX, int offsetY) {
-        // drawBitmap(currentFrame, width, height, offsetX, offsetY);
+    void transitionFrames(uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height, int offsetX, int offsetY) {
         // Start interpolation if needed
         if (!isInterpolating && !isFrameSame(currentFrame, nextFrame, width, height)) {
             startInterpolation();
@@ -224,9 +221,10 @@ class LEDMatrixDisplay {
         // Update interpolation frames
         uint8_t interpolatedFrame[width * height];
         memcpy(interpolatedFrame, currentFrame, width * height);
-        
+
         if (isInterpolating) {
-            if (millis() >= previousFrameTime) {
+            unsigned long currentTime = millis();
+            if (currentTime - previousFrameTime >= frameDelay) {
                 if (interpolationIndex < INTERPOLATION_FACTOR) {
                     interpolateFrames(currentFrame, nextFrame, interpolatedFrame, interpolationIndex, INTERPOLATION_FACTOR, width, height);
                     interpolationIndex++;
@@ -234,9 +232,8 @@ class LEDMatrixDisplay {
                     isInterpolating = false;
                     memcpy(currentFrame, nextFrame, width * height);
                 }
-                previousFrameTime = millis() + frameDelay;
             }
-            Serial.print(interpolationIndex);
+            // Serial.print(interpolationIndex);
             drawBitmap(interpolatedFrame, width, height, offsetX, offsetY);
         } else {
             drawBitmap(currentFrame, width, height, offsetX, offsetY);
@@ -244,8 +241,8 @@ class LEDMatrixDisplay {
     }
 
     void startInterpolation() {
-        Serial.println();
-        Serial.println("startInterpolation");
+        // Serial.println();
+        // Serial.println("startInterpolation");
         interpolationIndex = 0;
         isInterpolating = true;
     }
@@ -260,17 +257,17 @@ class LEDMatrixDisplay {
             // interpolated[i] = interpolatedPixel;
 
             // Cosine Interpolation
-            // float t = (float)index / totalFrames;
-            // float interpolatedValue = currentPixel + (1 - cos(t * M_PI)) * (nextPixel - currentPixel) / 2;
-            // interpolated[i] = (uint8_t)interpolatedValue;
+            float t = (float)index / totalFrames;
+            float interpolatedValue = currentPixel + (1 - cos(t * M_PI)) * (nextPixel - currentPixel) / 2;
+            interpolated[i] = static_cast<uint8_t>(interpolatedValue);
 
             // Cross blend the pixel values
-            uint8_t interpolatedPixel = (currentPixel * (totalFrames - index) + nextPixel * index) / totalFrames;
-            interpolated[i] = interpolatedPixel;
+            // uint8_t interpolatedPixel = (currentPixel * (totalFrames - index) + nextPixel * index) / totalFrames;
+            // interpolated[i] = interpolatedPixel;
         }
     }
     bool isFrameSame(const uint8_t* frame1, const uint8_t* frame2, int width, int height) {
-        for (int i = 0; i < (width * height) / 2; i++) {
+        for (int i = 0; i < width * height; i++) {
             if (frame1[i] != frame2[i]) {
                 return false;
             }
