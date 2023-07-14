@@ -179,11 +179,11 @@ class LEDMatrixDisplay {
         drawBitmap(bitmap, panelWidth, panelHeight, 0, 0);
     }
 
-    const uint8_t* prevEyeFrame = new uint8_t[eyeWidth * eyeHeight];
+    uint8_t* prevEyeFrame = new uint8_t[eyeWidth * eyeHeight];
     void drawEye(const uint8_t* bitmap) {
         // drawBitmap(bitmap, eyeWidth, eyeHeight, 12, 0);
         transitionFrames2(prevEyeFrame, bitmap, eyeWidth, eyeHeight, 12, 0);
-        prevEyeFrame = bitmap;
+        memcpy(prevEyeFrame, bitmap, 12 * 0);
     }
 
     void drawEyePupil(const uint8_t* bitmap, int x, int y) {
@@ -194,11 +194,11 @@ class LEDMatrixDisplay {
         drawBitmap(bitmap, 10, 6, 54, 6);
     }
 
-    const uint8_t* prevMouthFrame = new uint8_t[50 * 14];
+    uint8_t* prevMouthFrame = new uint8_t[50 * 14];
     void drawMouth(const uint8_t* bitmap) {
         // drawBitmap(bitmap, 50, 14, 14, 18);
         transitionFrames2(prevMouthFrame, bitmap, 50, 14, 14, 18);
-        prevMouthFrame = bitmap;
+        memcpy(prevMouthFrame, bitmap, 50 * 14);
     }
 
     void drawColorTest() {
@@ -215,7 +215,7 @@ class LEDMatrixDisplay {
     // State variables for frame interpolation
     bool isInterpolating = false;
     int interpolationIndex = 0;
-    void transitionFrames2(const uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height, int offsetX, int offsetY) {
+    void transitionFrames2(uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height, int offsetX, int offsetY) {
         // drawBitmap(currentFrame, width, height, offsetX, offsetY);
         // Start interpolation if needed
         if (!isInterpolating && !isFrameSame(currentFrame, nextFrame, width, height)) {
@@ -224,6 +224,7 @@ class LEDMatrixDisplay {
         // Update interpolation frames
         uint8_t interpolatedFrame[width * height];
         memcpy(interpolatedFrame, currentFrame, width * height);
+        
         if (isInterpolating) {
             if (millis() >= previousFrameTime) {
                 if (interpolationIndex < INTERPOLATION_FACTOR) {
@@ -231,7 +232,7 @@ class LEDMatrixDisplay {
                     interpolationIndex++;
                 } else {
                     isInterpolating = false;
-                    currentFrame = nextFrame;
+                    memcpy(currentFrame, nextFrame, width * height);
                 }
                 previousFrameTime = millis() + frameDelay;
             }
