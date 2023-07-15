@@ -26,7 +26,7 @@ class LEDMatrixDisplay {
     MatrixPanel_I2S_DMA* matrix;
     const int panelWidth = PANEL_RES_X,
               panelHeight = PANEL_RES_Y;
-    uint8_t panelBrightness = 64;
+    uint8_t panelBrightness = 32;
     int eyeWidth = 32, eyeHeight = 18;
 
    public:

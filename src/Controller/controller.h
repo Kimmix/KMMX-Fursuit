@@ -11,6 +11,7 @@ class Controller {
 
    public:
     void render() {
+        display.drawColorTest();
         display.drawNose(noseDefault);
         eyeState.update();
     }
