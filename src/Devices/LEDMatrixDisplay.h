@@ -163,13 +163,14 @@ class LEDMatrixDisplay {
     void drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY, bool drawBlack = true) {
         uint8_t r, g, b;
         for (int i = 0; i < imageHeight; i++) {
+            int offsetYPlusI = offsetY + i;
             for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
                 uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j);  // read the bytes from program memory
                 getColorMap(pixel, i + offsetY, r, g, b);
                 // getBlackWhiteWave(pixel, i, j + offsetY, r, g, b);
-                if (drawBlack || (r != 0 || g != 0 || b != 0)) {
-                    matrix->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
-                    matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetY + i, r, g, b);
+                if (drawBlack || (r | g | b) != 0) {
+                    matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
+                    matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
                 }
             }
         }
@@ -255,8 +256,8 @@ class LEDMatrixDisplay {
             uint8_t nextPixel = next[i];
 
             // Perform linear interpolation for each pixel
-            uint8_t interpolatedPixel = currentPixel + ((nextPixel - currentPixel) * index) / totalFrames;
-            interpolated[i] = interpolatedPixel;
+            // uint8_t interpolatedPixel = currentPixel + ((nextPixel - currentPixel) * index) / totalFrames;
+            // interpolated[i] = interpolatedPixel;
 
             // Cosine Interpolation
             // float t = (float)index / totalFrames;
@@ -264,8 +265,8 @@ class LEDMatrixDisplay {
             // interpolated[i] = static_cast<uint8_t>(interpolatedValue);
 
             // Cross blend the pixel values
-            // uint8_t interpolatedPixel = (currentPixel * (totalFrames - index) + nextPixel * index) / totalFrames;
-            // interpolated[i] = interpolatedPixel;
+            uint8_t interpolatedPixel = (currentPixel * (totalFrames - index) + nextPixel * index) / totalFrames;
+            interpolated[i] = interpolatedPixel;
         }
     }
     bool isFrameSame(const uint8_t* frame1, const uint8_t* frame2, int width, int height) {
