@@ -19,14 +19,14 @@
 #define SCREEN_HEIGHT PANEL_RES_Y
 
 // Define the number of frames and the transition duration
-#define INTERPOLATION_FACTOR 3
+#define INTERPOLATION_FACTOR 2
 
 class LEDMatrixDisplay {
    private:
     MatrixPanel_I2S_DMA* matrix;
     const int panelWidth = PANEL_RES_X,
               panelHeight = PANEL_RES_Y;
-    uint8_t panelBrightness = 32;
+    uint8_t panelBrightness = 40;
     int eyeWidth = 32, eyeHeight = 18;
 
    public:
@@ -110,15 +110,10 @@ class LEDMatrixDisplay {
      */
     void getColorMap(const uint8_t lightness, const int row, uint8_t& r, uint8_t& g, uint8_t& b) {
         const int index = row * 3;
-        if (row >= 0 && index < sizeof(accColor)) {  // add a check for valid range
-            uint16_t factor = lightness << 8;        // multiply by 256 (i.e., 2^8) using bit shift
-            r = (factor * accColor[index]) >> 16;    // divide by 65536 (i.e., 2^16) using bit shift
-            g = (factor * accColor[index + 1]) >> 16;
-            b = (factor * accColor[index + 2]) >> 16;
-        } else {
-            // handle the case where row is out of range
-            r = g = b = 0;
-        }
+        uint16_t factor = lightness << 8;      // multiply by 256 (i.e., 2^8) using bit shift
+        r = (factor * accColor[index]) >> 16;  // divide by 65536 (i.e., 2^16) using bit shift
+        g = (factor * accColor[index + 1]) >> 16;
+        b = (factor * accColor[index + 2]) >> 16;
     }
 
     void getBlackWhiteWave(const uint8_t brightness, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {
@@ -166,7 +161,7 @@ class LEDMatrixDisplay {
             for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
                 uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j);  // read the bytes from program memory
                 getColorMap(pixel, i + offsetY, r, g, b);
-                // getColorWave(pixel, i, j + offsetY, r, g, b);
+                // getBlackWhiteWave(pixel, i, j + offsetY, r, g, b);
                 if (drawBlack || (r != 0 || g != 0 || b != 0)) {
                     matrix->drawPixelRGB888(offsetX + j, offsetY + i, r, g, b);
                     matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetY + i, r, g, b);
@@ -209,7 +204,7 @@ class LEDMatrixDisplay {
     }
 
     unsigned long previousFrameTime;
-    unsigned long frameDelay = 10;
+    unsigned long frameDelay = 20;
     // State variables for frame interpolation
     bool isInterpolating = false;
     int interpolationIndex = 0;
@@ -253,13 +248,13 @@ class LEDMatrixDisplay {
             uint8_t nextPixel = next[i];
 
             // Perform linear interpolation for each pixel
-            // uint8_t interpolatedPixel = currentPixel + ((nextPixel - currentPixel) * index) / totalFrames;
-            // interpolated[i] = interpolatedPixel;
+            uint8_t interpolatedPixel = currentPixel + ((nextPixel - currentPixel) * index) / totalFrames;
+            interpolated[i] = interpolatedPixel;
 
             // Cosine Interpolation
-            float t = (float)index / totalFrames;
-            float interpolatedValue = currentPixel + (1 - cos(t * M_PI)) * (nextPixel - currentPixel) / 2;
-            interpolated[i] = static_cast<uint8_t>(interpolatedValue);
+            // float t = (float)index / totalFrames;
+            // float interpolatedValue = currentPixel + (1 - cos(t * M_PI)) * (nextPixel - currentPixel) / 2;
+            // interpolated[i] = static_cast<uint8_t>(interpolatedValue);
 
             // Cross blend the pixel values
             // uint8_t interpolatedPixel = (currentPixel * (totalFrames - index) + nextPixel * index) / totalFrames;
