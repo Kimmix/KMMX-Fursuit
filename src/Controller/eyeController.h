@@ -87,7 +87,7 @@ class EyeState {
     short boopAnimationFrame;
     void arrowFace() {
         if (millis() > nextBoop) {
-            nextBoop = millis() + 500;
+            nextBoop = millis() + 300;
             boopAnimationFrame ^= 1;
         }
         display->drawEye(boopAnimation[boopAnimationFrame]);

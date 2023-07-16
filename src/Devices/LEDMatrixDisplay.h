@@ -110,10 +110,15 @@ class LEDMatrixDisplay {
      */
     void getColorMap(const uint8_t lightness, const int row, uint8_t& r, uint8_t& g, uint8_t& b) {
         const int index = row * 3;
-        uint16_t factor = lightness << 8;      // multiply by 256 (i.e., 2^8) using bit shift
-        r = (factor * accColor[index]) >> 16;  // divide by 65536 (i.e., 2^16) using bit shift
-        g = (factor * accColor[index + 1]) >> 16;
-        b = (factor * accColor[index + 2]) >> 16;
+        if (row >= 0 && index < sizeof(accColor)) {  // add a check for valid range
+            uint16_t factor = lightness << 8;        // multiply by 256 (i.e., 2^8) using bit shift
+            r = (factor * accColor[index]) >> 16;    // divide by 65536 (i.e., 2^16) using bit shift
+            g = (factor * accColor[index + 1]) >> 16;
+            b = (factor * accColor[index + 2]) >> 16;
+        } else {
+            // handle the case where row is out of range
+            r = g = b = 0;
+        }
     }
 
     void getBlackWhiteWave(const uint8_t brightness, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {
@@ -198,8 +203,10 @@ class LEDMatrixDisplay {
         uint8_t r, g, b;
         for (int i = 0; i < 64; i++) {
             getColorMap(255, i, r, g, b);
-            matrix->drawPixelRGB888(0, i, r, g, b);
+            // matrix->drawPixelRGB888(0, i, r, g, b);
             matrix->drawPixelRGB888(SCREEN_WIDTH - 1, i, r, g, b);
+            matrix->drawPixelRGB888(SCREEN_WIDTH - 2, i, r, g, b);
+            matrix->drawPixelRGB888(SCREEN_WIDTH - 3, i, r, g, b);
         }
     }
 
