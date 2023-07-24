@@ -2,7 +2,7 @@
 #include <Adafruit_Sensor.h>
 #include <FastLED.h>
 
-#define LED_PIN GPIO_NUM_2  // Pin connected to the Data Input of WS2812
+#define LED_PIN GPIO_NUM_18  // Pin connected to the Data Input of WS2812
 #define NUM_LEDS 7          // Number of WS2812 LEDs in your strip
 #define BRIGHTNESS 10        // Set the initial brightness (0-255)
 #define LED_TYPE WS2812     // WS2812 or WS2812B, depending on your LEDs
