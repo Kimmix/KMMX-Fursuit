@@ -4,7 +4,7 @@
 
 #define LED_PIN GPIO_NUM_2  // Pin connected to the Data Input of WS2812
 #define NUM_LEDS 7          // Number of WS2812 LEDs in your strip
-#define BRIGHTNESS 2        // Set the initial brightness (0-255)
+#define BRIGHTNESS 10        // Set the initial brightness (0-255)
 #define LED_TYPE WS2812     // WS2812 or WS2812B, depending on your LEDs
 #define COLOR_ORDER GRB     // GRB or RGB, depending on your LEDs
 
@@ -17,8 +17,8 @@ class SideLED {
 
     void animate() {
         // Define the new gradient colors in HSV
-        CHSV color1HSV(239, 220, 196);  // Start color: #FF446C (Reddish Pink)
-        CHSV color2HSV(22, 165, 196);   // End color: #F9826C (Coral)
+        CHSV color1HSV(239, 240, 135);  // Start color: #FF446C (Reddish Pink)
+        CHSV color2HSV(22, 185, 125);   // End color: #F9826C (Coral)
 
         // Calculate the number of steps required for the hue shift
         int hueDistance = (color2HSV.h - color1HSV.h + 256) % 256;
