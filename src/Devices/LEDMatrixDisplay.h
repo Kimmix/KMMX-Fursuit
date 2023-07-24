@@ -182,6 +182,7 @@ class LEDMatrixDisplay {
 
     uint8_t* prevEyeFrame = new uint8_t[eyeWidth * eyeHeight];
     void drawEye(const uint8_t* bitmap) {
+        // drawBitmap(bitmap, eyeWidth, eyeHeight, 12, 0);
         transitionFrames(prevEyeFrame, bitmap, eyeWidth, eyeHeight, 12, 0);
         memcpy(prevEyeFrame, bitmap, 12 * 0);
     }
@@ -212,7 +213,7 @@ class LEDMatrixDisplay {
     }
 
     unsigned long previousFrameTime;
-    unsigned long frameDelay = 20;
+    unsigned long frameDelay = 10;
     // State variables for frame interpolation
     bool isInterpolating = false;
     int interpolationIndex = 0;

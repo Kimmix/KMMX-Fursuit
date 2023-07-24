@@ -13,11 +13,12 @@ class Controller {
 
    public:
     void render() {
+        sideLED.animate();
         display.drawColorTest();
         display.drawNose(noseDefault);
         eyeState.update();
-        sideLED.animate();
     }
+
     void render2() {
         mouthState.update();
     }
