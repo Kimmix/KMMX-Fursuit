@@ -1,3 +1,5 @@
+// TODO: Fix mic not init on second start, update rendering to 1st core
+
 #include "Bitmaps/mouthBitmapNew.h"
 #include "RenderFunction/viseme.h"
 
