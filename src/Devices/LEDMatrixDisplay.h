@@ -1,17 +1,6 @@
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 #include "Bitmaps/accColor.h"
 
-// ---- P3 LED Matrix Panel ----
-// HUB75E pinout
-// R1 | G1
-// B1 | GND
-// R2 | G2
-// B2 | E
-//  A | B
-//  C | D
-// CLK| LAT
-// OE | GND
-
 #define PANEL_RES_X 64
 #define PANEL_RES_Y 32
 #define PANELS_NUMBER 2
@@ -19,7 +8,8 @@
 #define SCREEN_HEIGHT PANEL_RES_Y
 
 // Define the number of frames and the transition duration
-#define INTERPOLATION_FACTOR 2
+#define INTERPOLATION_FACTOR 4
+#define INTERPOLATION_DURATION 5
 
 class LEDMatrixDisplay {
    private:
@@ -214,7 +204,7 @@ class LEDMatrixDisplay {
     }
 
     unsigned long previousFrameTime;
-    unsigned long frameDelay = 10;
+    unsigned long frameDelay = INTERPOLATION_DURATION;
     // State variables for frame interpolation
     bool isInterpolating = false;
     int interpolationIndex = 0;
@@ -258,8 +248,8 @@ class LEDMatrixDisplay {
             uint8_t nextPixel = next[i];
 
             // Perform linear interpolation for each pixel
-            // uint8_t interpolatedPixel = currentPixel + ((nextPixel - currentPixel) * index) / totalFrames;
-            // interpolated[i] = interpolatedPixel;
+            uint8_t interpolatedPixel = currentPixel + ((nextPixel - currentPixel) * index) / totalFrames;
+            interpolated[i] = interpolatedPixel;
 
             // Cosine Interpolation
             // float t = (float)index / totalFrames;
@@ -267,8 +257,8 @@ class LEDMatrixDisplay {
             // interpolated[i] = static_cast<uint8_t>(interpolatedValue);
 
             // Cross blend the pixel values
-            uint8_t interpolatedPixel = (currentPixel * (totalFrames - index) + nextPixel * index) / totalFrames;
-            interpolated[i] = interpolatedPixel;
+            // uint8_t interpolatedPixel = (currentPixel * (totalFrames - index) + nextPixel * index) / totalFrames;
+            // interpolated[i] = interpolatedPixel;
         }
     }
     bool isFrameSame(const uint8_t* frame1, const uint8_t* frame2, int width, int height) {
