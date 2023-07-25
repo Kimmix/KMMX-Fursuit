@@ -224,8 +224,9 @@ class Viseme {
         return previousLoudness;
     }
 
-    static int previousLevel = -1;  // Initialize with an invalid value
     const uint8_t* visemeOutput(VisemeType viseme, int level) {
+        static int previousLevel = -1;  // Initialize with an invalid value
+
         if (level == 0) {
             previousLevel = level;
             return mouthDefault;
