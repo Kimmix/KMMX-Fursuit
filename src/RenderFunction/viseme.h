@@ -30,13 +30,10 @@ class Viseme {
         }
         getDigtalSample(real, imaginary, true);
         // getAnalogSample(real, imaginary, false);
-        FFT.DCRemoval();
+        // FFT.DCRemoval();
         FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
         FFT.Compute(FFT_FORWARD);
         FFT.ComplexToMagnitude();
-        // double peak = FFT.MajorPeak();
-        // Serial.print("xp - ");
-        // Serial.println(peak);
 
         //? Compute amplitude of frequency ranges for each viseme
         double ah_amplitude = 0, ee_amplitude = 0,
@@ -62,7 +59,7 @@ class Viseme {
             }
         }
         //? Normalizing
-        ah_amplitude *= 0.8;
+        ah_amplitude *= 0.5;
         ee_amplitude *= 1.0;
         oh_amplitude *= 1.7;
         oo_amplitude *= 1.5;
@@ -89,14 +86,15 @@ class Viseme {
         double min_amplitude, max_amplitude, avg_amplitude;
         calculateAmplitude(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude, min_amplitude, max_amplitude, avg_amplitude);
         int loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
-        loudness_level = decayLoudness(loudness_level, max_amplitude, min_amplitude);
+        loudness_level = max_amplitude > NOISE_THRESHOLD ? loudness_level : 0;
+        loudness_level = decayLoudness(loudness_level);
 
         //? Debugging
-        // int max_threshold = 20000;
-        // Serial.print("NOISE_THRESHOLD:");
-        // Serial.print(NOISE_THRESHOLD);
-        // Serial.print(",Max_THRESHOLD:");
+        // int max_threshold = 5000;
+        // Serial.print("Max_THRESHOLD:");
         // Serial.print(max_threshold);
+        // Serial.print(",NOISE_THRESHOLD:");
+        // Serial.print(NOISE_THRESHOLD);
         // Serial.print(",AH:");
         // Serial.print(ah_amplitude > max_threshold ? max_threshold : ah_amplitude);
         // Serial.print(",EE:");
@@ -196,52 +194,59 @@ class Viseme {
         previousViseme = input;
         return previousViseme;
     }
-    int previousLoudness = 0;                          // Initialize previous input variable to 0
-    unsigned long decayStartTime = 0;                  // Initialize decay start time to 0
-    const double decayRate = 0.75;                     // Set the decay rate to 0.75
-    const unsigned long decayElapsedThreshold = 1000;  // Set the decay elapsed time threshold to 1 seconds
-    int decayLoudness(int input, double max_amplitude, double min_amplitude) {
-        if (max_amplitude > NOISE_THRESHOLD || previousLoudness > 0) {
-            if (input >= previousLoudness) {                                                             // If the new input is greater than or equal to the previous input
-                previousLoudness = input;                                                                // Update the previous input to the new input
-                decayStartTime = 0;                                                                      // Reset the decay start time
-            } else {                                                                                     // If the new input is less than the previous input
-                if (decayStartTime == 0) {                                                               // If this is the first time the input has decayed
-                    decayStartTime = millis();                                                           // Set the decay start time to the current time
-                } else {                                                                                 // If the input is currently decaying
-                    unsigned long decay_elapsed_time = millis() - decayStartTime;                        // Calculate the elapsed decay time
-                    if (decay_elapsed_time >= decayElapsedThreshold) {                                   // If the decay elapsed time exceeds the threshold
-                        previousLoudness = 0;                                                        // Update the previous input to the new input
-                        decayStartTime = 0;                                                              // Reset the decay start time
-                    } else {                                                                             // If the input is still decaying
-                        int decayed_input = previousLoudness - (decayRate * decay_elapsed_time / 1000);  // Calculate the decayed input
-                        if (decayed_input < input) {                                                     // If the decayed input is less than the new input
-                            previousLoudness = input;                                                    // Update the previous input to the new input
-                            decayStartTime = 0;                                                          // Reset the decay start time
-                        } else {                                                                         // If the decayed input is greater than or equal to the new input
-                            previousLoudness = decayed_input;                                            // Update the previous input to the decayed input
-                        }
+    int previousLoudness = 0;
+    unsigned long decayStartTime = 0;
+    const double decayRate = 3;                       // Set the decay rate to 0.75
+    const unsigned long decayElapsedThreshold = 500;  // Set the decay elapsed time threshold to 1 seconds
+    int decayLoudness(int input) {
+        if (input >= previousLoudness) {
+            previousLoudness = input;
+            decayStartTime = 0;
+        } else {
+            if (decayStartTime == 0) {
+                decayStartTime = millis();
+            } else {
+                unsigned long decay_elapsed_time = millis() - decayStartTime;
+                if (decay_elapsed_time >= decayElapsedThreshold && previousLoudness <= 1) {
+                    previousLoudness = 0;
+                    decayStartTime = 0;
+                } else {
+                    int decayed_input = previousLoudness - static_cast<int>(decayRate * decay_elapsed_time / 1000.0);
+                    if (decayed_input < input) {
+                        previousLoudness = input;
+                        decayStartTime = 0;
+                    } else {
+                        previousLoudness = decayed_input;
                     }
                 }
             }
-            return previousLoudness;  // Return the current input value
         }
-        return 0;
+        return previousLoudness;
     }
 
+    static int previousLevel = -1;  // Initialize with an invalid value
     const uint8_t* visemeOutput(VisemeType viseme, int level) {
         if (level == 0) {
+            previousLevel = level;
             return mouthDefault;
         }
+
+        if (level == previousLevel - 1 && viseme == previousViseme) {
+            // If the level is decreasing by 1 and it's the same viseme as before
+            previousLevel = level;
+            return visemeOutput(viseme, level);  // Recursively call with the same viseme
+        }
+        previousLevel = level;
+        previousViseme = viseme;
         level -= 1;
-        // Serial.print("Base:");
-        // Serial.print(4);
-        // Serial.print(",Level:");
-        // Serial.println(level);
-        // Serial.print("viseme:");
-        // Serial.print(viseme);
-        // Serial.print(",previousViseme:");
-        // Serial.print(previousViseme);
+        Serial.print("Base:");
+        Serial.print(4);
+        Serial.print(",Level:");
+        Serial.print(level);
+        Serial.print(",viseme:");
+        Serial.print(viseme);
+        Serial.print(",previousViseme:");
+        Serial.println(previousViseme);
         auto combination = visemeCombination.find(std::make_pair(viseme, previousViseme));
         // Serial.print(",combination:");
         // Serial.println(combination->second);
