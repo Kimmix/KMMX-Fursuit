@@ -1,5 +1,3 @@
-#include <Adafruit_BusIO_Register.h>
-#include <Adafruit_Sensor.h>
 #include <FastLED.h>
 
 #define LED_PIN GPIO_NUM_18  // Pin connected to the Data Input of WS2812
