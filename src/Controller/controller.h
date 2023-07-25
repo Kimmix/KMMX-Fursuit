@@ -16,11 +16,10 @@ class Controller {
         sideLED.animate();
         display.drawColorTest();
         display.drawNose(noseDefault);
-        eyeState.update();
-    }
-
-    void render2() {
         mouthState.update();
+        eyeState.update();
+        // display.render();
+        // display.clearScreen();
     }
 
     void faceBoop() {

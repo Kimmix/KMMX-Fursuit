@@ -20,21 +20,12 @@ void showFPS() {
     }
 }
 
-TaskHandle_t controlMouth;
-void asyncRender(void* parameter) {
-    while (true) {
-        // showFPS();
-        controller.render2();
-    }
-}
-
 void setup() {
     Serial.begin(115200);
     while (!Serial) delay(400);
     // ble.init();
     pinMode(IR_PIN, INPUT);
     randomSeed(analogRead(RANDOM_PIN));
-    xTaskCreatePinnedToCore(asyncRender, "Render Mouth", 10000, NULL, 0, &controlMouth, 0);
 }
 
 void loop() {
