@@ -32,7 +32,7 @@ class LEDMatrixDisplay {
    public:
     LEDMatrixDisplay() {
         HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER);
-        mxconfig.double_buff = false;  // Turn of double buffer
+        mxconfig.double_buff = true;  // Turn of double buffer
         // mxconfig.clkphase = true;
         matrix = new MatrixPanel_I2S_DMA(mxconfig);
         if (!matrix->begin())
@@ -197,6 +197,7 @@ class LEDMatrixDisplay {
 
     uint8_t* prevMouthFrame = new uint8_t[50 * 14];
     void drawMouth(const uint8_t* bitmap) {
+        // drawBitmap(bitmap, 50, 14, 14, 18);
         transitionFrames(prevMouthFrame, bitmap, 50, 14, 14, 18);
         memcpy(prevMouthFrame, bitmap, 50 * 14);
     }

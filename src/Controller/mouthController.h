@@ -13,6 +13,7 @@ class MouthState {
         // Check if currentState is not TALKING, and if the viseme task is running, suspend it.
         if (currentState != TALKING && visemeTaskRunning) {
             visemeTaskRunning = false;
+            // viseme.microphoneEnable = false;
             vTaskSuspend(visemeTaskHandle);
             Serial.println("Killed task");
             return;
@@ -24,22 +25,15 @@ class MouthState {
             case BOOP:
                 display->drawMouth(mouthOpen);
                 if (millis() - resetBoop >= 100) {
-                    // if (currentState == TALKING) {
-                    //     currentState = IDLE;
-                    //     Serial.println("Set IDLE");
-                    // } else {
-                    //     currentState = TALKING;
-                    //     Serial.println("Set TALKING");
-                    // }
-                        currentState = TALKING;
+                    currentState = TALKING;
                 }
-                // currentState = TALKING;
                 break;
             case TALKING:
                 // Check if the viseme task is already running, if not start it
                 if (!visemeTaskRunning) {
                     startVisemeTask();
                 }
+                display->drawMouth(visemeFrame);
                 break;
             default:
                 break;
@@ -60,6 +54,7 @@ class MouthState {
    private:
     LEDMatrixDisplay* display;
     Viseme viseme;
+    const uint8_t* visemeFrame = mouthDefault;
 
     enum State {
         IDLE,
@@ -91,18 +86,11 @@ class MouthState {
     static void visemeRenderingTask(void* parameter) {
         MouthState* mouthState = reinterpret_cast<MouthState*>(parameter);
         mouthState->visemeTaskRunning = true;
-
         while (mouthState->currentState == TALKING) {
-            // Render the viseme and update the display
-            mouthState->display->drawMouth(mouthState->viseme.renderViseme());
-
-            // You may need to add some delay or control logic here based on the viseme rendering time.
+            // mouthState->display->drawMouth(mouthState->viseme.renderViseme());
+            mouthState->visemeFrame = mouthState->viseme.renderViseme();
         }
-
-        // Set visemeTaskRunning to false when the task is about to exit
         mouthState->visemeTaskRunning = false;
-
-        // Terminate the task explicitly
-        vTaskDelete(NULL);
+        vTaskDelete(NULL);  // Terminate the task explicitly
     }
 };

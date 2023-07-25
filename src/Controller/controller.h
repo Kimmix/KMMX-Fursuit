@@ -13,13 +13,13 @@ class Controller {
 
    public:
     void render() {
-        sideLED.animate();
+        // sideLED.animate();
         display.drawColorTest();
         display.drawNose(noseDefault);
         mouthState.update();
         eyeState.update();
-        // display.render();
-        // display.clearScreen();
+        display.render();
+        display.clearScreen();
     }
 
     void faceBoop() {
