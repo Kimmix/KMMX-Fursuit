@@ -85,9 +85,9 @@ class Viseme {
 
         double min_amplitude, max_amplitude, avg_amplitude;
         calculateAmplitude(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude, min_amplitude, max_amplitude, avg_amplitude);
-        int loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
+        unsigned int loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
         loudness_level = max_amplitude > NOISE_THRESHOLD ? loudness_level : 0;
-        loudness_level = decayLoudness(loudness_level);
+        loudness_level = smoothedLoudness(loudness_level);
 
         //? Debugging
         // int max_threshold = 5000;
@@ -173,7 +173,7 @@ class Viseme {
         avgAmp = (ah + ee + oh + oo + th) / 5.0;
     }
     // Compute loudness level based on average amplitude
-    int calculateLoudness(double max, double avg) {
+    unsigned int calculateLoudness(double max, double avg) {
         if (max > avg * 2.2) {
             return 4;
         } else if (max > avg * 1.8) {
@@ -194,37 +194,41 @@ class Viseme {
         previousViseme = input;
         return previousViseme;
     }
-    int previousLoudness = 0;
+    unsigned int currentLoudness = 0;
     unsigned long decayStartTime = 0;
     const double decayRate = 3;                       // Set the decay rate to 0.75
     const unsigned long decayElapsedThreshold = 500;  // Set the decay elapsed time threshold to 1 seconds
-    int decayLoudness(int input) {
-        if (input >= previousLoudness) {
-            previousLoudness = input;
+    unsigned int smoothedLoudness(unsigned int input) {
+        // If the input is greater than or equal to the current loudness, increment smoothly
+        if (input >= currentLoudness) {
+            currentLoudness = input;
             decayStartTime = 0;
         } else {
+            // If the input is less than the current loudness, start the decay process
             if (decayStartTime == 0) {
                 decayStartTime = millis();
             } else {
-                unsigned long decay_elapsed_time = millis() - decayStartTime;
-                if (decay_elapsed_time >= decayElapsedThreshold && previousLoudness <= 1) {
-                    previousLoudness = 0;
+                unsigned long decayElapsedTime = millis() - decayStartTime;
+                // If the decay elapsed time threshold is exceeded and the loudness is very low, reset it to 0
+                if (decayElapsedTime >= decayElapsedThreshold && currentLoudness <= 1) {
+                    currentLoudness = 0;
                     decayStartTime = 0;
                 } else {
-                    int decayed_input = previousLoudness - static_cast<int>(decayRate * decay_elapsed_time / 1000.0);
-                    if (decayed_input < input) {
-                        previousLoudness = input;
+                    unsigned int decayedInput = static_cast<unsigned int>(currentLoudness - decayRate * decayElapsedTime / 1000.0);
+                    // If the decayed input is still higher than the desired input, decay further
+                    if (decayedInput < input) {
+                        currentLoudness = input;
                         decayStartTime = 0;
                     } else {
-                        previousLoudness = decayed_input;
+                        currentLoudness = decayedInput;
                     }
                 }
             }
         }
-        return previousLoudness;
+        return currentLoudness;
     }
 
-    const uint8_t* visemeOutput(VisemeType viseme, int level) {
+    const uint8_t* visemeOutput(VisemeType viseme, unsigned int level) {
         static int previousLevel = -1;  // Initialize with an invalid value
 
         if (level == 0) {
