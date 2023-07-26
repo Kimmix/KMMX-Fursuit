@@ -230,12 +230,10 @@ class Viseme {
 
     const uint8_t* visemeOutput(VisemeType viseme, unsigned int level) {
         static int previousLevel = -1;  // Initialize with an invalid value
-
         if (level == 0) {
             previousLevel = level;
             return mouthDefault;
         }
-
         if (level == previousLevel - 1 && viseme == previousViseme) {
             // If the level is decreasing by 1 and it's the same viseme as before
             previousLevel = level;
@@ -255,7 +253,6 @@ class Viseme {
         auto combination = visemeCombination.find(std::make_pair(viseme, previousViseme));
         // Serial.print(",combination:");
         // Serial.println(combination->second);
-        previousViseme = viseme;
         switch (viseme) {
             case AH:
                 return ahViseme[level];
