@@ -7,9 +7,9 @@
 BLEService service(BLE_SERVICE_UUID);
 BLEByteCharacteristic brightnessCharacteristic(BLE_CHARACTERISTIC_UUID, BLERead | BLEWrite);
 
-class BluetoothController {
+class Bluetooth {
    public:
-    BluetoothController(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
+    Bluetooth() {}
 
     void init() {
         Serial.println("Booting BLE...");
@@ -26,8 +26,8 @@ class BluetoothController {
         service.addCharacteristic(brightnessCharacteristic);
 
         BLE.addService(service);
-        BLE.setEventHandler(BLEConnected, BluetoothController::blePeripheralConnectHandler);
-        BLE.setEventHandler(BLEDisconnected, BluetoothController::blePeripheralDisconnectHandler);
+        BLE.setEventHandler(BLEConnected, Bluetooth::blePeripheralConnectHandler);
+        BLE.setEventHandler(BLEDisconnected, Bluetooth::blePeripheralDisconnectHandler);
 
         // Start advertising the BLE service
         BLE.advertise();
@@ -35,17 +35,12 @@ class BluetoothController {
     }
 
     void update() {
-        BLE.poll();  // Start BLE
-        if (brightnessCharacteristic.written()) {
-            display->setBrightnessValue(brightnessCharacteristic.value());
-        }
+        BLE.poll();
     }
 
    private:
-    LEDMatrixDisplay* display;
-
     int getBrightnessValue() {
-        return display->getBrightnessValue();
+        // return display->getBrightnessValue();
     }
 
     // On bluetooth connected

@@ -23,13 +23,14 @@ void showFPS() {
 void setup() {
     Serial.begin(115200);
     while (!Serial) delay(400);
-    // ble.init();
+    controller.setupBLE();
     pinMode(IR_PIN, INPUT);
     randomSeed(analogRead(RANDOM_PIN));
 }
 
 void loop() {
     // showFPS();
+    controller.BLEpoll();
     isBoop = !digitalRead(IR_PIN);
     if (isBoop) {
         controller.faceBoop();
