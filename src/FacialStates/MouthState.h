@@ -11,14 +11,6 @@ class MouthState : public FacialState {
     MouthState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
 
     void update() {
-        // Check if currentState is not TALKING, and if the viseme task is running, suspend it.
-        if (currentState != MouthStateEnum::TALKING && visemeTaskRunning) {
-            visemeTaskRunning = false;
-            // viseme.microphoneEnable = false;
-            vTaskSuspend(visemeTaskHandle);
-            Serial.println("Killed task");
-            return;
-        }
         switch (currentState) {
             case MouthStateEnum::IDLE:
                 display->drawMouth(mouthDefault);
@@ -30,7 +22,6 @@ class MouthState : public FacialState {
                 }
                 break;
             case MouthStateEnum::TALKING:
-                // Check if the viseme task is already running, if not start it
                 if (!visemeTaskRunning) {
                     startVisemeTask();
                 }
@@ -45,40 +36,41 @@ class MouthState : public FacialState {
         currentState = newState;
     }
 
+    MouthStateEnum getState() const {
+        return currentState;
+    }
+
    private:
+    MouthStateEnum currentState = MouthStateEnum::IDLE;
     LEDMatrixDisplay* display;
     Viseme viseme;
-    const uint8_t* visemeFrame = mouthDefault;
-    MouthStateEnum currentState = MouthStateEnum::IDLE;
-
-    unsigned long resetBoop;
-    bool visemeTaskRunning = false;
-
-    // Task handle for the viseme rendering task
     TaskHandle_t visemeTaskHandle = NULL;
+
+    bool visemeTaskRunning = false;
+    const uint8_t* visemeFrame = mouthDefault;
+    unsigned long resetBoop;
 
     // Start the viseme rendering task on the second core
     void startVisemeTask() {
-        Serial.println("Start task");
-        xTaskCreatePinnedToCore(
-            visemeRenderingTask,
-            "VisemeTask",
-            2048,  // Stack size (adjust this according to your needs)
-            this,  // Pass the MouthState object as a parameter to the task
-            1,     // Priority of the task
-            &visemeTaskHandle,
-            0  // Core to run the task on
-        );
+        Serial.println("Create task");
+        xTaskCreatePinnedToCore(visemeRenderingTask, "VisemeTask", 2048, this, 1, &visemeTaskHandle, 0);
+    }
+
+    void stopVisemeTask() {
+        vTaskDelete(visemeTaskHandle);
+        visemeTaskRunning = false;
     }
 
     // The viseme rendering task function
     static void visemeRenderingTask(void* parameter) {
         MouthState* mouthState = reinterpret_cast<MouthState*>(parameter);
         mouthState->visemeTaskRunning = true;
+        Serial.println("TASK Runinng");
         while (mouthState->currentState == MouthStateEnum::TALKING) {
             mouthState->visemeFrame = mouthState->viseme.renderViseme();
         }
         mouthState->visemeTaskRunning = false;
-        vTaskDelete(NULL);  // Terminate the task explicitly
+        Serial.println("TASK Ended");
+        vTaskDelete(NULL);
     }
 };

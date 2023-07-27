@@ -10,8 +10,6 @@ class EyeState {
     EyeState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
 
     void update() {
-        // Serial.print(currentState);
-        // Serial.print("\n");
         switch (currentState) {
             case EyeStateEnum::IDLE:
                 idleFace();
@@ -29,13 +27,18 @@ class EyeState {
                 break;
         }
     }
-    void setState(EyeStateEnum newState);
+    void setState(EyeStateEnum newState) {
+        currentState = newState;
+    }
+
+    EyeStateEnum getState() const {
+        return currentState;
+    }
 
    private:
+    EyeStateEnum currentState = EyeStateEnum::IDLE;
     LEDMatrixDisplay* display;
     GooglyEye googlyEye;
-    EyeStateEnum currentState = EyeStateEnum::IDLE;
-
     unsigned long
         nextBlink,
         blinkInterval,
