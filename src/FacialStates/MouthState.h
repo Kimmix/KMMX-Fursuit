@@ -1,17 +1,18 @@
-// TODO: Fix mic not init on second start, update rendering to 1st core
-
 #include "Bitmaps/mouthBitmapNew.h"
 #include "RenderFunction/viseme.h"
 
+enum class MouthStateEnum { IDLE,
+                            BOOP,
+                            TALKING };
 // Define a task handle for the viseme rendering task
 TaskHandle_t visemeTaskHandle = NULL;
-class MouthState {
+class MouthState : public FacialState {
    public:
     MouthState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
 
     void update() {
         // Check if currentState is not TALKING, and if the viseme task is running, suspend it.
-        if (currentState != TALKING && visemeTaskRunning) {
+        if (currentState != MouthStateEnum::TALKING && visemeTaskRunning) {
             visemeTaskRunning = false;
             // viseme.microphoneEnable = false;
             vTaskSuspend(visemeTaskHandle);
@@ -19,16 +20,16 @@ class MouthState {
             return;
         }
         switch (currentState) {
-            case IDLE:
+            case MouthStateEnum::IDLE:
                 display->drawMouth(mouthDefault);
                 break;
-            case BOOP:
+            case MouthStateEnum::BOOP:
                 display->drawMouth(mouthOpen);
                 if (millis() - resetBoop >= 100) {
-                    currentState = TALKING;
+                    currentState = MouthStateEnum::TALKING;
                 }
                 break;
-            case TALKING:
+            case MouthStateEnum::TALKING:
                 // Check if the viseme task is already running, if not start it
                 if (!visemeTaskRunning) {
                     startVisemeTask();
@@ -40,28 +41,16 @@ class MouthState {
         }
     }
 
-    void setIdle() {
-        currentState = IDLE;
-    }
-    void setTalk() {
-        currentState = TALKING;
-    }
-    void setBoop() {
-        currentState = BOOP;
-        resetBoop = millis();
+    void setState(MouthStateEnum newState) {
+        currentState = newState;
     }
 
    private:
     LEDMatrixDisplay* display;
     Viseme viseme;
     const uint8_t* visemeFrame = mouthDefault;
+    MouthStateEnum currentState = MouthStateEnum::IDLE;
 
-    enum State {
-        IDLE,
-        BOOP,
-        TALKING,
-    };
-    State currentState = IDLE;
     unsigned long resetBoop;
     bool visemeTaskRunning = false;
 
@@ -86,8 +75,7 @@ class MouthState {
     static void visemeRenderingTask(void* parameter) {
         MouthState* mouthState = reinterpret_cast<MouthState*>(parameter);
         mouthState->visemeTaskRunning = true;
-        while (mouthState->currentState == TALKING) {
-            // mouthState->display->drawMouth(mouthState->viseme.renderViseme());
+        while (mouthState->currentState == MouthStateEnum::TALKING) {
             mouthState->visemeFrame = mouthState->viseme.renderViseme();
         }
         mouthState->visemeTaskRunning = false;

@@ -1,13 +1,14 @@
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/SideLED.h"
-#include "Controller/eyeController.h"
-#include "Controller/mouthController.h"
+#include "FacialStates/FacialState.h"
+#include "FacialStates/MouthState.h"
+#include "FacialStates/EyeState.h"
 #include "Bitmaps/Icons.h"
 
 class Controller {
    private:
-    LEDMatrixDisplay display = LEDMatrixDisplay();
     SideLED sideLED;
+    LEDMatrixDisplay display;
     EyeState eyeState = EyeState(&display);
     MouthState mouthState = MouthState(&display);
 
@@ -23,7 +24,7 @@ class Controller {
     }
 
     void faceBoop() {
-        eyeState.setBoop();
-        mouthState.setBoop();
+        eyeState.setState(EyeStateEnum::BOOP);
+        mouthState.setState(MouthStateEnum::BOOP);
     }
 };

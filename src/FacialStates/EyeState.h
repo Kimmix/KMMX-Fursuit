@@ -1,6 +1,10 @@
 #include "../RenderFunction/googlyEye.h"
 #include "Bitmaps/eyeBitmap.h"
 
+enum class EyeStateEnum { IDLE,
+                          BLINK,
+                          BOOP,
+                          GOOGLY };
 class EyeState {
    public:
     EyeState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
@@ -9,48 +13,28 @@ class EyeState {
         // Serial.print(currentState);
         // Serial.print("\n");
         switch (currentState) {
-            case IDLE:
+            case EyeStateEnum::IDLE:
                 idleFace();
                 break;
-            case BLINK:
+            case EyeStateEnum::BLINK:
                 blink();
                 break;
-            case BOOP:
+            case EyeStateEnum::BOOP:
                 boopFace();
                 break;
-            case GOOGLY:
+            case EyeStateEnum::GOOGLY:
                 renderGooglyEye();
                 break;
             default:
                 break;
         }
     }
-
-    void setIdle() {
-        currentState = IDLE;
-    }
-    void setBlink() {
-        currentState = BLINK;
-    }
-    void setBoop() {
-        currentState = BOOP;
-        resetBoop = millis();
-    }
-    void setGoogly() {
-        currentState = GOOGLY;
-    }
+    void setState(EyeStateEnum newState);
 
    private:
     LEDMatrixDisplay* display;
     GooglyEye googlyEye;
-
-    enum State {
-        IDLE,
-        BLINK,
-        BOOP,
-        GOOGLY,
-    };
-    State currentState = IDLE;
+    EyeStateEnum currentState = EyeStateEnum::IDLE;
 
     unsigned long
         nextBlink,
@@ -62,7 +46,7 @@ class EyeState {
         display->drawEye(defaultAnimation[defaultFaceIndex]);
         if (millis() >= nextBlink) {
             nextBlink = millis() + (1000 * (esp_random() % 25) + 1);
-            currentState = BLINK;
+            currentState = EyeStateEnum::IDLE;
         }
     }
 
@@ -79,7 +63,7 @@ class EyeState {
     void boopFace() {
         arrowFace();
         if (millis() - resetBoop >= 1000) {
-            currentState = IDLE;
+            currentState = EyeStateEnum::IDLE;
         }
     }
 
@@ -119,7 +103,7 @@ class EyeState {
                 blinkStep = 0;
                 currentBlinkFrameIndex = 0;
                 changeDefaultFace();
-                currentState = IDLE;  // Blink complete, reset to idle
+                currentState = EyeStateEnum::IDLE;  // Blink complete, reset to idle
             }
             blinkInterval = millis() + 70;
         }
