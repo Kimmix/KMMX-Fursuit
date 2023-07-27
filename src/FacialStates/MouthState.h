@@ -4,8 +4,6 @@
 enum class MouthStateEnum { IDLE,
                             BOOP,
                             TALKING };
-// Define a task handle for the viseme rendering task
-TaskHandle_t visemeTaskHandle = NULL;
 class MouthState : public FacialState {
    public:
     MouthState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
@@ -28,6 +26,7 @@ class MouthState : public FacialState {
                 display->drawMouth(visemeFrame);
                 break;
             default:
+                currentState = MouthStateEnum::IDLE;
                 break;
         }
     }
@@ -52,7 +51,6 @@ class MouthState : public FacialState {
 
     // Start the viseme rendering task on the second core
     void startVisemeTask() {
-        Serial.println("Create task");
         xTaskCreatePinnedToCore(visemeRenderingTask, "VisemeTask", 2048, this, 1, &visemeTaskHandle, 0);
     }
 
@@ -65,12 +63,10 @@ class MouthState : public FacialState {
     static void visemeRenderingTask(void* parameter) {
         MouthState* mouthState = reinterpret_cast<MouthState*>(parameter);
         mouthState->visemeTaskRunning = true;
-        Serial.println("TASK Runinng");
         while (mouthState->currentState == MouthStateEnum::TALKING) {
             mouthState->visemeFrame = mouthState->viseme.renderViseme();
         }
         mouthState->visemeTaskRunning = false;
-        Serial.println("TASK Ended");
         vTaskDelete(NULL);
     }
 };
