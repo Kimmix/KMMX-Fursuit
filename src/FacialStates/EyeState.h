@@ -1,13 +1,10 @@
 #include "../RenderFunction/googlyEye.h"
 #include "Bitmaps/eyeBitmap.h"
 
-enum class EyeStateEnum { IDLE,
-                          BLINK,
-                          BOOP,
-                          GOOGLY };
 class EyeState {
    public:
-    EyeState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
+    EyeState(EyeStateEnum& state, LEDMatrixDisplay* displayPtr = nullptr)
+        : currentState(state), display(displayPtr) {}
 
     void update() {
         switch (currentState) {
@@ -24,6 +21,7 @@ class EyeState {
                 renderGooglyEye();
                 break;
             default:
+                currentState = EyeStateEnum::IDLE;
                 break;
         }
     }
@@ -36,7 +34,7 @@ class EyeState {
     }
 
    private:
-    EyeStateEnum currentState = EyeStateEnum::IDLE;
+    EyeStateEnum& currentState;
     LEDMatrixDisplay* display;
     GooglyEye googlyEye;
     unsigned long
@@ -65,9 +63,6 @@ class EyeState {
 
     void boopFace() {
         arrowFace();
-        if (millis() - resetBoop >= 1000) {
-            currentState = EyeStateEnum::IDLE;
-        }
     }
 
     const uint8_t* boopAnimation[2] = {eyeV1, eyeV2};

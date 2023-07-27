@@ -1,3 +1,11 @@
+enum class EyeStateEnum { IDLE,
+                          BLINK,
+                          BOOP,
+                          GOOGLY };
+enum class MouthStateEnum { IDLE,
+                            BOOP,
+                            TALKING };
+
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/SideLED.h"
 #include "Devices/Bluetooth.h"
@@ -6,34 +14,63 @@
 #include "FacialStates/EyeState.h"
 #include "Bitmaps/Icons.h"
 
+#define IR_PIN GPIO_NUM_35
+#define RANDOM_PIN GPIO_NUM_36
 class Controller {
    private:
     LEDMatrixDisplay display;
     SideLED sideLED;
     Bluetooth bluetooth;
-    EyeState eyeState = EyeState(&display);
-    MouthState mouthState = MouthState(&display);
+    EyeStateEnum currentEyeState = EyeStateEnum::IDLE;
+    MouthStateEnum currentMouthState = MouthStateEnum::IDLE;
+    EyeState eyeState = EyeState(currentEyeState, &display);
+    MouthState mouthState = MouthState(currentMouthState, &display);
+
+    unsigned long lastBoopTime = 0;
+    const unsigned long boopDuration = 500;
 
    public:
-    void setupBLE() {
+    void setupDevices() {
+        pinMode(IR_PIN, INPUT);
+        randomSeed(analogRead(RANDOM_PIN));
         bluetooth.init();
     }
 
-    void BLEpoll() {
+    void update() {
         bluetooth.update();
-    }
-    void render() {
+        renderFace();
         // sideLED.animate();
+    }
+
+    void renderFace() {
         display.drawColorTest();
         display.drawNose(noseDefault);
+        // Update facial expression states based on BLE commands
+        mouthState.setState(currentMouthState);
+        eyeState.setState(currentEyeState);
+        // Update state
         mouthState.update();
         eyeState.update();
+        // Double Buffering
         display.render();
         display.clearScreen();
+        resetBoop();
+    }
+
+    void resetFace() {
+        currentEyeState = EyeStateEnum::IDLE;
+        currentMouthState = MouthStateEnum::IDLE;
     }
 
     void faceBoop() {
-        eyeState.setState(EyeStateEnum::BOOP);
-        mouthState.setState(MouthStateEnum::BOOP);
+        currentMouthState = MouthStateEnum::BOOP;
+        currentEyeState = EyeStateEnum::BOOP;
+        lastBoopTime = millis();
+    }
+
+    void resetBoop() {
+        if (currentEyeState == EyeStateEnum::BOOP && millis() - lastBoopTime >= boopDuration) {
+            resetFace();
+        }
     }
 };

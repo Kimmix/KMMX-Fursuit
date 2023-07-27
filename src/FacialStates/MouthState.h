@@ -1,12 +1,10 @@
 #include "Bitmaps/mouthBitmapNew.h"
 #include "RenderFunction/viseme.h"
 
-enum class MouthStateEnum { IDLE,
-                            BOOP,
-                            TALKING };
 class MouthState : public FacialState {
    public:
-    MouthState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
+    MouthState(MouthStateEnum& state, LEDMatrixDisplay* displayPtr = nullptr)
+        : currentState(state), display(displayPtr) {}
 
     void update() {
         switch (currentState) {
@@ -15,9 +13,9 @@ class MouthState : public FacialState {
                 break;
             case MouthStateEnum::BOOP:
                 display->drawMouth(mouthOpen);
-                if (millis() - resetBoop >= 100) {
-                    currentState = MouthStateEnum::TALKING;
-                }
+                // if (millis() - resetBoop >= 100) {
+                //     currentState = MouthStateEnum::TALKING;
+                // }
                 break;
             case MouthStateEnum::TALKING:
                 if (!visemeTaskRunning) {
@@ -40,7 +38,7 @@ class MouthState : public FacialState {
     }
 
    private:
-    MouthStateEnum currentState = MouthStateEnum::IDLE;
+    MouthStateEnum& currentState;
     LEDMatrixDisplay* display;
     Viseme viseme;
     TaskHandle_t visemeTaskHandle = NULL;

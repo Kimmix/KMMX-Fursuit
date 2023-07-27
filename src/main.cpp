@@ -2,9 +2,8 @@
 #include <esp_random.h>
 
 #include "Controller/controller.h"
-
 #define IR_PIN GPIO_NUM_35
-#define RANDOM_PIN GPIO_NUM_36
+
 bool isBoop;
 
 Controller controller;
@@ -23,17 +22,14 @@ void showFPS() {
 void setup() {
     Serial.begin(115200);
     while (!Serial) delay(400);
-    controller.setupBLE();
-    pinMode(IR_PIN, INPUT);
-    randomSeed(analogRead(RANDOM_PIN));
+    controller.setupDevices();
 }
 
 void loop() {
     // showFPS();
-    controller.BLEpoll();
     isBoop = !digitalRead(IR_PIN);
     if (isBoop) {
         controller.faceBoop();
     }
-    controller.render();
+    controller.update();
 }
