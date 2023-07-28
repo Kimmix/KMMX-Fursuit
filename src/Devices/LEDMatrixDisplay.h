@@ -18,7 +18,7 @@ class LEDMatrixDisplay {
               panelHeight = PANEL_RES_Y;
     uint8_t panelBrightness = 40;
     int eyeWidth = 30, eyeHeight = 21,
-        mouthWidth = 41, mouthHeight = 10;
+        mouthWidth = 50, mouthHeight = 14;
 
    public:
     LEDMatrixDisplay() {
@@ -189,7 +189,7 @@ class LEDMatrixDisplay {
     uint8_t* prevMouthFrame = new uint8_t[mouthWidth * mouthHeight];
     void drawMouth(const uint8_t* bitmap) {
         // drawBitmap(bitmap, mouthWidth, mouthHeight, 14, 18);
-        transitionFrames(prevMouthFrame, bitmap, mouthWidth, mouthHeight, 23, 22);
+        transitionFrames(prevMouthFrame, bitmap, mouthWidth, mouthHeight, 14, 18);
         memcpy(prevMouthFrame, bitmap, mouthWidth * mouthHeight);
     }
 
