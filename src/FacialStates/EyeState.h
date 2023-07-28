@@ -61,8 +61,7 @@ class EyeState {
     }
 
     short defaultFaceIndex = 0;
-    const uint8_t* defaultAnimation[1] = {eyeDefault};
-    // const uint8_t* defaultAnimation[3] = {eyeDefault, eyeUp, eyeDown};
+    const uint8_t* defaultAnimation[3] = {eyeDefault, eyeUp, eyeDown};
     void changeDefaultFace() {
         if ((esp_random() % 10) <= 3) {
             defaultFaceIndex = (esp_random() % 2) + 1;
@@ -118,7 +117,7 @@ class EyeState {
                 changeDefaultFace();
                 currentState = EyeStateEnum::IDLE;  // Blink complete, reset to idle
             }
-            blinkInterval = millis() + 70;
+            blinkInterval = millis() + 30;
         }
         display->drawEye(blinkAnimation[currentBlinkFrameIndex]);
     }

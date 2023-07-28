@@ -1,4 +1,4 @@
-#include "Bitmaps/mouthBitmapNew.h"
+#include "Bitmaps/mouthBitmap.h"
 #include "RenderFunction/viseme.h"
 
 class MouthState : public FacialState {
@@ -40,7 +40,7 @@ class MouthState : public FacialState {
     LEDMatrixDisplay* display;
     Viseme viseme;
     const uint8_t* visemeFrame = mouthDefault;
-    MouthStateEnum currentState = MouthStateEnum::IDLE;
+    MouthStateEnum currentState = MouthStateEnum::TALKING;
 
     unsigned long resetBoop;
     bool visemeTaskRunning = false;
