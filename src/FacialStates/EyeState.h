@@ -21,16 +21,8 @@ class EyeState {
                 renderGooglyEye();
                 break;
             default:
-                currentState = EyeStateEnum::IDLE;
                 break;
         }
-    }
-    void setState(EyeStateEnum newState) {
-        currentState = newState;
-    }
-
-    EyeStateEnum getState() const {
-        return currentState;
     }
 
    private:

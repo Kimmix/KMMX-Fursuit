@@ -45,10 +45,6 @@ class Controller {
     void renderFace() {
         display.drawColorTest();
         display.drawNose(noseDefault);
-        // Update facial expression states based on BLE commands
-        mouthState.setState(currentMouthState);
-        eyeState.setState(currentEyeState);
-        // Update state
         mouthState.update();
         eyeState.update();
         // Double Buffering
