@@ -31,7 +31,7 @@ class Controller {
 
     void renderFace() {
         display.drawColorTest();
-        display.drawNose(noseDefault);
+        display.drawNose(noseNew);
         mouthState.update();
         eyeState.update();
         // Double Buffering

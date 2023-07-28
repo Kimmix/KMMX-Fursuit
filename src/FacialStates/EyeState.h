@@ -1,5 +1,5 @@
 #include "RenderFunction/googlyEye.h"
-#include "Bitmaps/eyeBitmap.h"
+#include "Bitmaps/eyeBitmapNew.h"
 
 class EyeState {
    public:
@@ -61,7 +61,8 @@ class EyeState {
     }
 
     short defaultFaceIndex = 0;
-    const uint8_t* defaultAnimation[3] = {eyeDefault, eyeUp, eyeDown};
+    const uint8_t* defaultAnimation[1] = {eyeDefault};
+    // const uint8_t* defaultAnimation[3] = {eyeDefault, eyeUp, eyeDown};
     void changeDefaultFace() {
         if ((esp_random() % 10) <= 3) {
             defaultFaceIndex = (esp_random() % 2) + 1;
@@ -77,7 +78,8 @@ class EyeState {
         }
     }
 
-    const uint8_t* boopAnimation[2] = {eyeV1, eyeV2};
+    const uint8_t* boopAnimation[1] = {eyeDefault};
+    // const uint8_t* boopAnimation[2] = {eyeV1, eyeV2};
     short boopAnimationFrame;
     void arrowFace() {
         if (millis() > nextBoop) {
@@ -87,7 +89,8 @@ class EyeState {
         display->drawEye(boopAnimation[boopAnimationFrame]);
     }
 
-    const uint8_t* oFaceAnimation[3] = {eyeO1, eyeO2, eyeO3};
+    const uint8_t* oFaceAnimation[3] = {eyeDefault, eyeDefault, eyeDefault};
+    // const uint8_t* oFaceAnimation[3] = {eyeO1, eyeO2, eyeO3};
     short currentOFaceIndex;
     void oFace() {
         if (millis() >= nextBoop) {
@@ -97,8 +100,8 @@ class EyeState {
         display->drawEye(oFaceAnimation[currentOFaceIndex]);
     }
 
-    const uint8_t* blinkAnimation[3] = {eyeBlink1, eyeBlink2, eyeBlink3};
-    const short blinkAnimationLength = 3;
+    const uint8_t* blinkAnimation[5] = {eyeBlink0, eyeBlink1, eyeBlink2, eyeBlink3, eyeBlink4};
+    const short blinkAnimationLength = 5;
     short blinkStep, currentBlinkFrameIndex;
     void blink() {
         if (millis() >= blinkInterval) {
@@ -121,8 +124,8 @@ class EyeState {
     }
 
     void renderGooglyEye() {
-        display->drawEye(eyeGoogly);
-        googlyEye.renderEye();
-        display->drawEyePupil(eyePupil, googlyEye.x, googlyEye.y);
+        // display->drawEye(eyeGoogly);
+        // googlyEye.renderEye();
+        // display->drawEyePupil(eyePupil, googlyEye.x, googlyEye.y);
     }
 };

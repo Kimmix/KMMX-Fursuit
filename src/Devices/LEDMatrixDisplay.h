@@ -17,7 +17,8 @@ class LEDMatrixDisplay {
     const int panelWidth = PANEL_RES_X,
               panelHeight = PANEL_RES_Y;
     uint8_t panelBrightness = 40;
-    int eyeWidth = 32, eyeHeight = 18;
+    int eyeWidth = 30, eyeHeight = 21,
+        mouthWidth = 41, mouthHeight = 10;
 
    public:
     LEDMatrixDisplay() {
@@ -182,14 +183,14 @@ class LEDMatrixDisplay {
     }
 
     void drawNose(const uint8_t* bitmap) {
-        drawBitmap(bitmap, 10, 6, 54, 6);
+        drawBitmap(bitmap, 8, 5, 56, 5);
     }
 
-    uint8_t* prevMouthFrame = new uint8_t[50 * 14];
+    uint8_t* prevMouthFrame = new uint8_t[mouthWidth * mouthHeight];
     void drawMouth(const uint8_t* bitmap) {
-        // drawBitmap(bitmap, 50, 14, 14, 18);
-        transitionFrames(prevMouthFrame, bitmap, 50, 14, 14, 18);
-        memcpy(prevMouthFrame, bitmap, 50 * 14);
+        // drawBitmap(bitmap, mouthWidth, mouthHeight, 14, 18);
+        transitionFrames(prevMouthFrame, bitmap, mouthWidth, mouthHeight, 23, 22);
+        memcpy(prevMouthFrame, bitmap, mouthWidth * mouthHeight);
     }
 
     void drawColorTest() {
