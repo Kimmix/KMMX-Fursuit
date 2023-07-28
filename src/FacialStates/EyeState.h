@@ -1,5 +1,5 @@
 #include "RenderFunction/googlyEye.h"
-#include "Bitmaps/eyeBitmapNew.h"
+#include "Bitmaps/eyeBitmap.h"
 
 class EyeState {
    public:
@@ -77,8 +77,7 @@ class EyeState {
         }
     }
 
-    const uint8_t* boopAnimation[1] = {eyeDefault};
-    // const uint8_t* boopAnimation[2] = {eyeV1, eyeV2};
+    const uint8_t* boopAnimation[2] = {eyeV1, eyeV2};
     short boopAnimationFrame;
     void arrowFace() {
         if (millis() > nextBoop) {
@@ -88,8 +87,7 @@ class EyeState {
         display->drawEye(boopAnimation[boopAnimationFrame]);
     }
 
-    const uint8_t* oFaceAnimation[3] = {eyeDefault, eyeDefault, eyeDefault};
-    // const uint8_t* oFaceAnimation[3] = {eyeO1, eyeO2, eyeO3};
+    const uint8_t* oFaceAnimation[3] = {eyeO1, eyeO2, eyeO3};
     short currentOFaceIndex;
     void oFace() {
         if (millis() >= nextBoop) {
@@ -99,8 +97,8 @@ class EyeState {
         display->drawEye(oFaceAnimation[currentOFaceIndex]);
     }
 
-    const uint8_t* blinkAnimation[5] = {eyeBlink0, eyeBlink1, eyeBlink2, eyeBlink3, eyeBlink4};
-    const short blinkAnimationLength = 5;
+    const uint8_t* blinkAnimation[3] = {eyeBlink1, eyeBlink2, eyeBlink3};
+    const short blinkAnimationLength = 3;
     short blinkStep, currentBlinkFrameIndex;
     void blink() {
         if (millis() >= blinkInterval) {
@@ -117,14 +115,14 @@ class EyeState {
                 changeDefaultFace();
                 currentState = EyeStateEnum::IDLE;  // Blink complete, reset to idle
             }
-            blinkInterval = millis() + 30;
+            blinkInterval = millis() + 70;
         }
         display->drawEye(blinkAnimation[currentBlinkFrameIndex]);
     }
 
     void renderGooglyEye() {
-        // display->drawEye(eyeGoogly);
-        // googlyEye.renderEye();
-        // display->drawEyePupil(eyePupil, googlyEye.x, googlyEye.y);
+        display->drawEye(eyeGoogly);
+        googlyEye.renderEye();
+        display->drawEyePupil(eyePupil, googlyEye.x, googlyEye.y);
     }
 };

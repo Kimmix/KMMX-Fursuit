@@ -17,7 +17,7 @@ class LEDMatrixDisplay {
     const int panelWidth = PANEL_RES_X,
               panelHeight = PANEL_RES_Y;
     uint8_t panelBrightness = 40;
-    int eyeWidth = 30, eyeHeight = 21,
+    int eyeWidth = 32, eyeHeight = 18,
         mouthWidth = 50, mouthHeight = 14;
 
    public:
