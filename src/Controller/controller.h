@@ -8,7 +8,6 @@ enum class MouthStateEnum { IDLE,
 
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/SideLED.h"
-#include "Devices/Bluetooth.h"
 #include "FacialStates/FacialState.h"
 #include "FacialStates/MouthState.h"
 #include "FacialStates/EyeState.h"
@@ -20,7 +19,6 @@ class Controller {
    private:
     LEDMatrixDisplay display;
     SideLED sideLED;
-    Bluetooth bluetooth;
     EyeStateEnum currentEyeState = EyeStateEnum::IDLE;
     MouthStateEnum currentMouthState = MouthStateEnum::IDLE;
     EyeState eyeState = EyeState(currentEyeState, &display);
@@ -33,11 +31,9 @@ class Controller {
     void setupDevices() {
         pinMode(IR_PIN, INPUT);
         randomSeed(analogRead(RANDOM_PIN));
-        bluetooth.init();
     }
 
     void update() {
-        bluetooth.update();
         renderFace();
         // sideLED.animate();
     }
@@ -51,6 +47,10 @@ class Controller {
         display.render();
         display.clearScreen();
         resetBoop();
+    }
+
+    void setEye() {
+        Serial.print("Update EYE State");
     }
 
     void resetFace() {
