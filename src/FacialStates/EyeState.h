@@ -1,12 +1,13 @@
-#include "../RenderFunction/googlyEye.h"
+#include "RenderFunction/googlyEye.h"
 #include "Bitmaps/eyeBitmap.h"
 
 class EyeState {
    public:
-    EyeState(EyeStateEnum& state, LEDMatrixDisplay* displayPtr = nullptr)
-        : currentState(state), display(displayPtr) {}
+    EyeState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
 
     void update() {
+        // Serial.print(currentState);
+        // Serial.print("\n");
         switch (currentState) {
             case EyeStateEnum::IDLE:
                 idleFace();
@@ -25,10 +26,19 @@ class EyeState {
         }
     }
 
+    void setState(EyeStateEnum newState) {
+        currentState = newState;
+    }
+
+    EyeStateEnum getState() const {
+        return currentState;
+    }
+
    private:
-    EyeStateEnum& currentState;
     LEDMatrixDisplay* display;
     GooglyEye googlyEye;
+    EyeStateEnum currentState = EyeStateEnum::IDLE;
+
     unsigned long
         nextBlink,
         blinkInterval,
@@ -38,8 +48,8 @@ class EyeState {
     void idleFace() {
         display->drawEye(defaultAnimation[defaultFaceIndex]);
         if (millis() >= nextBlink) {
-            nextBlink = millis() + (1000 * (esp_random() % 25) + 1);
-            currentState = EyeStateEnum::IDLE;
+            nextBlink = millis() + (1000 * (esp_random() % 20));
+            currentState = EyeStateEnum::BLINK;
         }
     }
 
@@ -55,6 +65,9 @@ class EyeState {
 
     void boopFace() {
         arrowFace();
+        if (millis() - resetBoop >= 1000) {
+            currentState = EyeStateEnum::IDLE;
+        }
     }
 
     const uint8_t* boopAnimation[2] = {eyeV1, eyeV2};

@@ -19,10 +19,8 @@ class Controller {
    private:
     LEDMatrixDisplay display;
     SideLED sideLED;
-    EyeStateEnum currentEyeState = EyeStateEnum::IDLE;
-    MouthStateEnum currentMouthState = MouthStateEnum::IDLE;
-    EyeState eyeState = EyeState(currentEyeState, &display);
-    MouthState mouthState = MouthState(currentMouthState, &display);
+    EyeState eyeState = EyeState(&display);
+    MouthState mouthState = MouthState(&display);
 
     unsigned long lastBoopTime = 0;
     const unsigned long boopDuration = 500;
@@ -46,7 +44,6 @@ class Controller {
         // Double Buffering
         display.render();
         display.clearScreen();
-        resetBoop();
     }
 
     void setEye() {
@@ -54,19 +51,13 @@ class Controller {
     }
 
     void resetFace() {
-        currentEyeState = EyeStateEnum::IDLE;
-        currentMouthState = MouthStateEnum::IDLE;
+        eyeState.setState(EyeStateEnum::IDLE);
+        mouthState.setState(MouthStateEnum::IDLE);
     }
 
     void faceBoop() {
-        currentMouthState = MouthStateEnum::BOOP;
-        currentEyeState = EyeStateEnum::BOOP;
+        eyeState.setState(EyeStateEnum::BOOP);
+        mouthState.setState(MouthStateEnum::BOOP);
         lastBoopTime = millis();
-    }
-
-    void resetBoop() {
-        if (currentEyeState == EyeStateEnum::BOOP && millis() - lastBoopTime >= boopDuration) {
-            resetFace();
-        }
     }
 };

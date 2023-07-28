@@ -3,8 +3,7 @@
 
 class MouthState : public FacialState {
    public:
-    MouthState(MouthStateEnum& state, LEDMatrixDisplay* displayPtr = nullptr)
-        : currentState(state), display(displayPtr) {}
+    MouthState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
 
     void update() {
         switch (currentState) {
@@ -13,9 +12,9 @@ class MouthState : public FacialState {
                 break;
             case MouthStateEnum::BOOP:
                 display->drawMouth(mouthOpen);
-                // if (millis() - resetBoop >= 100) {
-                //     currentState = MouthStateEnum::TALKING;
-                // }
+                if (millis() - resetBoop >= 100) {
+                    currentState = MouthStateEnum::TALKING;
+                }
                 break;
             case MouthStateEnum::TALKING:
                 if (!visemeTaskRunning) {
@@ -38,23 +37,20 @@ class MouthState : public FacialState {
     }
 
    private:
-    MouthStateEnum& currentState;
     LEDMatrixDisplay* display;
     Viseme viseme;
-    TaskHandle_t visemeTaskHandle = NULL;
-
-    bool visemeTaskRunning = false;
     const uint8_t* visemeFrame = mouthDefault;
+    MouthStateEnum currentState = MouthStateEnum::IDLE;
+
     unsigned long resetBoop;
+    bool visemeTaskRunning = false;
+
+    // Task handle for the viseme rendering task
+    TaskHandle_t visemeTaskHandle = NULL;
 
     // Start the viseme rendering task on the second core
     void startVisemeTask() {
         xTaskCreatePinnedToCore(visemeRenderingTask, "VisemeTask", 2048, this, 1, &visemeTaskHandle, 0);
-    }
-
-    void stopVisemeTask() {
-        vTaskDelete(visemeTaskHandle);
-        visemeTaskRunning = false;
     }
 
     // The viseme rendering task function
