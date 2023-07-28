@@ -27,7 +27,7 @@ static void blePeripheralDisconnectHandler(BLEDevice central) {
 void switchCharacteristicWritten(BLEDevice central, BLECharacteristic characteristic) {
     Serial.print("Characteristic event, written: ");
     Serial.println(brightnessCharacteristic.value());
-    controller.setEye();
+    controller.setEye(brightnessCharacteristic.value());
     // display->setBrightnessValue(brightnessCharacteristic.value());
 }
 //? ------------- Blueooth Setup
@@ -74,7 +74,8 @@ void setup() {
     Serial.begin(115200);
     while (!Serial) delay(400);
     setupBLE();
-    controller.setupDevices();
+    pinMode(IR_PIN, INPUT);
+    randomSeed(analogRead(RANDOM_PIN));
 }
 
 void loop() {

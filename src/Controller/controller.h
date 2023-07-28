@@ -1,7 +1,8 @@
 enum class EyeStateEnum { IDLE,
                           BLINK,
                           BOOP,
-                          GOOGLY };
+                          GOOGLY,
+                          OEYE };
 enum class MouthStateEnum { IDLE,
                             BOOP,
                             TALKING };
@@ -22,15 +23,7 @@ class Controller {
     EyeState eyeState = EyeState(&display);
     MouthState mouthState = MouthState(&display);
 
-    unsigned long lastBoopTime = 0;
-    const unsigned long boopDuration = 500;
-
    public:
-    void setupDevices() {
-        pinMode(IR_PIN, INPUT);
-        randomSeed(analogRead(RANDOM_PIN));
-    }
-
     void update() {
         renderFace();
         // sideLED.animate();
@@ -46,8 +39,18 @@ class Controller {
         display.clearScreen();
     }
 
-    void setEye() {
-        Serial.print("Update EYE State");
+    void setEye(int i) {
+        switch (i) {
+            case 1:
+                eyeState.setState(EyeStateEnum::GOOGLY);
+                break;
+            case 2:
+                eyeState.setState(EyeStateEnum::OEYE);
+                break;
+            default:
+                eyeState.setState(EyeStateEnum::IDLE);
+                break;
+        }
     }
 
     void resetFace() {
@@ -56,8 +59,8 @@ class Controller {
     }
 
     void faceBoop() {
+        eyeState.setPrevState(eyeState.getState());
         eyeState.setState(EyeStateEnum::BOOP);
         mouthState.setState(MouthStateEnum::BOOP);
-        lastBoopTime = millis();
     }
 };

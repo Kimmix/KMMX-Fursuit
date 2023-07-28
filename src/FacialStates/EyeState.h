@@ -21,6 +21,9 @@ class EyeState {
             case EyeStateEnum::GOOGLY:
                 renderGooglyEye();
                 break;
+            case EyeStateEnum::OEYE:
+                oFace();
+                break;
             default:
                 break;
         }
@@ -30,6 +33,10 @@ class EyeState {
         currentState = newState;
     }
 
+    void setPrevState(EyeStateEnum newState) {
+        prevState = newState;
+    }
+
     EyeStateEnum getState() const {
         return currentState;
     }
@@ -37,7 +44,7 @@ class EyeState {
    private:
     LEDMatrixDisplay* display;
     GooglyEye googlyEye;
-    EyeStateEnum currentState = EyeStateEnum::IDLE;
+    EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
 
     unsigned long
         nextBlink,
@@ -66,7 +73,7 @@ class EyeState {
     void boopFace() {
         arrowFace();
         if (millis() - resetBoop >= 1000) {
-            currentState = EyeStateEnum::IDLE;
+            currentState = prevState;
         }
     }
 
