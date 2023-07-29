@@ -11,7 +11,7 @@ class MouthState : public FacialState {
                 display->drawMouth(mouthDefault);
                 break;
             case MouthStateEnum::BOOP:
-                display->drawMouth(AH3);
+                display->drawMouth(mouthOpen);
                 if (millis() - resetBoop >= 100) {
                     currentState = prevState;
                 }
