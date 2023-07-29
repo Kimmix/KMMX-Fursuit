@@ -11,7 +11,7 @@ Controller controller;
 BLEService protoService("c1449275-bf34-40ab-979d-e34a1fdbb129");
 BLEByteCharacteristic eyeStateCharacteristic("49a36bb2-1c66-4e5c-8ff3-28e55a64beb3", BLERead | BLEWrite);
 BLEByteCharacteristic mouthStateCharacteristic("493d06f3-0fa0-4a90-88f1-ebaed0da9b80", BLERead | BLEWrite);
-BLEByteCharacteristic displayBrightnessCharacteristic("493d06f3-0fa0-4a90-88f1-ebaed0da9b80", BLERead | BLEWrite);
+BLEByteCharacteristic displayBrightnessCharacteristic("9fdfd124-966b-44f7-8331-778c4d1512fc", BLERead | BLEWrite);
 // Change displayBrightnessCharacteristic data type
 
 //? ------------------------ Blueooth 
