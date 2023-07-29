@@ -60,6 +60,7 @@ class Controller {
 
     void faceBoop() {
         eyeState.setPrevState(eyeState.getState());
+        mouthState.setPrevState(mouthState.getState());
         eyeState.setState(EyeStateEnum::BOOP);
         mouthState.setState(MouthStateEnum::BOOP);
     }
