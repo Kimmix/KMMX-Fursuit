@@ -64,6 +64,10 @@ class Controller {
         }
     }
 
+    void setDisplayBrightness(int i) {
+        display->setBrightnessValue(i);
+    }
+
     void resetFace() {
         eyeState.setState(EyeStateEnum::IDLE);
         mouthState.setState(MouthStateEnum::IDLE);
