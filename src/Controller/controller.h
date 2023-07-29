@@ -53,6 +53,17 @@ class Controller {
         }
     }
 
+    void setMouth(int i) {
+        switch (i) {
+            case 1:
+                mouthState.setState(mouthStateEnum::TALKING);
+                break;
+            default:
+                mouthState.setState(mouthStateEnum::IDLE);
+                break;
+        }
+    }
+
     void resetFace() {
         eyeState.setState(EyeStateEnum::IDLE);
         mouthState.setState(MouthStateEnum::IDLE);

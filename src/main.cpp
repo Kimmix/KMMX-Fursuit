@@ -9,7 +9,8 @@
 Controller controller;
 
 BLEService facialExpressionService("c1449275-bf34-40ab-979d-e34a1fdbb129");
-BLEByteCharacteristic brightnessCharacteristic("49a36bb2-1c66-4e5c-8ff3-28e55a64beb3", BLERead | BLEWrite);
+BLEByteCharacteristic eyeStateCharacteristic("49a36bb2-1c66-4e5c-8ff3-28e55a64beb3", BLERead | BLEWrite);
+BLEByteCharacteristic mouthStateCharacteristic("493d06f3-0fa0-4a90-88f1-ebaed0da9b80", BLERead | BLEWrite);
 
 //? ------------------------ Blueooth 
 static void blePeripheralConnectHandler(BLEDevice central) {
@@ -24,11 +25,17 @@ static void blePeripheralDisconnectHandler(BLEDevice central) {
     digitalWrite(LED_BUILTIN, LOW);
 }
 
-void switchCharacteristicWritten(BLEDevice central, BLECharacteristic characteristic) {
+void eyeStateWritten(BLEDevice central, BLECharacteristic characteristic) {
     Serial.print("Characteristic event, written: ");
-    Serial.println(brightnessCharacteristic.value());
-    controller.setEye(brightnessCharacteristic.value());
-    // display->setBrightnessValue(brightnessCharacteristic.value());
+    Serial.println(characteristic.value());
+    controller.setEye(characteristic.value());
+    // display->setBrightnessValue(characteristic.value());
+}
+void mouthStateWritten(BLEDevice central, BLECharacteristic characteristic) {
+    Serial.print("Characteristic event, written: ");
+    Serial.println(characteristic.value());
+    controller.setMouth(characteristic.value());
+    // display->setBrightnessValue(characteristic.value());
 }
 //? ------------- Blueooth Setup
 void setupBLE() {
@@ -44,14 +51,16 @@ void setupBLE() {
 
     // Define the BLE facialExpressionService  and characteristic
     BLE.setAdvertisedService(facialExpressionService);
-    facialExpressionService.addCharacteristic(brightnessCharacteristic);
+    facialExpressionService.addCharacteristic(eyeStateCharacteristic);
+    facialExpressionService.addCharacteristic(mouthStateCharacteristic);
 
     BLE.addService(facialExpressionService);
     BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
     BLE.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
 
     // assign event handlers for characteristic
-    brightnessCharacteristic.setEventHandler(BLEWritten, switchCharacteristicWritten);
+    eyeStateCharacteristic.setEventHandler(BLEWritten, eyeStateWritten);
+    mouthStateCharacteristic.setEventHandler(BLEWritten, mouthStateWritten);
 
     // Start advertising the BLE pService
     BLE.advertise();
