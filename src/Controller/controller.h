@@ -56,16 +56,16 @@ class Controller {
     void setMouth(int i) {
         switch (i) {
             case 1:
-                mouthState.setState(mouthStateEnum::TALKING);
+                mouthState.setState(MouthStateEnum::TALKING);
                 break;
             default:
-                mouthState.setState(mouthStateEnum::IDLE);
+                mouthState.setState(MouthStateEnum::IDLE);
                 break;
         }
     }
 
     void setDisplayBrightness(int i) {
-        display->setBrightnessValue(i);
+        display.setBrightnessValue(i);
     }
 
     void resetFace() {

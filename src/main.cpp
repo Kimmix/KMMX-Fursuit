@@ -28,13 +28,16 @@ static void blePeripheralDisconnectHandler(BLEDevice central) {
 }
 
 void eyeStateWritten(BLEDevice central, BLECharacteristic characteristic) {
-    controller.setEye(characteristic.value());
+    const uint8_t* data = characteristic.value();
+    controller.setEye(static_cast<int>(*data));
 }
 void mouthStateWritten(BLEDevice central, BLECharacteristic characteristic) {
-    controller.setMouth(characteristic.value());
+    const uint8_t* data = characteristic.value();
+    controller.setMouth(static_cast<int>(*data));
 }
 void displayBrightnessWritten(BLEDevice central, BLECharacteristic characteristic) {
-    controller.setDisplayBrightness(characteristic.value());
+    const uint8_t* data = characteristic.value();
+    controller.setDisplayBrightness(static_cast<int>(*data));
 }
 //? ------------- Blueooth Setup
 void setupBLE() {
