@@ -35,8 +35,12 @@ class Controller {
 
     void getBoop() {
         isBoop = !digitalRead(IR_PIN);
+        if (isBoopPrev == LOW && isBoop == HIGH) {
+            eyeState.setPrevState(eyeState.getState());
+            mouthState.setPrevState(mouthState.getState());
+        }
         if (isBoopPrev == HIGH && isBoop == LOW) {
-            resetBoop();
+            flyingHeart.reset();
         }
         isBoopPrev = isBoop;
         if (isBoop) {
@@ -92,15 +96,7 @@ class Controller {
     }
 
     void faceBoop() {
-        if (isBoopPrev == LOW && isBoop == HIGH) {
-            eyeState.setPrevState(eyeState.getState());
-            mouthState.setPrevState(mouthState.getState());
-        }
         eyeState.setState(EyeStateEnum::BOOP);
         mouthState.setState(MouthStateEnum::BOOP);
-    }
-
-    void resetBoop() {
-        flyingHeart.reset();
     }
 };

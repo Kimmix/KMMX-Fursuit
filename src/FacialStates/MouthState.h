@@ -36,7 +36,9 @@ class MouthState : public FacialState {
     }
 
     void setPrevState(MouthStateEnum newState) {
-        Serial.print("Prev called");
+        if (newState == MouthStateEnum::BOOP) {
+            return;
+        }
         prevState = newState;
     }
 
@@ -48,7 +50,7 @@ class MouthState : public FacialState {
     LEDMatrixDisplay* display;
     Viseme viseme;
     const uint8_t* visemeFrame = mouthDefault;
-    MouthStateEnum prevState = MouthStateEnum::TALKING, currentState = MouthStateEnum::TALKING;
+    MouthStateEnum prevState, currentState = MouthStateEnum::TALKING;
 
     unsigned long resetBoop;
     bool visemeTaskRunning = false;

@@ -37,6 +37,9 @@ class EyeState {
     }
 
     void setPrevState(EyeStateEnum newState) {
+        if (newState == EyeStateEnum::BOOP) {
+            return;
+        }
         prevState = newState;
     }
 
@@ -47,7 +50,7 @@ class EyeState {
    private:
     LEDMatrixDisplay* display;
     GooglyEye googlyEye;
-    EyeStateEnum prevState = EyeStateEnum::IDLE, currentState = EyeStateEnum::IDLE;
+    EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
 
     unsigned long
         nextBlink,
