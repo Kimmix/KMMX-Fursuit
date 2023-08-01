@@ -12,6 +12,7 @@ enum class MouthStateEnum { IDLE,
 #include "FacialStates/FacialState.h"
 #include "FacialStates/MouthState.h"
 #include "FacialStates/EyeState.h"
+#include "RenderFunction/flyingHeart.h"
 #include "Bitmaps/Icons.h"
 
 #define IR_PIN GPIO_NUM_35
@@ -22,18 +23,35 @@ class Controller {
     SideLED sideLED;
     EyeState eyeState = EyeState(&display);
     MouthState mouthState = MouthState(&display);
+    FlyingHeart flyingHeart = FlyingHeart(&display);
+    bool isBoop = false, isBoopPrev = false;
 
    public:
     void update() {
+        getBoop();
         renderFace();
         // sideLED.animate();
     }
 
+    void getBoop() {
+        isBoop = !digitalRead(IR_PIN);
+        if (isBoopPrev == HIGH && isBoop == LOW) {
+            resetBoop();
+        }
+        isBoopPrev = isBoop;
+        if (isBoop) {
+            faceBoop();
+        }
+    }
+
     void renderFace() {
-        display.drawColorTest();
+        // display.drawColorTest();
         display.drawNose(noseNew);
         mouthState.update();
         eyeState.update();
+        if (isBoop) {
+            flyingHeart.renderHeart();
+        }
         // Double Buffering
         display.render();
         display.clearScreen();
@@ -74,9 +92,15 @@ class Controller {
     }
 
     void faceBoop() {
-        eyeState.setPrevState(eyeState.getState());
-        mouthState.setPrevState(mouthState.getState());
+        if (isBoopPrev == LOW && isBoop == HIGH) {
+            eyeState.setPrevState(eyeState.getState());
+            mouthState.setPrevState(mouthState.getState());
+        }
         eyeState.setState(EyeStateEnum::BOOP);
         mouthState.setState(MouthStateEnum::BOOP);
+    }
+
+    void resetBoop() {
+        flyingHeart.reset();
     }
 };

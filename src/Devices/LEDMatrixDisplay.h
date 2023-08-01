@@ -168,12 +168,27 @@ class LEDMatrixDisplay {
         }
     }
 
+    /**
+     * @brief Draws a bitmap onto the LED matrix with provided rgb value
+     * @param bitmap Array of 8-bit values representing the image
+     * @param image_width Width of the image in pixels
+     * @param image_height Height of the image in pixels
+     * @param offset_x X offset of the image
+     * @param offset_y Y offset of the image
+     * @param r red
+     * @param g green
+     * @param b blue
+     */
     void drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY, uint8_t r, uint8_t g, uint8_t b) {
         for (int i = 0; i < imageHeight; i++) {
             int offsetYPlusI = offsetY + i;
             for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
+                uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j);  // read the bytes from program memory
+                if (pixel <= 30) {
+                    continue;
+                }
                 matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
-                matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
+                // matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
             }
         }
     }

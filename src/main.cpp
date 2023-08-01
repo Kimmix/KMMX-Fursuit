@@ -3,18 +3,16 @@
 #include <esp_random.h>
 
 #include "Controller/controller.h"
-#define IR_PIN GPIO_NUM_35
 #define LED_BUILTIN GPIO_NUM_2
 
 Controller controller;
-
 BLEService protoService("c1449275-bf34-40ab-979d-e34a1fdbb129");
 BLEByteCharacteristic eyeStateCharacteristic("49a36bb2-1c66-4e5c-8ff3-28e55a64beb3", BLERead | BLEWrite);
 BLEByteCharacteristic mouthStateCharacteristic("493d06f3-0fa0-4a90-88f1-ebaed0da9b80", BLERead | BLEWrite);
 BLEByteCharacteristic displayBrightnessCharacteristic("9fdfd124-966b-44f7-8331-778c4d1512fc", BLERead | BLEWrite);
 // Change displayBrightnessCharacteristic data type
 
-//? ------------------------ Blueooth 
+//? ------------------------ Blueooth
 static void blePeripheralConnectHandler(BLEDevice central) {
     Serial.print("Connected event, central: ");
     Serial.println(central.address());
@@ -82,7 +80,7 @@ void showFPS() {
     }
 }
 
-//! -------------------- Main Setup -------------------- 
+//! -------------------- Main Setup --------------------
 void setup() {
     Serial.begin(115200);
     while (!Serial) delay(400);
@@ -94,8 +92,5 @@ void setup() {
 void loop() {
     // showFPS();
     BLE.poll();
-    if (!digitalRead(IR_PIN)) {
-        controller.faceBoop();
-    }
     controller.update();
 }

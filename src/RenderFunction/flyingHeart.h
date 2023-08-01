@@ -1,77 +1,66 @@
-// ------------------ Sill WIP remove from main code for now ------------------
-#include <Arduino.h>
-
-struct Heart {
-	float xpos, ypos;
-	float velocityx, velocityy;
-};
-Heart Hearts[numHeart];
-static const int numHeart = 5;
-
+//? Still need two screen to complete this feature
 // 5x5
-static const uint8_t PROGMEM heartS[] = {
-	0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0xff, 0xff, 0xff,
-	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff,
-	0xff, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00 };
-
+static const uint8_t PROGMEM heartBM[] = {
+    0x00, 0xff, 0x00, 0xff, 0x00,
+    0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff,
+    0x00, 0xff, 0xff, 0xff, 0x00,
+    0x00, 0x00, 0xff, 0x00, 0x00};
 class FlyingHeart {
-private:
+   public:
+    FlyingHeart(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {
+        reset();
+    }
 
-	void drawHeart(int offsetX, int offsetY) {
-		int imageWidth = 5, imageHeight = 5;
-		// int offsetX = 0, offsetY = 0;
-		int i, j, j2;
-		for (i = 0; i < imageHeight; i++) {
-			for (j = 0, j2 = 63; j < imageWidth; j++) {
-				if (heartS[i * imageWidth + j] > 0) {
-					display.writeBUffer(offsetX + j, offsetY + i, (heartS[i * imageWidth + j] * 255) / 255, 0, 0);
-					// matrix->drawPixelRGB888(-offsetX + PANEL_WIDTH + j2, offsetY + i,
-					//                         (heartS[i * imageWidth + j] * 255) / 255, 0,
-					//                         0);
-					j2--;
-				}
-			}
-		}
-	}
+    void renderHeart() {
+        if (millis() - heartSpeed >= 25) {
+            for (int i = 0; i < numHeart; i++) {
+                moveHeart(i);
+                // drawHeart(Hearts[i].xpos, Hearts[i].ypos);
+                heartSpeed = millis();
+            }
+        }
+        for (int i = 0; i < numHeart; i++) {
+            drawHeart(Hearts[i].xpos, Hearts[i].ypos);
+        }
+    }
 
-public:
-	volatile unsigned long heartSpeed = 0;
+    void reset() {
+        for (int i = 0; i < numHeart; i++) {
+            Hearts[i].xpos = SCREEN_WIDTH / 2;
+            Hearts[i].ypos = (esp_random() % 10);
+            Hearts[i].velocityx = static_cast<float>(esp_random()) / static_cast<float>(RAND_MAX);
+            Hearts[i].velocityy = static_cast<float>(esp_random()) / static_cast<float>(RAND_MAX);
+        }
+    }
 
-	void init() {
-		randomSeed(analogRead(0));
-		for (int i = 0; i < numHeart; i++) {
-			// Hearts[i].xpos = random(0, matrix->width() - 8);
-			// Hearts[i].ypos = random(0, matrix->height() - 6);
-			Hearts[i].xpos = 0;
-			Hearts[i].ypos = random(0, PANEL_HEIGHT - 5);
-			Hearts[i].velocityx = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-			Hearts[i].velocityy = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-		}
-	}
+   private:
+    LEDMatrixDisplay* display;
+    struct Heart {
+        float xpos, ypos;
+        float velocityx, velocityy;
+    };
+    static const int numHeart = 25;
+    Heart Hearts[numHeart];
+    volatile unsigned long heartSpeed = 0;
 
-	void flyingHeart() {
-		if (millis() - heartSpeed >= 25) {
-			FastLED_Pixel_Buff->dimAll(200);
-			for (int i = 0; i < numHeart; i++) {
-				// Draw heart and then calculate
-				drawHeart(Hearts[i].xpos, Hearts[i].ypos);
-				if (8 + Hearts[i].xpos >= PANEL_WIDTH) {
-					Hearts[i].velocityx *= -1;
-				}
-				else if (Hearts[i].xpos <= 0) {
-					Hearts[i].velocityx = abs(Hearts[i].velocityx);
-				}
-				if (6 + Hearts[i].ypos >= PANEL_HEIGHT) {
-					Hearts[i].velocityy *= -1;
-				}
-				else if (Hearts[i].ypos <= 0) {
-					Hearts[i].velocityy = abs(Hearts[i].velocityy);
-				}
-				Hearts[i].xpos += Hearts[i].velocityx;
-				Hearts[i].ypos += Hearts[i].velocityy;
-				heartSpeed = millis();
-			}
-			FastLED_Pixel_Buff->show();
-		}
-	}
+    int imageWidth = 5, imageHeight = 5;
+    void drawHeart(int offsetX, int offsetY) {
+        display->drawBitmap(heartBM, imageWidth, imageHeight, offsetX, offsetY, 255, 10, 10);
+    }
+
+    void moveHeart(int i) {
+        if (Hearts[i].xpos >= SCREEN_WIDTH) {
+            Hearts[i].velocityx *= -1;
+        } else if (Hearts[i].xpos <= 0) {
+            Hearts[i].velocityx = abs(Hearts[i].velocityx);
+        }
+        if (Hearts[i].ypos >= SCREEN_HEIGHT) {
+            Hearts[i].velocityy *= -1;
+        } else if (Hearts[i].ypos <= 0) {
+            Hearts[i].velocityy = abs(Hearts[i].velocityy);
+        }
+        Hearts[i].xpos += Hearts[i].velocityx;
+        Hearts[i].ypos += Hearts[i].velocityy;
+    }
 };

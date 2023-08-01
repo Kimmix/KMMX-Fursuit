@@ -30,6 +30,9 @@ class EyeState {
     }
 
     void setState(EyeStateEnum newState) {
+        if (newState == EyeStateEnum::BOOP) {
+            resetBoop = millis();
+        }
         currentState = newState;
     }
 

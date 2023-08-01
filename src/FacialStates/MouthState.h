@@ -29,6 +29,9 @@ class MouthState : public FacialState {
     }
 
     void setState(MouthStateEnum newState) {
+        if (newState == MouthStateEnum::BOOP) {
+            resetBoop = millis();
+        }
         currentState = newState;
     }
 

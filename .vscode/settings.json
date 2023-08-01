@@ -12,6 +12,8 @@
         "*.tcc": "cpp",
         "cmath": "cpp",
         "new": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "cstdlib": "cpp",
+        "algorithm": "cpp"
     }
 }
