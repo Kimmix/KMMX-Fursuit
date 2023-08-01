@@ -13,13 +13,14 @@ class FlyingHeart {
     }
 
     void renderHeart() {
-        if (millis() - heartSpeed >= 25) {
+        // Update heart position every X
+        if (millis() - heartSpeed >= 10) {
             for (int i = 0; i < numHeart; i++) {
                 moveHeart(i);
-                // drawHeart(Hearts[i].xpos, Hearts[i].ypos);
-                heartSpeed = millis();
             }
+            heartSpeed = millis();
         }
+        // Non-blocking render
         for (int i = 0; i < numHeart; i++) {
             drawHeart(Hearts[i].xpos, Hearts[i].ypos);
         }
@@ -28,7 +29,7 @@ class FlyingHeart {
     void reset() {
         for (int i = 0; i < numHeart; i++) {
             Hearts[i].xpos = SCREEN_WIDTH / 2;
-            Hearts[i].ypos = (esp_random() % 10);
+            Hearts[i].ypos = 3 + (esp_random() % 5);
             Hearts[i].velocityx = static_cast<float>(esp_random()) / static_cast<float>(RAND_MAX);
             Hearts[i].velocityy = static_cast<float>(esp_random()) / static_cast<float>(RAND_MAX);
         }
