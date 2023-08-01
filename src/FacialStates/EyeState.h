@@ -47,7 +47,7 @@ class EyeState {
    private:
     LEDMatrixDisplay* display;
     GooglyEye googlyEye;
-    EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
+    EyeStateEnum prevState = EyeStateEnum::IDLE, currentState = EyeStateEnum::IDLE;
 
     unsigned long
         nextBlink,
