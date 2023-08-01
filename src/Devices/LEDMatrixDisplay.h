@@ -151,18 +151,29 @@ class LEDMatrixDisplay {
      * @param offset_x X offset of the image
      * @param offset_y Y offset of the image
      */
-    void drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY, bool drawBlack = true) {
+    void drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY) {
         uint8_t r, g, b;
         for (int i = 0; i < imageHeight; i++) {
             int offsetYPlusI = offsetY + i;
             for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
                 uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j);  // read the bytes from program memory
+                if (pixel <= 30) {
+                    continue;
+                }
                 getColorMap(pixel, i + offsetY, r, g, b);
                 // getBlackWhiteWave(pixel, i, j + offsetY, r, g, b);
-                if (drawBlack || (r | g | b) != 0) {
-                    matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
-                    matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
-                }
+                matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
+                matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
+            }
+        }
+    }
+
+    void drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY, uint8_t r, uint8_t g, uint8_t b) {
+        for (int i = 0; i < imageHeight; i++) {
+            int offsetYPlusI = offsetY + i;
+            for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
+                matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
+                matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
             }
         }
     }
@@ -179,7 +190,7 @@ class LEDMatrixDisplay {
     }
 
     void drawEyePupil(const uint8_t* bitmap, int x, int y) {
-        drawBitmap(bitmap, 6, 6, 21 + x, 5 + y, false);
+        drawBitmap(bitmap, 6, 6, 21 + x, 5 + y);
     }
 
     void drawNose(const uint8_t* bitmap) {
