@@ -194,8 +194,8 @@ class GooglyEye {
         // Serial.println(accZ);
 
         // Orient the sensor directions to the display directions
-        float eye_ax = -accY;
-        float eye_ay = -accX;
+        float eye_ax = accX;
+        float eye_ay = accY;
         update(eye_ax, eye_ay);
     }
 };
