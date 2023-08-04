@@ -35,6 +35,10 @@ class FlyingHeart {
         }
     }
 
+    void setSpeed(int speed) {
+        speedModifier = speed;
+    }
+
    private:
     LEDMatrixDisplay* display;
     struct Heart {
