@@ -67,7 +67,7 @@ class MouthState : public FacialState {
     static void visemeRenderingTask(void* parameter) {
         MouthState* mouthState = reinterpret_cast<MouthState*>(parameter);
         mouthState->visemeTaskRunning = true;
-        while (mouthState->currentState == MouthStateEnum::TALKING) {
+        while (mouthState->currentState != MouthStateEnum::IDLE) {
             mouthState->visemeFrame = mouthState->viseme.renderViseme();
         }
         mouthState->visemeTaskRunning = false;
