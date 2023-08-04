@@ -30,7 +30,7 @@ class Controller {
     void update() {
         getBoop();
         renderFace();
-        // sideLED.animate();
+        sideLED.animate();
     }
 
     void getBoop() {
@@ -45,6 +45,7 @@ class Controller {
         isBoopPrev = isBoop;
         if (isBoop) {
             faceBoop();
+            flyingHeart.renderHeart();
         }
     }
 
@@ -53,9 +54,6 @@ class Controller {
         display.drawNose(noseNew);
         mouthState.update();
         eyeState.update();
-        if (isBoop) {
-            flyingHeart.renderHeart();
-        }
         // Double Buffering
         display.render();
         display.clearScreen();
