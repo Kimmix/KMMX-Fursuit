@@ -22,7 +22,6 @@ enum class FXStateEnum { IDLE,
 class Controller {
    public:
     void update() {
-        // getBoop();
         getDynamicBoop();
         renderFace();
         sideLED.animate();
@@ -76,56 +75,33 @@ class Controller {
         display.clearScreen();
     }
 
-    void faceBoop() {
-        eyeState.setState(EyeStateEnum::BOOP);
-        mouthState.setState(MouthStateEnum::BOOP);
-    }
-
-    void getBoop() {
-        isBoop = !digitalRead(IR_PIN);
-        if (isBoopPrev == LOW && isBoop == HIGH) {
-            eyeState.setPrevState(eyeState.getState());
-            mouthState.setPrevState(mouthState.getState());
-        }
-        if (isBoopPrev == HIGH && isBoop == LOW) {
-            // flyingHeart.reset();
-        }
-        isBoopPrev = isBoop;
-        if (isBoop) {
-            faceBoop();
-            // flyingHeart.renderHeart();
-        }
-    }
-
     enum BoopState {
         IDLE,
         BOOP_IN_PROGRESS,
     };
     BoopState currentBoopState = IDLE;
-    const int SENSOR_IN_RANGE_THRESHOLD = 300;    // Adjust this value based on your sensor characteristics
-    const int SENSOR_OUT_RANGE_THRESHOLD = 3900;  // Adjust this value based on your sensor characteristics
-    const unsigned long TIMEOUT_MS = 2000;        // Timeout in milliseconds (2 seconds)
+    const int IR_IN_RANGE_THRESHOLD = 300, IR_OUT_RANGE_THRESHOLD = 3900;
+    const unsigned long boopDuration = 1000;
     unsigned long boopStartTime = 0;
 
     void getDynamicBoop() {
         int sensorValue = analogRead(IR_PIN);
         switch (currentBoopState) {
             case IDLE:
-                if (sensorValue < SENSOR_OUT_RANGE_THRESHOLD && sensorValue > SENSOR_IN_RANGE_THRESHOLD) {
+                if (sensorValue < IR_OUT_RANGE_THRESHOLD && sensorValue > IR_IN_RANGE_THRESHOLD) {
                     boopStartTime = millis();
                     currentBoopState = BOOP_IN_PROGRESS;
                 }
                 break;
             case BOOP_IN_PROGRESS:
                 mouthState.setState(MouthStateEnum::BOOP);
-                if (sensorValue <= SENSOR_IN_RANGE_THRESHOLD) {
+                if (sensorValue <= IR_IN_RANGE_THRESHOLD) {
                     float speed = calculateBoopSpeed();
-                    Serial.println(speed);
                     if (speed > 0.0) {
                         setBoopEffects(speed);
                     }
                     currentBoopState = IDLE;
-                } else if (sensorValue >= SENSOR_OUT_RANGE_THRESHOLD) {
+                } else if (sensorValue >= IR_OUT_RANGE_THRESHOLD) {
                     currentBoopState = IDLE;
                 }
                 break;
@@ -133,7 +109,7 @@ class Controller {
     }
     float calculateBoopSpeed() {
         unsigned long elapsedTime = millis() - boopStartTime;
-        float speed = map(elapsedTime, 100, TIMEOUT_MS, 0, 100);
+        float speed = map(elapsedTime, 100, boopDuration, 0, 100);
         return speed / 100;
     }
     void setBoopEffects(float speed) {
