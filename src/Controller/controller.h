@@ -80,7 +80,7 @@ class Controller {
         BOOP_IN_PROGRESS,
     };
     BoopState currentBoopState = IDLE;
-    const int IR_IN_RANGE_THRESHOLD = 300, IR_OUT_RANGE_THRESHOLD = 3900;
+    const int IR_IN_RANGE_THRESHOLD = 300, IR_OUT_RANGE_THRESHOLD = 3600;
     const unsigned long boopDuration = 1000;
     unsigned long boopStartTime = 0;
 
