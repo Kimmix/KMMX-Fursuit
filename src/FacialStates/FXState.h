@@ -40,7 +40,7 @@ class FXState {
 
     void flyingHeartState() {
         flyingHeart.renderHeart();
-        if (millis() - resetHeart >= 2000) {
+        if (millis() - resetHeart >= 3500) {
             currentState = FXStateEnum::IDLE;
         }
     }

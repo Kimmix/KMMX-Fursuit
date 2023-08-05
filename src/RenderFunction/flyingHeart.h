@@ -63,10 +63,10 @@ class FlyingHeart {
         // }
         if (Hearts[i].ypos >= SCREEN_HEIGHT) {
             Hearts[i].velocityy *= -1;
-            Hearts[i].velocityx *= 1.3;
+            Hearts[i].velocityx *= 1.5;
         } else if (Hearts[i].ypos <= 0) {
             Hearts[i].velocityy = abs(Hearts[i].velocityy);
-            Hearts[i].velocityx *= 1.3;
+            Hearts[i].velocityx *= 1.5;
         }
         // Destroy
         if (Hearts[i].xpos >= SCREEN_WIDTH || Hearts[i].xpos <= 0) {

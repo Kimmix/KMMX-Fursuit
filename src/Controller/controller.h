@@ -97,23 +97,27 @@ class Controller {
         }
     }
 
-    enum SensorState {
-        WAITING,
-        DETECTED,
-        TIMEOUT,
+    enum BoopState {
+        IDLE,
+        BOOP_IN_PROGRESS,
     };
+    BoopState currentState = IDLE;
     const int SENSOR_IN_RANGE_THRESHOLD = 300;    // Adjust this value based on your sensor characteristics
     const int SENSOR_OUT_RANGE_THRESHOLD = 3900;  // Adjust this value based on your sensor characteristics
     const unsigned long TIMEOUT_MS = 2000;        // Timeout in milliseconds (2 seconds)
-    SensorState currentState = WAITING;
     unsigned long startTime = 0;
 
     void getDynamicBoop() {
         int sensorValue = analogRead(IR_PIN);
-        if (sensorValue < SENSOR_OUT_RANGE_THRESHOLD && sensorValue > SENSOR_IN_RANGE_THRESHOLD) {
-            startTime = millis();
-            while (sensorValue < SENSOR_OUT_RANGE_THRESHOLD && sensorValue > SENSOR_IN_RANGE_THRESHOLD) {
-                sensorValue = analogRead(IR_PIN);
+        switch (currentState) {
+            case IDLE:
+                if (sensorValue < SENSOR_OUT_RANGE_THRESHOLD && sensorValue > SENSOR_IN_RANGE_THRESHOLD) {
+                    currentState = BOOP_IN_PROGRESS;
+                    startTime = millis();
+                }
+                break;
+
+            case BOOP_IN_PROGRESS:
                 mouthState.setState(MouthStateEnum::BOOP);
                 if (sensorValue <= SENSOR_IN_RANGE_THRESHOLD) {
                     unsigned long elapsedTime = millis() - startTime;
@@ -125,10 +129,11 @@ class Controller {
                         eyeState.setState(EyeStateEnum::BOOP);
                         mouthState.setState(MouthStateEnum::BOOP);
                     }
-                    return;
+                    currentState = IDLE;
+                } else if (sensorValue >= SENSOR_OUT_RANGE_THRESHOLD) {
+                    currentState = IDLE;
                 }
-            }
-            return;
+                break;
         }
     }
 };
