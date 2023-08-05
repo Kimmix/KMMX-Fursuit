@@ -36,7 +36,7 @@ class FlyingHeart {
     }
 
     void setSpeed(int speed) {
-        speedModifier = speed;
+        // speedModifier = speed;
     }
 
    private:

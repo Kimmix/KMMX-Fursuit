@@ -6,13 +6,15 @@ enum class EyeStateEnum { IDLE,
 enum class MouthStateEnum { IDLE,
                             BOOP,
                             TALKING };
+enum class FXStateEnum { IDLE,
+                         Heart,
+                         Blush };
 
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/SideLED.h"
-#include "FacialStates/FacialState.h"
 #include "FacialStates/MouthState.h"
 #include "FacialStates/EyeState.h"
-#include "RenderFunction/flyingHeart.h"
+#include "FacialStates/FXState.h"
 #include "Bitmaps/Icons.h"
 
 #define IR_PIN GPIO_NUM_35
@@ -60,7 +62,7 @@ class Controller {
     SideLED sideLED;
     EyeState eyeState = EyeState(&display);
     MouthState mouthState = MouthState(&display);
-    FlyingHeart flyingHeart = FlyingHeart(&display);
+    FXState fxState = FXState(&display);
     bool isBoop = false, isBoopPrev = false;
 
     void renderFace() {
@@ -68,6 +70,7 @@ class Controller {
         display.drawNose(noseNew);
         mouthState.update();
         eyeState.update();
+        fxState.update();
         // Double Buffering
         display.render();
         display.clearScreen();
@@ -85,72 +88,47 @@ class Controller {
             mouthState.setPrevState(mouthState.getState());
         }
         if (isBoopPrev == HIGH && isBoop == LOW) {
-            flyingHeart.reset();
+            // flyingHeart.reset();
         }
         isBoopPrev = isBoop;
         if (isBoop) {
             faceBoop();
-            flyingHeart.renderHeart();
+            // flyingHeart.renderHeart();
         }
     }
-
-    // void getDynamicBoop() {
-    //     float detectedSpeed = detectSpeed(analogRead(IR_PIN));
-    //     if (detectedSpeed > 0.0) {
-    //         Serial.print("Detected Speed: ");
-    //         Serial.println(detectedSpeed);
-    //     }
-    // }
 
     enum SensorState {
         WAITING,
         DETECTED,
         TIMEOUT,
     };
-    const int SENSOR_IN_RANGE_THRESHOLD = 500;    // Adjust this value based on your sensor characteristics
-    const int SENSOR_OUT_RANGE_THRESHOLD = 4000;  // Adjust this value based on your sensor characteristics
+    const int SENSOR_IN_RANGE_THRESHOLD = 300;    // Adjust this value based on your sensor characteristics
+    const int SENSOR_OUT_RANGE_THRESHOLD = 3900;  // Adjust this value based on your sensor characteristics
     const unsigned long TIMEOUT_MS = 2000;        // Timeout in milliseconds (2 seconds)
     SensorState currentState = WAITING;
     unsigned long startTime = 0;
+
     void getDynamicBoop() {
         int sensorValue = analogRead(IR_PIN);
-        switch (currentState) {
-            case WAITING:
-                if (sensorValue < SENSOR_OUT_RANGE_THRESHOLD && sensorValue > SENSOR_IN_RANGE_THRESHOLD) {
-                    currentState = DETECTED;
-                    startTime = millis();
-                    flyingHeart.reset();
-                }
-                break;
-
-            case DETECTED:
+        if (sensorValue < SENSOR_OUT_RANGE_THRESHOLD && sensorValue > SENSOR_IN_RANGE_THRESHOLD) {
+            startTime = millis();
+            while (sensorValue < SENSOR_OUT_RANGE_THRESHOLD && sensorValue > SENSOR_IN_RANGE_THRESHOLD) {
+                sensorValue = analogRead(IR_PIN);
                 mouthState.setState(MouthStateEnum::BOOP);
                 if (sensorValue <= SENSOR_IN_RANGE_THRESHOLD) {
                     unsigned long elapsedTime = millis() - startTime;
                     float speed = map(elapsedTime, 100, TIMEOUT_MS * 0.75, 0, 100);
-                    // speed = constrain(speed, 0.0, 1.0);
                     speed /= 100;
                     if (speed > 0.0) {
-                        Serial.print("Detected Speed: ");
-                        Serial.println(speed);
-                        flyingHeart.setSpeed(speed);
-                        flyingHeart.renderHeart();
+                        fxState.setFlyingSpeed(speed);
+                        fxState.setState(FXStateEnum::Heart);
                         eyeState.setState(EyeStateEnum::BOOP);
                         mouthState.setState(MouthStateEnum::BOOP);
                     }
-                    currentState = WAITING;
-                } else if (sensorValue >= SENSOR_OUT_RANGE_THRESHOLD) {
-                    Serial.println("------ Out of Range ------");
-                    currentState = WAITING;
-                } else if (millis() - startTime >= TIMEOUT_MS) {
-                    Serial.println("------ TIMED OUT ------");
-                    currentState = TIMEOUT;
+                    return;
                 }
-                break;
-
-            case TIMEOUT:
-                currentState = WAITING;
-                break;
+            }
+            return;
         }
     }
 };
