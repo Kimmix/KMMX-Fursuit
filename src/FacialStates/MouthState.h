@@ -1,7 +1,7 @@
 #include "Bitmaps/mouthBitmap.h"
 #include "RenderFunction/viseme.h"
 
-class MouthState : public FacialState {
+class MouthState {
    public:
     MouthState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
 
@@ -50,7 +50,7 @@ class MouthState : public FacialState {
     LEDMatrixDisplay* display;
     Viseme viseme;
     const uint8_t* visemeFrame = mouthDefault;
-    MouthStateEnum prevState, currentState = MouthStateEnum::TALKING;
+    MouthStateEnum prevState = MouthStateEnum::TALKING, currentState = MouthStateEnum::TALKING;
 
     unsigned long resetBoop;
     bool visemeTaskRunning = false;
