@@ -45,7 +45,7 @@ class FXState {
         }
     }
 
-    void setFlyingSpeed(int i) {
+    void setFlyingSpeed(float i) {
         flyingHeart.setSpeed(i);
     }
 };

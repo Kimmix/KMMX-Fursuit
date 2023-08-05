@@ -101,39 +101,45 @@ class Controller {
         IDLE,
         BOOP_IN_PROGRESS,
     };
-    BoopState currentState = IDLE;
+    BoopState currentBoopState = IDLE;
     const int SENSOR_IN_RANGE_THRESHOLD = 300;    // Adjust this value based on your sensor characteristics
     const int SENSOR_OUT_RANGE_THRESHOLD = 3900;  // Adjust this value based on your sensor characteristics
     const unsigned long TIMEOUT_MS = 2000;        // Timeout in milliseconds (2 seconds)
-    unsigned long startTime = 0;
+    unsigned long boopStartTime = 0;
 
     void getDynamicBoop() {
         int sensorValue = analogRead(IR_PIN);
-        switch (currentState) {
+        switch (currentBoopState) {
             case IDLE:
                 if (sensorValue < SENSOR_OUT_RANGE_THRESHOLD && sensorValue > SENSOR_IN_RANGE_THRESHOLD) {
-                    currentState = BOOP_IN_PROGRESS;
-                    startTime = millis();
+                    boopStartTime = millis();
+                    currentBoopState = BOOP_IN_PROGRESS;
                 }
                 break;
-
             case BOOP_IN_PROGRESS:
                 mouthState.setState(MouthStateEnum::BOOP);
                 if (sensorValue <= SENSOR_IN_RANGE_THRESHOLD) {
-                    unsigned long elapsedTime = millis() - startTime;
-                    float speed = map(elapsedTime, 100, TIMEOUT_MS * 0.75, 0, 100);
-                    speed /= 100;
+                    float speed = calculateBoopSpeed();
+                    Serial.println(speed);
                     if (speed > 0.0) {
-                        fxState.setFlyingSpeed(speed);
-                        fxState.setState(FXStateEnum::Heart);
-                        eyeState.setState(EyeStateEnum::BOOP);
-                        mouthState.setState(MouthStateEnum::BOOP);
+                        setBoopEffects(speed);
                     }
-                    currentState = IDLE;
+                    currentBoopState = IDLE;
                 } else if (sensorValue >= SENSOR_OUT_RANGE_THRESHOLD) {
-                    currentState = IDLE;
+                    currentBoopState = IDLE;
                 }
                 break;
         }
+    }
+    float calculateBoopSpeed() {
+        unsigned long elapsedTime = millis() - boopStartTime;
+        float speed = map(elapsedTime, 100, TIMEOUT_MS, 0, 100);
+        return speed / 100;
+    }
+    void setBoopEffects(float speed) {
+        fxState.setFlyingSpeed(speed);
+        fxState.setState(FXStateEnum::Heart);
+        eyeState.setState(EyeStateEnum::BOOP);
+        mouthState.setState(MouthStateEnum::BOOP);
     }
 };
