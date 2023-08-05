@@ -9,7 +9,7 @@
 
 // Define the number of frames and the transition duration
 #define INTERPOLATION_FACTOR 4
-#define INTERPOLATION_DURATION 5
+#define INTERPOLATION_DURATION 6
 
 class LEDMatrixDisplay {
    private:
@@ -275,8 +275,8 @@ class LEDMatrixDisplay {
             uint8_t nextPixel = next[i];
 
             // Perform linear interpolation for each pixel
-            uint8_t interpolatedPixel = currentPixel + ((nextPixel - currentPixel) * index) / totalFrames;
-            interpolated[i] = interpolatedPixel;
+            // uint8_t interpolatedPixel = currentPixel + ((nextPixel - currentPixel) * index) / totalFrames;
+            // interpolated[i] = interpolatedPixel;
 
             // Cosine Interpolation
             // float t = (float)index / totalFrames;
@@ -284,8 +284,8 @@ class LEDMatrixDisplay {
             // interpolated[i] = static_cast<uint8_t>(interpolatedValue);
 
             // Cross blend the pixel values
-            // uint8_t interpolatedPixel = (currentPixel * (totalFrames - index) + nextPixel * index) / totalFrames;
-            // interpolated[i] = interpolatedPixel;
+            uint8_t interpolatedPixel = (currentPixel * (totalFrames - index) + nextPixel * index) / totalFrames;
+            interpolated[i] = interpolatedPixel;
         }
     }
     bool isFrameSame(const uint8_t* frame1, const uint8_t* frame2, int width, int height) {
