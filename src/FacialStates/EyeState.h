@@ -6,8 +6,6 @@ class EyeState {
     EyeState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
 
     void update() {
-        // Serial.print(currentState);
-        // Serial.print("\n");
         switch (currentState) {
             case EyeStateEnum::IDLE:
                 idleFace();
@@ -16,7 +14,10 @@ class EyeState {
                 blink();
                 break;
             case EyeStateEnum::BOOP:
-                boopFace();
+                arrowFace();
+                if (millis() - resetBoop >= 1500) {
+                    currentState = prevState;
+                }
                 break;
             case EyeStateEnum::GOOGLY:
                 renderGooglyEye();
@@ -30,13 +31,14 @@ class EyeState {
     }
 
     void setState(EyeStateEnum newState) {
+        savePrevState(currentState);
         if (newState == EyeStateEnum::BOOP) {
             resetBoop = millis();
         }
         currentState = newState;
     }
 
-    void setPrevState(EyeStateEnum newState) {
+    void savePrevState(EyeStateEnum newState) {
         if (newState == EyeStateEnum::BOOP) {
             return;
         }
@@ -58,14 +60,6 @@ class EyeState {
         nextBoop,
         resetBoop;
 
-    void idleFace() {
-        display->drawEye(defaultAnimation[defaultFaceIndex]);
-        if (millis() >= nextBlink) {
-            nextBlink = millis() + (1000 * (esp_random() % 20));
-            currentState = EyeStateEnum::BLINK;
-        }
-    }
-
     short defaultFaceIndex = 0;
     const uint8_t* defaultAnimation[3] = {eyeDefault, eyeUp, eyeDown};
     void changeDefaultFace() {
@@ -76,31 +70,12 @@ class EyeState {
         }
     }
 
-    void boopFace() {
-        arrowFace();
-        if (millis() - resetBoop >= 1000) {
-            currentState = prevState;
+    void idleFace() {
+        display->drawEye(defaultAnimation[defaultFaceIndex]);
+        if (millis() >= nextBlink) {
+            nextBlink = millis() + (1000 * (esp_random() % 20));
+            currentState = EyeStateEnum::BLINK;
         }
-    }
-
-    const uint8_t* boopAnimation[2] = {eyeV1, eyeV2};
-    short boopAnimationFrame;
-    void arrowFace() {
-        if (millis() > nextBoop) {
-            nextBoop = millis() + 300;
-            boopAnimationFrame ^= 1;
-        }
-        display->drawEye(boopAnimation[boopAnimationFrame]);
-    }
-
-    const uint8_t* oFaceAnimation[3] = {eyeO1, eyeO2, eyeO3};
-    short currentOFaceIndex;
-    void oFace() {
-        if (millis() >= nextBoop) {
-            nextBoop = millis() + 200;
-            currentOFaceIndex = esp_random() % 3;
-        }
-        display->drawEye(oFaceAnimation[currentOFaceIndex]);
     }
 
     const uint8_t* blinkAnimation[3] = {eyeBlink1, eyeBlink2, eyeBlink3};
@@ -124,6 +99,26 @@ class EyeState {
             blinkInterval = millis() + 70;
         }
         display->drawEye(blinkAnimation[currentBlinkFrameIndex]);
+    }
+
+    const uint8_t* boopAnimation[2] = {eyeV1, eyeV2};
+    short boopAnimationFrame;
+    void arrowFace() {
+        if (millis() > nextBoop) {
+            nextBoop = millis() + 300;
+            boopAnimationFrame ^= 1;
+        }
+        display->drawEye(boopAnimation[boopAnimationFrame]);
+    }
+
+    const uint8_t* oFaceAnimation[3] = {eyeO1, eyeO2, eyeO3};
+    short currentOFaceIndex;
+    void oFace() {
+        if (millis() >= nextBoop) {
+            nextBoop = millis() + 200;
+            currentOFaceIndex = esp_random() % 3;
+        }
+        display->drawEye(oFaceAnimation[currentOFaceIndex]);
     }
 
     void renderGooglyEye() {

@@ -22,7 +22,7 @@ enum class FXStateEnum { IDLE,
 class Controller {
    public:
     void update() {
-        getDynamicBoop();
+        dynamicBoop();
         renderFace();
         sideLED.animate();
     }
@@ -41,9 +41,9 @@ class Controller {
         }
     }
 
-    void setMouth(int i) {
-        switch (i) {
-            case 1:
+    void setViseme(boolean b) {
+        switch (b) {
+            case true:
                 mouthState.setState(MouthStateEnum::TALKING);
                 break;
             default:
@@ -84,7 +84,7 @@ class Controller {
     const unsigned long boopDuration = 1000;
     unsigned long boopStartTime = 0;
 
-    void getDynamicBoop() {
+    void dynamicBoop() {
         int sensorValue = analogRead(IR_PIN);
         switch (currentBoopState) {
             case IDLE:
