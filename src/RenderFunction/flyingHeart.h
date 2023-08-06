@@ -30,8 +30,11 @@ class FlyingHeart {
     }
 
     void reset() {
-        setIndex = (setIndex + 1) % numSets;
-        for (int i = (0 * setIndex) + 1; i < (numHeart * setIndex) + 1; i++) {
+        Serial.print("--------- Index: ");
+        Serial.println(setIndex);
+        for (int i = setIndex * numHeart; i < (setIndex + 1) * numHeart; i++) {
+            Serial.print(i);
+            Serial.print(",");
             if (Hearts[i].velocityx == 0 && Hearts[i].velocityy == 0) {
                 Hearts[i].xpos = SCREEN_WIDTH / 2;
                 Hearts[i].ypos = 3 + (esp_random() % 5);
@@ -39,6 +42,8 @@ class FlyingHeart {
                 Hearts[i].velocityy = (static_cast<float>(esp_random()) / static_cast<float>(RAND_MAX) * speedModifier);
             }
         }
+        Serial.println();
+        setIndex = (setIndex + 1) % numSets;
     }
 
     void resetAll() {
