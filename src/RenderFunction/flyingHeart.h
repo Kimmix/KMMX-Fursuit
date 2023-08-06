@@ -30,19 +30,19 @@ class FlyingHeart {
     }
 
     void reset() {
-        Serial.print("--------- Index: ");
-        Serial.println(setIndex);
         for (int i = setIndex * numHeart; i < (setIndex + 1) * numHeart; i++) {
-            Serial.print(i);
-            Serial.print(",");
             if (Hearts[i].velocityx == 0 && Hearts[i].velocityy == 0) {
                 Hearts[i].xpos = SCREEN_WIDTH / 2;
                 Hearts[i].ypos = 3 + (esp_random() % 5);
+                // if (esp_random() % 2 == 0) {
+                //     Hearts[i].velocityx = -1.0f * (static_cast<float>(esp_random()) / static_cast<float>(RAND_MAX) * speedModifier);
+                // } else {
+                //     Hearts[i].velocityx = (static_cast<float>(esp_random()) / static_cast<float>(RAND_MAX) * speedModifier);
+                // }
                 Hearts[i].velocityx = (static_cast<float>(esp_random()) / static_cast<float>(RAND_MAX) * speedModifier);
                 Hearts[i].velocityy = (static_cast<float>(esp_random()) / static_cast<float>(RAND_MAX) * speedModifier);
             }
         }
-        Serial.println();
         setIndex = (setIndex + 1) % numSets;
     }
 
