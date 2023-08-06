@@ -52,6 +52,10 @@ class Controller {
         }
     }
 
+    int getDisplayBrightness() {
+        return display.getBrightnessValue();
+    }
+
     void setDisplayBrightness(int i) {
         display.setBrightnessValue(i);
     }
