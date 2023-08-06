@@ -1,11 +1,25 @@
 //? Still need two screen to complete this feature
+// 3x3
+static const uint8_t PROGMEM heartBM3x3[] = {
+    0xff, 0x00, 0xff,
+    0xff, 0xff, 0xff,
+    0x00, 0xff, 0x00};
 // 5x5
-static const uint8_t PROGMEM heartBM[] = {
+static const uint8_t PROGMEM heartBM5x5[] = {
     0x00, 0xff, 0x00, 0xff, 0x00,
     0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff,
     0x00, 0xff, 0xff, 0xff, 0x00,
     0x00, 0x00, 0xff, 0x00, 0x00};
+// 7x7
+static const uint8_t PROGMEM heartBM7x7[] = {
+    0x00, 0xff, 0xff, 0x00, 0xff, 0xff, 0x00,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00,
+    0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00};
 class FlyingHeart {
    public:
     FlyingHeart(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {
@@ -25,7 +39,7 @@ class FlyingHeart {
             if (Hearts[i].velocityx == 0 && Hearts[i].velocityy == 0) {
                 continue;
             }
-            drawHeart(Hearts[i].xpos, Hearts[i].ypos);
+            drawHeart(Hearts[i].xpos, Hearts[i].ypos, Hearts[i].size);
         }
     }
 
@@ -41,6 +55,7 @@ class FlyingHeart {
                 // }
                 Hearts[i].velocityx = (static_cast<float>(esp_random()) / static_cast<float>(RAND_MAX) * speedModifier);
                 Hearts[i].velocityy = (static_cast<float>(esp_random()) / static_cast<float>(RAND_MAX) * speedModifier);
+                Hearts[i].size = getRandomHeartSize();
             }
         }
         setIndex = (setIndex + 1) % numSets;
@@ -52,6 +67,7 @@ class FlyingHeart {
             Hearts[i].ypos = 0;
             Hearts[i].velocityx = 0;
             Hearts[i].velocityy = 0;
+            Hearts[i].size = getRandomHeartSize();
         }
     }
 
@@ -61,9 +77,13 @@ class FlyingHeart {
 
    private:
     LEDMatrixDisplay* display;
+    enum HeartSize { SIZE_3x3,
+                     SIZE_5x5,
+                     SIZE_7x7 };
     struct Heart {
         float xpos, ypos;
         float velocityx, velocityy;
+        HeartSize size;
     };
     short setIndex = 0;
     static const short numSets = 3, numHeart = 23, sumHeart = numSets * numHeart;
@@ -71,9 +91,35 @@ class FlyingHeart {
     volatile unsigned long heartSpeed = 0;
     float speedModifier = 0.5;
 
+    HeartSize getRandomHeartSize() {
+        int randomNum = esp_random() % 3;
+        switch (randomNum) {
+            case 0:
+                return HeartSize::SIZE_3x3;
+            case 1:
+                return HeartSize::SIZE_5x5;
+            case 2:
+            default:
+                return HeartSize::SIZE_7x7;
+        }
+    }
+
     int imageWidth = 5, imageHeight = 5;
-    void drawHeart(int offsetX, int offsetY) {
-        display->drawBitmap(heartBM, imageWidth, imageHeight, offsetX, offsetY, 255, 10, 10);
+    void drawHeart(int offsetX, int offsetY, HeartSize size) {
+        switch (size) {
+            case HeartSize::SIZE_3x3:
+                display->drawBitmap(heartBM3x3, 3, 3, offsetX, offsetY, 255, 10, 10);
+                break;
+            case HeartSize::SIZE_5x5:
+                display->drawBitmap(heartBM5x5, 5, 5, offsetX, offsetY, 255, 10, 10);
+                break;
+            case HeartSize::SIZE_7x7:
+                display->drawBitmap(heartBM7x7, 7, 7, offsetX, offsetY, 255, 10, 10);
+                break;
+            default:
+                display->drawBitmap(heartBM5x5, 5, 5, offsetX, offsetY, 255, 10, 10);
+                break;
+        }
     }
 
     void moveHeart(int i) {
