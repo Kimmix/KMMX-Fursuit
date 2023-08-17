@@ -52,6 +52,10 @@ class Controller {
         }
     }
 
+    int getViseme() {
+        return mouthState.getState();
+    }
+
     int getDisplayBrightness() {
         return display.getBrightnessValue();
     }

@@ -57,7 +57,7 @@ void setupBLE() {
     // Set default values for each characteristic
     displayBrightnessCharacteristic.setValue(controller.getDisplayBrightness());
     eyeStateCharacteristic.setValue(0x00);
-    visemeCharacteristic.setValue(true);
+    visemeCharacteristic.setValue(controller.getViseme());
 
     BLE.addService(protoService);
     BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
