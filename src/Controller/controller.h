@@ -53,7 +53,7 @@ class Controller {
     }
 
     int getViseme() {
-        return mouthState.getState();
+        return mouthState.getState() == MouthStateEnum::TALKING;
     }
 
     int getDisplayBrightness() {
