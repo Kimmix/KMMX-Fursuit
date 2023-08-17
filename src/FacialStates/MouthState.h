@@ -1,4 +1,9 @@
 #include "Bitmaps/mouthBitmap.h"
+#include "Bitmaps/Viseme/visemeAH.h"
+#include "Bitmaps/Viseme/visemeEE.h"
+#include "Bitmaps/Viseme/visemeOH.h"
+#include "Bitmaps/Viseme/visemeOO.h"
+#include "Bitmaps/Viseme/visemeTH.h"
 #include "Bitmaps/mouthAnimated.h"
 #include "RenderFunction/viseme.h"
 
@@ -22,7 +27,11 @@ class MouthState {
                 if (!visemeTaskRunning) {
                     startVisemeTask();
                 }
-                display->drawMouth(visemeFrame);
+                if (visemeFrame == mouthDefault) {
+                    drawDefault();
+                } else {
+                    display->drawMouth(visemeFrame);
+                }
                 break;
             default:
                 currentState = MouthStateEnum::IDLE;
@@ -53,7 +62,7 @@ class MouthState {
     LEDMatrixDisplay* display;
     Viseme viseme;
     const uint8_t* visemeFrame = mouthDefault;
-    MouthStateEnum prevState, currentState = MouthStateEnum::IDLE;
+    MouthStateEnum prevState, currentState = MouthStateEnum::TALKING;
     unsigned long mouthInterval;
 
     const uint8_t* defaultAnimation[20] = {

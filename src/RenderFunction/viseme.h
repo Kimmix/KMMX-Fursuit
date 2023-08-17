@@ -59,11 +59,11 @@ class Viseme {
             }
         }
         //? Normalizing
-        ah_amplitude *= 0.5;
+        ah_amplitude *= 0.6;
         ee_amplitude *= 1.0;
-        oh_amplitude *= 1.7;
-        oo_amplitude *= 1.5;
-        th_amplitude *= 2.4;
+        oh_amplitude *= 1.8;
+        oo_amplitude *= 2.2;
+        th_amplitude *= 2.6;
 
         VisemeType viseme = AH;
         double viseme_amplitude = ah_amplitude;
@@ -90,7 +90,7 @@ class Viseme {
         loudness_level = smoothedLoudness(loudness_level);
 
         //? Debugging
-        // int max_threshold = 5000;
+        // int max_threshold = 2000;
         // Serial.print("Max_THRESHOLD:");
         // Serial.print(max_threshold);
         // Serial.print(",NOISE_THRESHOLD:");
@@ -104,9 +104,13 @@ class Viseme {
         // Serial.print(",OO:");
         // Serial.print(oo_amplitude > max_threshold ? max_threshold : oo_amplitude);
         // Serial.print(",TH:");
-        // Serial.print(th_amplitude > max_threshold ? max_threshold : th_amplitude);
+        // Serial.println(th_amplitude > max_threshold ? max_threshold : th_amplitude);
+        // Serial.print(",Level:");
+        // Serial.print(loudness_level * 100);
+        // Serial.print(",Max:");
+        // Serial.print(max_amplitude > max_threshold ? max_threshold : max_amplitude);
         // Serial.print(",AVG_AMP:");
-        // Serial.println(avg_amplitude);
+        // Serial.println(avg_amplitude > max_threshold ? max_threshold : avg_amplitude);
 
         //! Final render
         return visemeOutput(viseme, loudness_level);
@@ -123,11 +127,21 @@ class Viseme {
         OO,
         TH
     };
-    const uint8_t* ahViseme[4] = {AH1, AH2, AH3, AH4};
-    const uint8_t* eeViseme[4] = {EE1, EE2, EE3, EE4};
-    const uint8_t* ohViseme[4] = {OH1, OH2, OH3, OH4};
-    const uint8_t* ooViseme[4] = {OO1, OO2, OO3, OO4};
-    const uint8_t* thViseme[4] = {TH1, TH2, TH3, TH4};
+    const uint8_t* ahViseme[20] = {
+        mouthAH1, mouthAH2, mouthAH3, mouthAH4, mouthAH5, mouthAH6, mouthAH7, mouthAH8, mouthAH9, mouthAH10,
+        mouthAH11, mouthAH12, mouthAH13, mouthAH14, mouthAH15, mouthAH16, mouthAH17, mouthAH18, mouthAH19, mouthAH20};
+    const uint8_t* eeViseme[20] = {
+        mouthEE1, mouthEE2, mouthEE3, mouthEE4, mouthEE5, mouthEE6, mouthEE7, mouthEE8, mouthEE9, mouthEE10,
+        mouthEE11, mouthEE12, mouthEE13, mouthEE14, mouthEE15, mouthEE16, mouthEE17, mouthEE18, mouthEE19, mouthEE20};
+    const uint8_t* ohViseme[20] = {
+        mouthOH1, mouthOH2, mouthOH3, mouthOH4, mouthOH5, mouthOH6, mouthOH7, mouthOH8, mouthOH9, mouthOH10,
+        mouthOH11, mouthOH12, mouthOH13, mouthOH14, mouthOH15, mouthOH16, mouthOH17, mouthOH18, mouthOH19, mouthOH20};
+    const uint8_t* ooViseme[20] = {
+        mouthOO1, mouthOO2, mouthOO3, mouthOO4, mouthOO5, mouthOO6, mouthOO7, mouthOO8, mouthOO9, mouthOO10,
+        mouthOO11, mouthOO12, mouthOO13, mouthOO14, mouthOO15, mouthOO16, mouthOO17, mouthOO18, mouthOO19, mouthOO20};
+    const uint8_t* thViseme[20] = {
+        mouthTH1, mouthTH2, mouthTH3, mouthTH4, mouthTH5, mouthTH6, mouthTH7, mouthTH8, mouthTH9, mouthTH10,
+        mouthTH11, mouthTH12, mouthTH13, mouthTH14, mouthTH15, mouthTH16, mouthTH17, mouthTH18, mouthTH19, mouthTH20};
 
     double real[SAMPLES],
         imaginary[SAMPLES];
@@ -174,14 +188,17 @@ class Viseme {
     }
     // Compute loudness level based on average amplitude
     unsigned int calculateLoudness(double max, double avg) {
-        if (max > avg * 2.2) {
-            return 4;
-        } else if (max > avg * 1.8) {
-            return 3;
-        } else if (max > avg * 1.6) {
-            return 2;
-        } else if (max > avg * 1.4) {
-            return 1;
+        const double multiples[] = {
+            1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4, 1.45, 1.5, 1.55,
+            1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5};
+        const unsigned int levels[] = {
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+            11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+
+        for (int i = 19; i >= 0; --i) {
+            if (max > avg * multiples[i]) {
+                return levels[i];
+            }
         }
         return 0;
     }
@@ -250,7 +267,7 @@ class Viseme {
         // Serial.print(viseme);
         // Serial.print(",previousViseme:");
         // Serial.println(previousViseme);
-        auto combination = visemeCombination.find(std::make_pair(viseme, previousViseme));
+        // auto combination = visemeCombination.find(std::make_pair(viseme, previousViseme));
         // Serial.print(",combination:");
         // Serial.println(combination->second);
         switch (viseme) {
@@ -268,30 +285,30 @@ class Viseme {
         return NULL;
     };
 
-    std::map<std::pair<int, int>, String> visemeCombination = {
-        {{AH, AH}, "AHViseme"},
-        {{EE, EE}, "EEViseme"},
-        {{OH, OH}, "OHViseme"},
-        {{OO, OO}, "OOViseme"},
-        {{TH, TH}, "THViseme"},
-        {{AH, EE}, "AHEEViseme"},
-        {{AH, OH}, "AHOHViseme"},
-        {{AH, OO}, "AHOOViseme"},
-        {{AH, TH}, "AHTHViseme"},
-        {{EE, AH}, "AHEEViseme"},
-        {{EE, OH}, "EEOHViseme"},
-        {{EE, OO}, "EEOOViseme"},
-        {{EE, TH}, "EETHViseme"},
-        {{OH, AH}, "AHOHViseme"},
-        {{OH, EE}, "EEOHViseme"},
-        {{OH, OO}, "OHOOViseme"},
-        {{OH, TH}, "OHTHViseme"},
-        {{OO, AH}, "AHOOViseme"},
-        {{OO, EE}, "EEOOViseme"},
-        {{OO, OH}, "OHOOViseme"},
-        {{OO, TH}, "OOTHViseme"},
-        {{TH, AH}, "AHTHViseme"},
-        {{TH, EE}, "EETHViseme"},
-        {{TH, OH}, "OHTHViseme"},
-        {{TH, OO}, "OOTHViseme"}};
+    // std::map<std::pair<int, int>, String> visemeCombination = {
+    //     {{AH, AH}, "AHViseme"},
+    //     {{EE, EE}, "EEViseme"},
+    //     {{OH, OH}, "OHViseme"},
+    //     {{OO, OO}, "OOViseme"},
+    //     {{TH, TH}, "THViseme"},
+    //     {{AH, EE}, "AHEEViseme"},
+    //     {{AH, OH}, "AHOHViseme"},
+    //     {{AH, OO}, "AHOOViseme"},
+    //     {{AH, TH}, "AHTHViseme"},
+    //     {{EE, AH}, "AHEEViseme"},
+    //     {{EE, OH}, "EEOHViseme"},
+    //     {{EE, OO}, "EEOOViseme"},
+    //     {{EE, TH}, "EETHViseme"},
+    //     {{OH, AH}, "AHOHViseme"},
+    //     {{OH, EE}, "EEOHViseme"},
+    //     {{OH, OO}, "OHOOViseme"},
+    //     {{OH, TH}, "OHTHViseme"},
+    //     {{OO, AH}, "AHOOViseme"},
+    //     {{OO, EE}, "EEOOViseme"},
+    //     {{OO, OH}, "OHOOViseme"},
+    //     {{OO, TH}, "OOTHViseme"},
+    //     {{TH, AH}, "AHTHViseme"},
+    //     {{TH, EE}, "EETHViseme"},
+    //     {{TH, OH}, "OHTHViseme"},
+    //     {{TH, OO}, "OOTHViseme"}};
 };
