@@ -1,4 +1,5 @@
 #include "Bitmaps/mouthBitmap.h"
+#include "Bitmaps/mouthAnimated.h"
 #include "RenderFunction/viseme.h"
 
 class MouthState {
@@ -6,9 +7,10 @@ class MouthState {
     MouthState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
 
     void update() {
+        updateAnimation();
         switch (currentState) {
             case MouthStateEnum::IDLE:
-                display->drawMouth(mouthDefault);
+                drawDefault();
                 break;
             case MouthStateEnum::BOOP:
                 display->drawMouth(mouthOpen);
@@ -51,7 +53,57 @@ class MouthState {
     LEDMatrixDisplay* display;
     Viseme viseme;
     const uint8_t* visemeFrame = mouthDefault;
-    MouthStateEnum prevState, currentState = MouthStateEnum::TALKING;
+    MouthStateEnum prevState, currentState = MouthStateEnum::IDLE;
+    unsigned long mouthInterval;
+
+    const uint8_t* defaultAnimation[20] = {
+        mouthDefault1,
+        mouthDefault2,
+        mouthDefault3,
+        mouthDefault4,
+        mouthDefault5,
+        mouthDefault6,
+        mouthDefault7,
+        mouthDefault8,
+        mouthDefault9,
+        mouthDefault10,
+        mouthDefault11,
+        mouthDefault12,
+        mouthDefault13,
+        mouthDefault14,
+        mouthDefault15,
+        mouthDefault16,
+        mouthDefault17,
+        mouthDefault18,
+        mouthDefault19,
+        mouthDefault20,
+    };
+    short defaultAnimationIndex = 0;
+    void drawDefault() {
+        display->drawMouth(defaultAnimation[defaultAnimationIndex]);
+    }
+
+    unsigned long previousMillis = 0;
+    const unsigned long interval = 5;
+    bool increasingIndex = true;
+    void updateAnimation() {
+        if (millis() >= mouthInterval) {
+            if (increasingIndex) {
+                defaultAnimationIndex++;
+                if (defaultAnimationIndex >= 19) {
+                    defaultAnimationIndex = 19;
+                    increasingIndex = false;
+                }
+            } else {
+                defaultAnimationIndex--;
+                if (defaultAnimationIndex <= 0) {
+                    defaultAnimationIndex = 0;
+                    increasingIndex = true;
+                }
+            }
+            mouthInterval = millis() + 80;
+        }
+    }
 
     unsigned long resetBoop;
     bool visemeTaskRunning = false;
