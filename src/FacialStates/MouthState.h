@@ -1,4 +1,6 @@
 #include "Bitmaps/mouthBitmap.h"
+#include "Bitmaps/mouthUp.h"
+#include "Bitmaps/mouthDown.h"
 #include "Bitmaps/Viseme/visemeAH.h"
 #include "Bitmaps/Viseme/visemeEE.h"
 #include "Bitmaps/Viseme/visemeOH.h"
@@ -6,13 +8,14 @@
 #include "Bitmaps/Viseme/visemeTH.h"
 #include "Bitmaps/mouthAnimated.h"
 #include "RenderFunction/viseme.h"
-
 class MouthState {
    public:
-    MouthState(LEDMatrixDisplay* displayPtr = nullptr) : display(displayPtr) {}
+    MouthState(LEDMatrixDisplay* displayPtr = nullptr, Adafruit_LIS3DH* lisptr = nullptr) : display(displayPtr),
+                                                                                            lis(lisptr) {}
 
     void update() {
         updateAnimation();
+        movingMouth();
         switch (currentState) {
             case MouthStateEnum::IDLE:
                 drawDefault();
@@ -60,8 +63,9 @@ class MouthState {
 
    private:
     LEDMatrixDisplay* display;
+    Adafruit_LIS3DH* lis;
     Viseme viseme;
-    const uint8_t* visemeFrame = mouthDefault;
+    const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;
     MouthStateEnum prevState, currentState = MouthStateEnum::TALKING;
     unsigned long mouthInterval;
 
@@ -87,9 +91,78 @@ class MouthState {
         mouthDefault19,
         mouthDefault20,
     };
-    short defaultAnimationIndex = 0;
     void drawDefault() {
-        display->drawMouth(defaultAnimation[defaultAnimationIndex]);
+        display->drawMouth(mouthFrame);
+    }
+
+    const uint8_t* mouthUp[20] = {
+        mouthUp1,
+        mouthUp2,
+        mouthUp3,
+        mouthUp4,
+        mouthUp5,
+        mouthUp6,
+        mouthUp7,
+        mouthUp8,
+        mouthUp9,
+        mouthUp10,
+        mouthUp11,
+        mouthUp12,
+        mouthUp13,
+        mouthUp14,
+        mouthUp15,
+        mouthUp16,
+        mouthUp17,
+        mouthUp18,
+        mouthUp19,
+        mouthUp20,
+    };
+    const uint8_t* mouthDown[20] = {
+        mouthDown1,
+        mouthDown2,
+        mouthDown3,
+        mouthDown4,
+        mouthDown5,
+        mouthDown6,
+        mouthDown7,
+        mouthDown8,
+        mouthDown9,
+        mouthDown10,
+        mouthDown11,
+        mouthDown12,
+        mouthDown13,
+        mouthDown14,
+        mouthDown15,
+        mouthDown16,
+        mouthDown17,
+        mouthDown18,
+        mouthDown19,
+        mouthDown20,
+    };
+    void movingMouth() {
+        sensors_event_t event;
+        lis->getEvent(&event);
+        float yAcc = event.acceleration.y;
+
+        // Hysteresis thresholds for movement detection
+        const float upThreshold = -2.00, downThreshold = 3.00,
+                    upMaxThreshold = -7.00, downMaxThreshold = 8.00;
+
+        // Check if head is moving up or down
+        if (yAcc < upThreshold) {
+            int level = mapFloat(yAcc, upThreshold, upMaxThreshold, 0, 19);
+            mouthFrame = mouthUp[level];
+        } else if (yAcc > downThreshold) {
+            int level = mapFloat(yAcc, downThreshold, downMaxThreshold, 0, 19);
+            mouthFrame = mouthDown[level];
+        } else {
+            mouthFrame = defaultAnimation[defaultAnimationIndex];
+        }
+    }
+
+    float mapFloat(float x, float inMin, float inMax, float outMin, float outMax) {
+        int mappedValue = int((x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin);
+        return constrain(mappedValue, outMin, outMax);
     }
 
     unsigned long previousMillis = 0;
@@ -97,20 +170,25 @@ class MouthState {
     bool increasingIndex = true;
     void updateAnimation() {
         if (millis() >= mouthInterval) {
-            if (increasingIndex) {
-                defaultAnimationIndex++;
-                if (defaultAnimationIndex >= 19) {
-                    defaultAnimationIndex = 19;
-                    increasingIndex = false;
-                }
-            } else {
-                defaultAnimationIndex--;
-                if (defaultAnimationIndex <= 0) {
-                    defaultAnimationIndex = 0;
-                    increasingIndex = true;
-                }
-            }
+            updateIndex();
             mouthInterval = millis() + 80;
+        }
+    }
+
+    short defaultAnimationIndex = 0;
+    void updateIndex() {
+        if (increasingIndex) {
+            defaultAnimationIndex++;
+            if (defaultAnimationIndex >= 19) {
+                defaultAnimationIndex = 19;
+                increasingIndex = false;
+            }
+        } else {
+            defaultAnimationIndex--;
+            if (defaultAnimationIndex <= 0) {
+                defaultAnimationIndex = 0;
+                increasingIndex = true;
+            }
         }
     }
 

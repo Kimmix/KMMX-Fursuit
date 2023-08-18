@@ -10,6 +10,7 @@ enum class FXStateEnum { IDLE,
                          Heart,
                          Blush };
 
+#include <Adafruit_LIS3DH.h>
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/SideLED.h"
 #include "FacialStates/MouthState.h"
@@ -19,8 +20,18 @@ enum class FXStateEnum { IDLE,
 
 #define IR_PIN GPIO_NUM_35
 #define RANDOM_PIN GPIO_NUM_36
+#define LIS3DH_ADDR 0x19
 class Controller {
    public:
+    void setUpLis() {
+        if (!lis.begin(LIS3DH_ADDR)) {
+            Serial.println("Could not initialize LIS3DH");
+            while (1)
+                ;
+        }
+        lis.setRange(LIS3DH_RANGE_2_G);
+    }
+
     void update() {
         dynamicBoop();
         renderFace();
@@ -65,10 +76,11 @@ class Controller {
     }
 
    private:
+    Adafruit_LIS3DH lis = Adafruit_LIS3DH();
     LEDMatrixDisplay display;
     SideLED sideLED;
     EyeState eyeState = EyeState(&display);
-    MouthState mouthState = MouthState(&display);
+    MouthState mouthState = MouthState(&display, &lis);
     FXState fxState = FXState(&display);
     bool isBoop = false, isBoopPrev = false;
 

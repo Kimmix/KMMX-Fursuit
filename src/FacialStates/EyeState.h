@@ -1,4 +1,4 @@
-#include "RenderFunction/googlyEye.h"
+// #include "RenderFunction/googlyEye.h"
 #include "Bitmaps/eyeBitmap.h"
 
 class EyeState {
@@ -51,7 +51,7 @@ class EyeState {
 
    private:
     LEDMatrixDisplay* display;
-    GooglyEye googlyEye;
+    // GooglyEye googlyEye;
     EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
 
     unsigned long
@@ -123,7 +123,7 @@ class EyeState {
 
     void renderGooglyEye() {
         display->drawEye(eyeGoogly);
-        googlyEye.renderEye();
-        display->drawEyePupil(eyePupil, googlyEye.x, googlyEye.y);
+        // googlyEye.renderEye();
+        // display->drawEyePupil(eyePupil, googlyEye.x, googlyEye.y);
     }
 };
