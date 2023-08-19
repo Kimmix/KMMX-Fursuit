@@ -29,6 +29,7 @@ class Controller {
                 ;
         }
         lis.setRange(LIS3DH_RANGE_2_G);
+        xTaskCreatePinnedToCore(lisEventTask, "LisEventTask", 2048, this, 1, &lisEventTaskHandle, 0);
     }
 
     void getLisEvent() {
@@ -37,11 +38,18 @@ class Controller {
         eyeState.getListEvent(sensorEvent);
     }
 
+    static void lisEventTask(void *parameter) {
+        Controller *controller = static_cast<Controller *>(parameter);
+        while (1) {
+            controller->getLisEvent();
+        }
+    }
+
     void update() {
         dynamicBoop();
         renderFace();
         sideLED.animate();
-        getLisEvent();
+        // getLisEvent();
     }
 
     void setEye(int i) {
@@ -110,6 +118,7 @@ class Controller {
     const int IR_IN_RANGE_THRESHOLD = 300, IR_OUT_RANGE_THRESHOLD = 3600;
     const unsigned long boopDuration = 1000;
     unsigned long boopStartTime = 0;
+    TaskHandle_t lisEventTaskHandle;
 
     void dynamicBoop() {
         int sensorValue = analogRead(IR_PIN);

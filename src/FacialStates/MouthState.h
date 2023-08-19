@@ -201,7 +201,7 @@ class MouthState {
 
     // Start the viseme rendering task on the second core
     void startVisemeTask() {
-        xTaskCreatePinnedToCore(visemeRenderingTask, "VisemeTask", 2048, this, 1, &visemeTaskHandle, 0);
+        xTaskCreatePinnedToCore(visemeRenderingTask, "VisemeTask", 2048, this, 2, &visemeTaskHandle, 0);
     }
 
     // The viseme rendering task function
