@@ -20,11 +20,10 @@ enum class FXStateEnum { IDLE,
 
 #define IR_PIN GPIO_NUM_35
 #define RANDOM_PIN GPIO_NUM_36
-#define LIS3DH_ADDR 0x19
 class Controller {
    public:
     void setUpLis() {
-        if (!lis.begin(LIS3DH_ADDR)) {
+        if (!lis.begin(0x19)) {
             Serial.println("Could not initialize LIS3DH");
             while (1)
                 ;
@@ -32,10 +31,17 @@ class Controller {
         lis.setRange(LIS3DH_RANGE_2_G);
     }
 
+    void getLisEvent() {
+        lis.getEvent(&sensorEvent);
+        mouthState.getListEvent(sensorEvent);
+        eyeState.getListEvent(sensorEvent);
+    }
+
     void update() {
         dynamicBoop();
         renderFace();
         sideLED.animate();
+        getLisEvent();
     }
 
     void setEye(int i) {
@@ -80,8 +86,9 @@ class Controller {
     LEDMatrixDisplay display;
     SideLED sideLED;
     EyeState eyeState = EyeState(&display);
-    MouthState mouthState = MouthState(&display, &lis);
+    MouthState mouthState = MouthState(&display);
     FXState fxState = FXState(&display);
+    sensors_event_t sensorEvent;
     bool isBoop = false, isBoopPrev = false;
 
     void renderFace() {

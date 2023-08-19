@@ -1,11 +1,10 @@
-// * SRC: https://github.com/adafruit/Adafruit_Learning_System_Guides/blob/main/Hallowing_Googly_Eye/Hallowing_Googly_Eye.ino
+// * Source: https://github.com/adafruit/Adafruit_Learning_System_Guides/blob/main/Hallowing_Googly_Eye/Hallowing_Googly_Eye.ino
 // SPDX-FileCopyrightText: 2018 Phillip Burgess for Adafruit Industries
 // SPDX-License-Identifier: MIT
-#include "Devices/LIS3DH.h"
 
-#define G_SCALE 40.0     // Accel scale; no science, just looks good
-#define ELASTICITY 0.90  // Edge-bounce coefficient (MUST be <1.0!)
-#define DRAG 0.996       // Dampens motion slightly
+#define G_SCALE 1.0     // Accel scale; no science, just looks good
+#define ELASTICITY 0.95  // Edge-bounce coefficient (MUST be <1.0!)
+#define DRAG 0.997       // Dampens motion slightly
 #define EYE_RADIUS 3.0   // Radius of eye, floating-point pixel units
 #define PUPIL_SIZE 16.0
 #define PUPIL_RADIUS (PUPIL_SIZE / 2.0)  // Radius of pupil, same units
@@ -14,9 +13,16 @@
 #define INNER_RADIUS (EYE_RADIUS - PUPIL_RADIUS)
 
 class GooglyEye {
-   private:
-    LIS3DH accelerometer = LIS3DH();
+   public:
+    GooglyEye() {}
 
+    float x, y;
+    void renderEye(float accX, float accY) {
+        // Orient the sensor directions to the display directions
+        update(accX, accY);
+    }
+
+   private:
     unsigned long lastTime = 0;
     float vx, vy = 0.0;
     bool firstFrame = true;  // Force full-screen update on initial frame
@@ -171,31 +177,4 @@ class GooglyEye {
         if (x2 > 127) x2 = 127;
         if (y2 > 127) y2 = 127;
     };
-
-   public:
-    GooglyEye() {}
-
-    float x, y;
-    bool accEnable = false;
-    void renderEye() {
-        if (!accEnable) {
-            accelerometer.init();
-            accelerometer.checkData();
-            accEnable = true;
-        }
-        float accX, accY, accZ;
-        accelerometer.readAccelG(accX, accY, accZ);
-        //? Debugging
-        // Serial.print("X:");
-        // Serial.print(accX);
-        // Serial.print(",Y:");
-        // Serial.print(accY);
-        // Serial.print(",Z:");
-        // Serial.println(accZ);
-
-        // Orient the sensor directions to the display directions
-        float eye_ax = accX;
-        float eye_ay = accY;
-        update(eye_ax, eye_ay);
-    }
 };

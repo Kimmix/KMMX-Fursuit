@@ -10,8 +10,7 @@
 #include "RenderFunction/viseme.h"
 class MouthState {
    public:
-    MouthState(LEDMatrixDisplay* displayPtr = nullptr, Adafruit_LIS3DH* lisptr = nullptr) : display(displayPtr),
-                                                                                            lis(lisptr) {}
+    MouthState(LEDMatrixDisplay* display) : display(display) {}
 
     void update() {
         updateAnimation();
@@ -61,9 +60,13 @@ class MouthState {
         return currentState;
     }
 
+    void getListEvent(const sensors_event_t& eventData) {
+        event = eventData;
+    }
+
    private:
     LEDMatrixDisplay* display;
-    Adafruit_LIS3DH* lis;
+    sensors_event_t event;
     Viseme viseme;
     const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;
     MouthStateEnum prevState, currentState = MouthStateEnum::TALKING;
@@ -140,8 +143,6 @@ class MouthState {
         mouthDown20,
     };
     void movingMouth() {
-        sensors_event_t event;
-        lis->getEvent(&event);
         float yAcc = event.acceleration.y;
 
         // Hysteresis thresholds for movement detection
