@@ -116,15 +116,6 @@ class LEDMatrixDisplay {
             uint8_t currentPixel = current[i];
             uint8_t nextPixel = next[i];
 
-            // Perform linear interpolation for each pixel
-            // uint8_t interpolatedPixel = currentPixel + ((nextPixel - currentPixel) * index) / totalFrames;
-            // interpolated[i] = interpolatedPixel;
-
-            // Cosine Interpolation
-            // float t = (float)index / totalFrames;
-            // float interpolatedValue = currentPixel + (1 - cos(t * M_PI)) * (nextPixel - currentPixel) / 2;
-            // interpolated[i] = static_cast<uint8_t>(interpolatedValue);
-
             // Cross blend the pixel values
             uint8_t interpolatedPixel = (currentPixel * (totalFrames - index) + nextPixel * index) / totalFrames;
             interpolated[i] = interpolatedPixel;
@@ -268,6 +259,38 @@ class LEDMatrixDisplay {
                 // getBlackWhiteWave(pixel, i, j + offsetY, r, g, b);
                 matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
                 matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
+            }
+        }
+    }
+
+    /**
+     * @brief Draws a bitmap onto the LED matrix
+     * @param bitmapL Array of 8-bit values representing the image on left side
+     * @param bitmapR Array of 8-bit values representing the image on right side
+     * @param image_width Width of the image in pixels
+     * @param image_height Height of the image in pixels
+     * @param offset_x X offset of the image
+     * @param offset_y Y offset of the image
+     */
+    void drawBitmap(const uint8_t* bitmapL, const uint8_t* bitmapR, int imageWidth, int imageHeight, int offsetX, int offsetY) {
+        uint8_t r, g, b;
+        for (int i = 0; i < imageHeight; i++) {
+            int offsetYPlusI = offsetY + i;
+            for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
+                uint8_t pixelL = pgm_read_byte(bitmapL + i * imageWidth + j);
+                uint8_t pixelR = pgm_read_byte(bitmapR + i * imageWidth + j);
+                if (pixelL <= 30 && pixelR <= 30) {
+                    continue;
+                }
+                if (pixelL > 30) {
+                    getColorMap(pixelL, i + offsetY, r, g, b);
+                    matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);  // Draw on the left side
+                }
+
+                if (pixelR > 30) {
+                    getColorMap(pixelR, i + offsetY, r, g, b);
+                    matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);  // Draw on the right side
+                }
             }
         }
     }
