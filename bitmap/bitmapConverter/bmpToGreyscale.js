@@ -6,7 +6,7 @@ const path = require('path');
 const inputDirectory = './input';
 
 // Output file path
-const outputFile = './output/output.txt';
+const outputFile = './output/output.h';
 
 // Process each GIF file in the directory
 fs.readdir(inputDirectory, async (err, files) => {
@@ -51,7 +51,7 @@ function generateOutputFileContent(greyscaleArrays) {
     const lines = ['// Generated output'];
 
     for (const { data, index } of greyscaleArrays) {
-        const sectionName = `mouthDefault${index}`;
+        const sectionName = `mouthDown${index}`;
         const sectionLines = [
             `static const uint8_t PROGMEM ${sectionName}[700] = {`
         ];
