@@ -49,7 +49,6 @@ class Controller {
         dynamicBoop();
         renderFace();
         sideLED.animate();
-        // getLisEvent();
     }
 
     void setEye(int i) {
@@ -100,7 +99,7 @@ class Controller {
     bool isBoop = false, isBoopPrev = false;
 
     void renderFace() {
-        // display.drawColorTest();
+        display.drawColorTest();
         display.drawNose(noseNew);
         mouthState.update();
         eyeState.update();
