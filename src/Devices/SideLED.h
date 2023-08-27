@@ -69,7 +69,8 @@ class SideLED {
             // CRGB colorRGB;
             // hsv2rgb_rainbow(colorHSV, colorRGB);
             // leds[index] = colorRGB;
-            leds[index] = CHSV(currentHue, color1HSV.s + (saturationStep * i), color1HSV.v + (valueStep * i));
+            // leds[index] = CHSV(currentHue, color1HSV.s + (saturationStep * i), color1HSV.v + (valueStep * i));
+            leds[index] = CHSV(currentHue, color1HSV.s + (saturationStep * i), pgm_read_byte(&gamma8[color1HSV.v + (valueStep * i)]));
             // uint8_t fader = sin8(millis() / random8(10, 20));
             // fader = pgm_read_byte(&gamma8[fader]);
             // leds[i] = CHSV(i * 20, 255, fader);
