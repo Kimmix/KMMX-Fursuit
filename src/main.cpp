@@ -84,6 +84,10 @@ void showFPS() {
     }
 }
 
+float mapFloat(float x, float inMin, float inMax, float outMin, float outMax) {
+    int mappedValue = int((x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin);
+    return constrain(mappedValue, outMin, outMax);
+}
 //! -------------------- Main Setup --------------------
 void setup() {
     Serial.begin(115200);

@@ -68,9 +68,9 @@ class MouthState {
     LEDMatrixDisplay* display;
     sensors_event_t event;
     Viseme viseme;
-    const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;
     MouthStateEnum prevState, currentState = MouthStateEnum::TALKING;
     unsigned long mouthInterval;
+    const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;
 
     const uint8_t* defaultAnimation[20] = {
         mouthDefault1,
@@ -159,11 +159,6 @@ class MouthState {
         } else {
             mouthFrame = defaultAnimation[defaultAnimationIndex];
         }
-    }
-
-    float mapFloat(float x, float inMin, float inMax, float outMin, float outMax) {
-        int mappedValue = int((x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin);
-        return constrain(mappedValue, outMin, outMax);
     }
 
     unsigned long previousMillis = 0;
