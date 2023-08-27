@@ -212,6 +212,10 @@ class LEDMatrixDisplay {
         memcpy(prevEyeFrame, bitmap, 12 * 0);
     }
 
+    void drawEye(const uint8_t* bitmapL, const uint8_t* bitmapR) {
+        drawBitmap(bitmapL, bitmapR, eyeWidth, eyeHeight, 12, 0);
+    }
+
     void drawEyePupil(const uint8_t* bitmap, int x, int y) {
         drawBitmap(bitmap, 6, 6, 21 + x, 5 + y);
     }

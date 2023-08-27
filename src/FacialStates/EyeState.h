@@ -58,6 +58,7 @@ class EyeState {
     sensors_event_t event;
     GooglyEye googlyEye;
     EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
+    const uint8_t *eyeFrame = eyeDefault;
 
     unsigned long
         nextBlink,
@@ -65,18 +66,38 @@ class EyeState {
         nextBoop,
         resetBoop;
 
-    short defaultFaceIndex = 0;
+    void movingEye() {
+        float xAcc = event.acceleration.x;
+
+        // Hysteresis thresholds for movement detection
+        const float leftThreshold = -2.00, rightThreshold = 3.00,
+                    leftMaxThreshold = -7.00, rightMaxThreshold = 8.00;
+
+        // Check if head is moving left or right
+        if (xAcc < leftThreshold) {
+            int level = mapFloat(xAcc, leftThreshold, leftMaxThreshold, 0, 19);
+            // display->drawEye(eyeDown[level], eyeFrame);
+        } else if (xAcc > rightThreshold) {
+            int level = mapFloat(xAcc, rightThreshold, rightMaxThreshold, 0, 19);
+            // display->drawEye(eyeFrame, eyeDown[level]);
+        } else {
+            display->drawEye(eyeFrame);
+        }
+    }
+
+    short defaultAnimationIndex = 0;
     const uint8_t* defaultAnimation[3] = {eyeDefault, eyeUp, eyeDown};
     void changeDefaultFace() {
         if ((esp_random() % 10) <= 3) {
-            defaultFaceIndex = (esp_random() % 2) + 1;
+            defaultAnimationIndex = (esp_random() % 2) + 1;
         } else {
-            defaultFaceIndex = 0;
+            defaultAnimationIndex = 0;
         }
     }
 
     void idleFace() {
-        display->drawEye(defaultAnimation[defaultFaceIndex]);
+        // display->drawEye(eyeFrame);
+        movingEye();
         if (millis() >= nextBlink) {
             nextBlink = millis() + (1000 * (esp_random() % 20));
             currentState = EyeStateEnum::BLINK;
