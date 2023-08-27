@@ -1,5 +1,7 @@
 #include "RenderFunction/flyingHeart.h"
-
+enum class FXStateEnum { IDLE,
+                         Heart,
+                         Blush };
 class FXState {
    private:
     LEDMatrixDisplay* display;

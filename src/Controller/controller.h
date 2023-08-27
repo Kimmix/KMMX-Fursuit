@@ -1,15 +1,3 @@
-enum class EyeStateEnum { IDLE,
-                          BLINK,
-                          BOOP,
-                          GOOGLY,
-                          OEYE };
-enum class MouthStateEnum { IDLE,
-                            BOOP,
-                            TALKING };
-enum class FXStateEnum { IDLE,
-                         Heart,
-                         Blush };
-
 #include <Adafruit_LIS3DH.h>
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/SideLED.h"

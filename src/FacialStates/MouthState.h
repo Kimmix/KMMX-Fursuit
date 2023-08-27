@@ -8,6 +8,9 @@
 #include "Bitmaps/Viseme/visemeTH.h"
 #include "Bitmaps/mouthAnimated.h"
 #include "RenderFunction/viseme.h"
+enum class MouthStateEnum { IDLE,
+                            BOOP,
+                            TALKING };
 class MouthState {
    public:
     MouthState(LEDMatrixDisplay* display) : display(display) {}

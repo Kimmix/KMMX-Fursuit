@@ -1,6 +1,10 @@
 #include "RenderFunction/googlyEye.h"
 #include "Bitmaps/eyeBitmap.h"
-
+enum class EyeStateEnum { IDLE,
+                          BLINK,
+                          BOOP,
+                          GOOGLY,
+                          OEYE };
 class EyeState {
    public:
     EyeState(LEDMatrixDisplay* display) : display(display) {}
