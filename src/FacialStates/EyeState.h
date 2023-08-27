@@ -62,7 +62,7 @@ class EyeState {
     sensors_event_t event;
     GooglyEye googlyEye;
     EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
-    const uint8_t *eyeFrame = eyeDefault;
+    const uint8_t* eyeFrame = eyeDefault;
 
     unsigned long
         nextBlink,
@@ -71,19 +71,18 @@ class EyeState {
         resetBoop;
 
     void movingEye() {
-        float xAcc = event.acceleration.x;
+        float zAcc = event.acceleration.z;
 
         // Hysteresis thresholds for movement detection
-        const float leftThreshold = -2.00, rightThreshold = 3.00,
-                    leftMaxThreshold = -7.00, rightMaxThreshold = 8.00;
-
+        const float leftThreshold = 3.00, rightThreshold = -3.00,
+                    leftMaxThreshold = 6.00, rightMaxThreshold = -6.00;
         // Check if head is moving left or right
-        if (xAcc < leftThreshold) {
-            int level = mapFloat(xAcc, leftThreshold, leftMaxThreshold, 0, 19);
-            // display->drawEye(eyeDown[level], eyeFrame);
-        } else if (xAcc > rightThreshold) {
-            int level = mapFloat(xAcc, rightThreshold, rightMaxThreshold, 0, 19);
-            // display->drawEye(eyeFrame, eyeDown[level]);
+        if (zAcc > leftThreshold) {
+            int level = mapFloat(zAcc, leftThreshold, leftMaxThreshold, 0, 19);
+            display->drawEye(eyeFrame, eyeDown);
+        } else if (zAcc < rightThreshold) {
+            int level = mapFloat(zAcc, rightThreshold, rightMaxThreshold, 0, 19);
+            display->drawEye(eyeDown, eyeFrame);
         } else {
             display->drawEye(eyeFrame);
         }

@@ -22,6 +22,12 @@ class Controller {
 
     void getLisEvent() {
         lis.getEvent(&sensorEvent);
+        // Serial.print("X:");
+        // Serial.print(sensorEvent.acceleration.x);
+        // Serial.print(",Y:");
+        // Serial.print(sensorEvent.acceleration.y);
+        // Serial.print(",Z:");
+        // Serial.println(sensorEvent.acceleration.z);
         mouthState.getListEvent(sensorEvent);
         eyeState.getListEvent(sensorEvent);
     }
@@ -34,7 +40,7 @@ class Controller {
     }
 
     void update() {
-        dynamicBoop();
+        // dynamicBoop();
         renderFace();
         sideLED.animate();
     }
