@@ -16,6 +16,7 @@ class Controller {
             while (1)
                 ;
         }
+        lis.setDataRate(LIS3DH_DATARATE_25_HZ);
         lis.setRange(LIS3DH_RANGE_2_G);
         xTaskCreatePinnedToCore(lisEventTask, "LisEventTask", 2048, this, 1, &lisEventTaskHandle, 0);
     }
