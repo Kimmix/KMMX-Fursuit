@@ -10,7 +10,7 @@ Controller controller;
 BLEService protoService("c1449275-bf34-40ab-979d-e34a1fdbb129");
 BLEByteCharacteristic displayBrightnessCharacteristic("9fdfd124-966b-44f7-8331-778c4d1512fc", BLERead | BLEWrite);
 BLEByteCharacteristic eyeStateCharacteristic("49a36bb2-1c66-4e5c-8ff3-28e55a64beb3", BLERead | BLEWrite);
-BLEBooleanCharacteristic visemeCharacteristic("493d06f3-0fa0-4a90-88f1-ebaed0da9b80", BLERead | BLEWrite);
+BLEByteCharacteristic visemeCharacteristic("493d06f3-0fa0-4a90-88f1-ebaed0da9b80", BLERead | BLEWrite);
 
 //? ------------------------ Blueooth
 static void blePeripheralConnectHandler(BLEDevice central) {
@@ -35,7 +35,7 @@ void eyeStateWritten(BLEDevice central, BLECharacteristic characteristic) {
 }
 void visemeStateWritten(BLEDevice central, BLECharacteristic characteristic) {
     const uint8_t* data = characteristic.value();
-    controller.setViseme(static_cast<boolean>(*data));
+    controller.setViseme(static_cast<int>(*data));
 }
 //? ------------- Blueooth Setup
 void setupBLE() {

@@ -9,6 +9,7 @@ enum class MouthStateEnum { IDLE,
 class MouthState {
    public:
     MouthState(LEDMatrixDisplay* display) : display(display) {}
+    Viseme viseme;
 
     void update() {
         updateAnimation();
@@ -65,7 +66,6 @@ class MouthState {
    private:
     LEDMatrixDisplay* display;
     sensors_event_t event;
-    Viseme viseme;
     MouthStateEnum prevState, currentState = MouthStateEnum::TALKING;
     unsigned long mouthInterval;
     const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;

@@ -87,15 +87,15 @@ class Viseme {
         double min_amplitude, max_amplitude, avg_amplitude;
         calculateAmplitude(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude, min_amplitude, max_amplitude, avg_amplitude);
         unsigned int loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
-        loudness_level = max_amplitude > NOISE_THRESHOLD ? loudness_level : 0;
+        loudness_level = max_amplitude > noiseThreshold ? loudness_level : 0;
         loudness_level = smoothedLoudness(loudness_level);
 
         //? Debugging
         // int max_threshold = 2000;
         // Serial.print("Max_THRESHOLD:");
         // Serial.print(max_threshold);
-        // Serial.print(",NOISE_THRESHOLD:");
-        // Serial.print(NOISE_THRESHOLD);
+        // Serial.print(",noiseThreshold:");
+        // Serial.print(noiseThreshold);
         // Serial.print(",AH:");
         // Serial.print(ah_amplitude > max_threshold ? max_threshold : ah_amplitude);
         // Serial.print(",EE:");
@@ -117,9 +117,19 @@ class Viseme {
         return visemeOutput(viseme, loudness_level);
     }
 
+    double getNoiseThreshold() {
+        return noiseThreshold;
+    };
+
+    void setNoiseThreshold(double value) {
+        noiseThreshold = value;
+        Serial.println(noiseThreshold);
+    };
+
    private:
     I2SMicrophone microphone = I2SMicrophone();
     arduinoFFT FFT = arduinoFFT(real, imaginary, SAMPLES, SAMPLE_RATE);
+    double noiseThreshold = NOISE_THRESHOLD;
 
     enum VisemeType {
         AH,
