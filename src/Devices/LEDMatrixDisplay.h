@@ -8,8 +8,8 @@
 #define SCREEN_HEIGHT PANEL_RES_Y
 
 // Define the number of frames and the transition duration
-#define INTERPOLATION_FACTOR 4
-#define INTERPOLATION_DURATION 6
+#define INTERPOLATION_FACTOR 2
+#define INTERPOLATION_DURATION 14
 
 class LEDMatrixDisplay {
    private:
@@ -133,8 +133,11 @@ class LEDMatrixDisplay {
    public:
     LEDMatrixDisplay() {
         HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER);
-        mxconfig.double_buff = true;  // Turn of double buffer
-        // mxconfig.clkphase = true;
+        mxconfig.driver = HUB75_I2S_CFG::FM6124;
+        mxconfig.i2sspeed = HUB75_I2S_CFG::HZ_20M;
+        mxconfig.clkphase = false;
+        mxconfig.min_refresh_rate = 144;
+        mxconfig.double_buff = true;
         matrix = new MatrixPanel_I2S_DMA(mxconfig);
         if (!matrix->begin())
             Serial.println("****** I2S memory allocation failed ***********");

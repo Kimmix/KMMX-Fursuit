@@ -28,7 +28,7 @@ class FlyingHeart {
 
     void renderHeart() {
         // Update heart position every X
-        if (millis() - heartSpeed >= 5) {
+        if (millis() - heartSpeed >= 7) {
             for (int i = 0; i < sumHeart; i++) {
                 moveHeart(i);
             }

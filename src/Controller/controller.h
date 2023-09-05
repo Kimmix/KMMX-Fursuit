@@ -41,7 +41,7 @@ class Controller {
     }
 
     void update() {
-        // dynamicBoop();
+        dynamicBoop();
         renderFace();
         sideLED.animate();
     }
