@@ -134,7 +134,7 @@ class LEDMatrixDisplay {
     LEDMatrixDisplay() {
         HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER);
         mxconfig.driver = HUB75_I2S_CFG::FM6124;
-        mxconfig.i2sspeed = HUB75_I2S_CFG::HZ_20M;
+        // mxconfig.i2sspeed = HUB75_I2S_CFG::HZ_20M;
         mxconfig.clkphase = false;
         mxconfig.min_refresh_rate = 144;
         mxconfig.double_buff = true;
