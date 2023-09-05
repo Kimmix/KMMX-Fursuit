@@ -7,10 +7,6 @@
 #define SCREEN_WIDTH PANEL_RES_X* PANELS_NUMBER
 #define SCREEN_HEIGHT PANEL_RES_Y
 
-// Define the number of frames and the transition duration
-#define INTERPOLATION_FACTOR 2
-#define INTERPOLATION_DURATION 14
-
 class LEDMatrixDisplay {
    private:
     MatrixPanel_I2S_DMA* matrix;
@@ -70,64 +66,6 @@ class LEDMatrixDisplay {
         r = constrain(static_cast<uint8_t>(color2), 0, 255);
         g = constrain(static_cast<uint8_t>(color1), 0, 255);
         b = constrain(static_cast<uint8_t>(color1 + color2), 0, 255);
-    }
-
-    unsigned long previousFrameTime;
-    unsigned long frameDelay = INTERPOLATION_DURATION;
-    // State variables for frame interpolation
-    bool isInterpolating = false;
-    int interpolationIndex = 0;
-    void transitionFrames(uint8_t* currentFrame, const uint8_t* nextFrame, int width, int height, int offsetX, int offsetY) {
-        // Start interpolation if needed
-        if (!isInterpolating && !isFrameSame(currentFrame, nextFrame, width, height)) {
-            startInterpolation();
-        }
-        // Update interpolation frames
-        uint8_t interpolatedFrame[width * height];
-        memcpy(interpolatedFrame, currentFrame, width * height);
-
-        if (isInterpolating) {
-            unsigned long currentTime = millis();
-            if (currentTime - previousFrameTime >= frameDelay) {
-                if (interpolationIndex < INTERPOLATION_FACTOR) {
-                    interpolateFrames(currentFrame, nextFrame, interpolatedFrame, interpolationIndex, INTERPOLATION_FACTOR, width, height);
-                    interpolationIndex++;
-                } else {
-                    isInterpolating = false;
-                    memcpy(currentFrame, nextFrame, width * height);
-                }
-            }
-            // Serial.print(interpolationIndex);
-            drawBitmap(interpolatedFrame, width, height, offsetX, offsetY);
-        } else {
-            drawBitmap(currentFrame, width, height, offsetX, offsetY);
-        }
-    }
-
-    void startInterpolation() {
-        // Serial.println();
-        // Serial.println("startInterpolation");
-        interpolationIndex = 0;
-        isInterpolating = true;
-    }
-
-    void interpolateFrames(const uint8_t* current, const uint8_t* next, uint8_t* interpolated, int index, int totalFrames, int width, int height) {
-        for (int i = 0; i < width * height; i++) {
-            uint8_t currentPixel = current[i];
-            uint8_t nextPixel = next[i];
-
-            // Cross blend the pixel values
-            uint8_t interpolatedPixel = (currentPixel * (totalFrames - index) + nextPixel * index) / totalFrames;
-            interpolated[i] = interpolatedPixel;
-        }
-    }
-    bool isFrameSame(const uint8_t* frame1, const uint8_t* frame2, int width, int height) {
-        for (int i = 0; i < width * height; i++) {
-            if (frame1[i] != frame2[i]) {
-                return false;
-            }
-        }
-        return true;
     }
 
    public:
@@ -208,11 +146,8 @@ class LEDMatrixDisplay {
         drawBitmap(bitmap, panelWidth, panelHeight, 0, 0);
     }
 
-    uint8_t* prevEyeFrame = new uint8_t[eyeWidth * eyeHeight];
     void drawEye(const uint8_t* bitmap) {
-        // drawBitmap(bitmap, eyeWidth, eyeHeight, 12, 0);
-        transitionFrames(prevEyeFrame, bitmap, eyeWidth, eyeHeight, 12, 0);
-        memcpy(prevEyeFrame, bitmap, 12 * 0);
+        drawBitmap(bitmap, eyeWidth, eyeHeight, 12, 0);
     }
 
     void drawEye(const uint8_t* bitmapL, const uint8_t* bitmapR) {
@@ -227,11 +162,8 @@ class LEDMatrixDisplay {
         drawBitmap(bitmap, 8, 5, 56, 5);
     }
 
-    uint8_t* prevMouthFrame = new uint8_t[mouthWidth * mouthHeight];
     void drawMouth(const uint8_t* bitmap) {
-        // drawBitmap(bitmap, mouthWidth, mouthHeight, 14, 18);
-        transitionFrames(prevMouthFrame, bitmap, mouthWidth, mouthHeight, 14, 18);
-        memcpy(prevMouthFrame, bitmap, mouthWidth * mouthHeight);
+        drawBitmap(bitmap, mouthWidth, mouthHeight, 14, 18);
     }
 
     void drawColorTest() {
@@ -254,18 +186,16 @@ class LEDMatrixDisplay {
      * @param offset_y Y offset of the image
      */
     void drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY) {
-        uint8_t r, g, b;
         for (int i = 0; i < imageHeight; i++) {
             int offsetYPlusI = offsetY + i;
             for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
-                uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j);  // read the bytes from program memory
-                if (pixel <= 30) {
-                    continue;
+                uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j);
+                if (pixel > 30) {
+                    uint8_t r, g, b;
+                    getColorMap(pixel, i + offsetY, r, g, b);
+                    matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
+                    matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
                 }
-                getColorMap(pixel, i + offsetY, r, g, b);
-                // getBlackWhiteWave(pixel, i, j + offsetY, r, g, b);
-                matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
-                matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
             }
         }
     }
@@ -280,23 +210,20 @@ class LEDMatrixDisplay {
      * @param offset_y Y offset of the image
      */
     void drawBitmap(const uint8_t* bitmapL, const uint8_t* bitmapR, int imageWidth, int imageHeight, int offsetX, int offsetY) {
-        uint8_t r, g, b;
         for (int i = 0; i < imageHeight; i++) {
             int offsetYPlusI = offsetY + i;
             for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
                 uint8_t pixelL = pgm_read_byte(bitmapL + i * imageWidth + j);
                 uint8_t pixelR = pgm_read_byte(bitmapR + i * imageWidth + j);
-                if (pixelL <= 30 && pixelR <= 30) {
-                    continue;
-                }
                 if (pixelL > 30) {
+                    uint8_t r, g, b;
                     getColorMap(pixelL, i + offsetY, r, g, b);
-                    matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);  // Draw on the left side
+                    matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
                 }
-
                 if (pixelR > 30) {
+                    uint8_t r, g, b;
                     getColorMap(pixelR, i + offsetY, r, g, b);
-                    matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);  // Draw on the right side
+                    matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
                 }
             }
         }
@@ -317,12 +244,10 @@ class LEDMatrixDisplay {
         for (int i = 0; i < imageHeight; i++) {
             int offsetYPlusI = offsetY + i;
             for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
-                uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j);  // read the bytes from program memory
-                if (pixel <= 30) {
-                    continue;
+                uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j);
+                if (pixel > 30) {
+                    matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
                 }
-                matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
-                // matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
             }
         }
     }
