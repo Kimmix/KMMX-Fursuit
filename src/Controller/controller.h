@@ -139,32 +139,35 @@ class Controller {
         BOOP_IN_PROGRESS,
     };
     BoopState currentBoopState = IDLE;
-    const int IR_IN_RANGE_THRESHOLD = 300, IR_OUT_RANGE_THRESHOLD = 3600;
+    const int IR_IN_RANGE_THRESHOLD = 1000, IR_OUT_RANGE_THRESHOLD = 3500;
     const unsigned long boopDuration = 1000;
-    unsigned long boopStartTime = 0;
+    unsigned long boopInterval = 0, boopStartTime = 0;
     TaskHandle_t lisEventTaskHandle;
 
     void dynamicBoop() {
-        int sensorValue = analogRead(IR_PIN);
-        switch (currentBoopState) {
-            case IDLE:
-                if (sensorValue < IR_OUT_RANGE_THRESHOLD && sensorValue > IR_IN_RANGE_THRESHOLD) {
-                    boopStartTime = millis();
-                    currentBoopState = BOOP_IN_PROGRESS;
-                }
-                break;
-            case BOOP_IN_PROGRESS:
-                mouthState.setState(MouthStateEnum::BOOP);
-                if (sensorValue <= IR_IN_RANGE_THRESHOLD) {
-                    float speed = calculateBoopSpeed();
-                    if (speed > 0.0) {
-                        setBoopEffects(speed);
+        if (millis() - boopInterval >= 100) {
+            int sensorValue = analogRead(IR_PIN);
+            switch (currentBoopState) {
+                case IDLE:
+                    if (sensorValue < IR_OUT_RANGE_THRESHOLD && sensorValue > IR_IN_RANGE_THRESHOLD) {
+                        boopStartTime = millis();
+                        currentBoopState = BOOP_IN_PROGRESS;
                     }
-                    currentBoopState = IDLE;
-                } else if (sensorValue >= IR_OUT_RANGE_THRESHOLD) {
-                    currentBoopState = IDLE;
-                }
-                break;
+                    break;
+                case BOOP_IN_PROGRESS:
+                    mouthState.setState(MouthStateEnum::BOOP);
+                    if (sensorValue <= IR_IN_RANGE_THRESHOLD) {
+                        float speed = calculateBoopSpeed();
+                        if (speed > 0.0) {
+                            setBoopEffects(speed);
+                        }
+                        currentBoopState = IDLE;
+                    } else if (sensorValue >= IR_OUT_RANGE_THRESHOLD) {
+                        currentBoopState = IDLE;
+                    }
+                    break;
+            }
+            boopInterval = millis();
         }
     }
     float calculateBoopSpeed() {
