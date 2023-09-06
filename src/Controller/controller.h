@@ -69,13 +69,13 @@ class Controller {
                 mouthState.setState(MouthStateEnum::TALKING);
                 break;
             case 2:
-                mouthState.viseme.setNoiseThreshold(200);
-                break;
-            case 3:
                 mouthState.viseme.setNoiseThreshold(400);
                 break;
+            case 3:
+                mouthState.viseme.setNoiseThreshold(600);
+                break;
             case 4:
-                mouthState.viseme.setNoiseThreshold(800);
+                mouthState.viseme.setNoiseThreshold(1000);
                 break;
             case 5:
                 mouthState.viseme.setNoiseThreshold(1600);
@@ -84,16 +84,16 @@ class Controller {
                 mouthState.viseme.setNoiseThreshold(3200);
                 break;
             case 7:
-                mouthState.viseme.setNoiseThreshold(4800);
-                break;
-            case 8:
                 mouthState.viseme.setNoiseThreshold(6400);
                 break;
+            case 8:
+                mouthState.viseme.setNoiseThreshold(1200);
+                break;
             case 9:
-                mouthState.viseme.setNoiseThreshold(8000);
+                mouthState.viseme.setNoiseThreshold(18000);
                 break;
             case 10:
-                mouthState.viseme.setNoiseThreshold(12000);
+                mouthState.viseme.setNoiseThreshold(25000);
                 break;
             default:
                 mouthState.setState(MouthStateEnum::TALKING);
