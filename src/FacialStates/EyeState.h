@@ -1,5 +1,6 @@
 #include "RenderFunction/googlyEye.h"
 #include "Bitmaps/eyeBitmap.h"
+#include "Bitmaps/eyeBlink.h"
 enum class EyeStateEnum { IDLE,
                           BLINK,
                           BOOP,
@@ -107,17 +108,34 @@ class EyeState {
         }
     }
 
-    const uint8_t* blinkAnimation[3] = {eyeBlink1, eyeBlink2, eyeBlink3};
-    const short blinkAnimationLength = 3;
+    const uint8_t* blinkAnimation[15] = {
+        eyeBlink1,
+        eyeBlink2,
+        eyeBlink3,
+        eyeBlink4,
+        eyeBlink5,
+        eyeBlink6,
+        eyeBlink7,
+        eyeBlink8,
+        eyeBlink9,
+        eyeBlink10,
+        eyeBlink11,
+        eyeBlink12,
+        eyeBlink13,
+        eyeBlink14,
+        eyeBlink15};
+    const short blinkAnimationLength = 15;
     short blinkStep, currentBlinkFrameIndex;
     void blink() {
         if (millis() >= blinkInterval) {
             if (blinkStep < blinkAnimationLength - 1) {
                 blinkStep++;
                 currentBlinkFrameIndex++;
+                blinkInterval = millis() + 7;
             } else if (blinkStep >= blinkAnimationLength - 1 && blinkStep < (blinkAnimationLength * 2) - 1) {
                 blinkStep++;
                 currentBlinkFrameIndex--;
+                blinkInterval = millis() + 4;
             }
             if (blinkStep == (blinkAnimationLength * 2) - 1) {
                 blinkStep = 0;
@@ -125,7 +143,6 @@ class EyeState {
                 changeDefaultFace();
                 currentState = EyeStateEnum::IDLE;  // Blink complete, reset to idle
             }
-            blinkInterval = millis() + 70;
         }
         display->drawEye(blinkAnimation[currentBlinkFrameIndex]);
     }
