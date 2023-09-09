@@ -6,3 +6,5 @@
 node_modules/
 bitmap/bitmapConverter/input/*
 bitmap/bitmapConverter/output/*
+!bitmap/bitmapConverter/input/.gitkeep 
+!bitmap/bitmapConverter/output/.gitkeep 
