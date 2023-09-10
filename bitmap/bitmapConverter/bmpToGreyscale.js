@@ -51,7 +51,7 @@ function generateOutputFileContent(greyscaleArrays) {
     const lines = ['// Generated output'];
 
     for (const { data, index } of greyscaleArrays) {
-        const sectionName = `eyeBlink${index}`;
+        const sectionName = `eyeSmile${index}`;
         const sectionLines = [
             `static const uint8_t PROGMEM ${sectionName}[576] = {`
         ];

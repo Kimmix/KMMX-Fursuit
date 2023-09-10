@@ -54,6 +54,9 @@ class Controller {
             case 2:
                 eyeState.setState(EyeStateEnum::OEYE);
                 break;
+            case 3:
+                eyeState.setState(EyeStateEnum::SMILE);
+                break;
             default:
                 eyeState.setState(EyeStateEnum::IDLE);
                 break;

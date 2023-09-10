@@ -1,11 +1,13 @@
 #include "RenderFunction/googlyEye.h"
 #include "Bitmaps/eyeBitmap.h"
 #include "Bitmaps/eyeBlink.h"
+#include "Bitmaps/eyeSmile.h"
 enum class EyeStateEnum { IDLE,
                           BLINK,
                           BOOP,
                           GOOGLY,
-                          OEYE };
+                          OEYE,
+                          SMILE };
 class EyeState {
    public:
     EyeState(LEDMatrixDisplay* display) : display(display) {}
@@ -29,6 +31,9 @@ class EyeState {
                 break;
             case EyeStateEnum::OEYE:
                 oFace();
+                break;
+            case EyeStateEnum::SMILE:
+                smileFace();
                 break;
             default:
                 break;
@@ -63,6 +68,7 @@ class EyeState {
     sensors_event_t event;
     GooglyEye googlyEye;
     EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
+    bool isTransistion = false;
     const uint8_t* eyeFrame = eyeDefault;
 
     unsigned long
@@ -165,6 +171,10 @@ class EyeState {
             currentOFaceIndex = esp_random() % 3;
         }
         display->drawEye(oFaceAnimation[currentOFaceIndex]);
+    }
+
+    void smileFace() {
+        display->drawEye(eyeSmile20);
     }
 
     void renderGooglyEye() {
