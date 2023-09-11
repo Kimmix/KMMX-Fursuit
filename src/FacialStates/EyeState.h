@@ -46,6 +46,7 @@ class EyeState {
             resetBoop = millis();
         }
         currentState = newState;
+        isTransistion = true;
     }
 
     void savePrevState(EyeStateEnum newState) {
@@ -75,7 +76,8 @@ class EyeState {
         nextBlink,
         blinkInterval,
         nextBoop,
-        resetBoop;
+        resetBoop,
+        nextSmile;
 
     void movingEye() {
         float zAcc = event.acceleration.z;
@@ -173,9 +175,44 @@ class EyeState {
         display->drawEye(oFaceAnimation[currentOFaceIndex]);
     }
 
+    const uint8_t* smileAnimation[20] = {
+        eyeSmile1,
+        eyeSmile2,
+        eyeSmile3,
+        eyeSmile4,
+        eyeSmile5,
+        eyeSmile6,
+        eyeSmile7,
+        eyeSmile8,
+        eyeSmile9,
+        eyeSmile10,
+        eyeSmile11,
+        eyeSmile12,
+        eyeSmile13,
+        eyeSmile14,
+        eyeSmile15,
+        eyeSmile16,
+        eyeSmile17,
+        eyeSmile18,
+        eyeSmile19,
+        eyeSmile20};
+    const short smileLength = 20;
+    short smileIndex = 0;
     void smileFace() {
-        display->drawEye(eyeSmile20);
+    if (isTransition) {
+        if (millis() >= nextSmile) {
+            nextSmile = millis() + 14;
+            smileIndex++;
+            if (smileIndex >= smileLength) {
+                smileIndex = 0;
+                isTransition = false;
+            }
+        }
+        display->drawEye(smileAnimation[smileIndex]);
+    } else {
+        display->drawEye(smileAnimation[20]);
     }
+}
 
     void renderGooglyEye() {
         display->drawEye(eyeGoogly);
