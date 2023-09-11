@@ -199,20 +199,20 @@ class EyeState {
     const short smileLength = 20;
     short smileIndex = 0;
     void smileFace() {
-    if (isTransition) {
-        if (millis() >= nextSmile) {
-            nextSmile = millis() + 14;
-            smileIndex++;
-            if (smileIndex >= smileLength) {
-                smileIndex = 0;
-                isTransition = false;
+        if (isTransition) {
+            if (millis() >= nextSmile) {
+                nextSmile = millis() + 14;
+                smileIndex++;
+                if (smileIndex >= smileLength) {
+                    smileIndex = 0;
+                    isTransition = false;
+                }
             }
+            display->drawEye(smileAnimation[smileIndex]);
+        } else {
+            display->drawEye(smileAnimation[20]);
         }
-        display->drawEye(smileAnimation[smileIndex]);
-    } else {
-        display->drawEye(smileAnimation[20]);
     }
-}
 
     void renderGooglyEye() {
         display->drawEye(eyeGoogly);
