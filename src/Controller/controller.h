@@ -41,13 +41,14 @@ class Controller {
     }
 
     unsigned long nextFrame;
-    const short fps = 144;
+    const short frametime = 7; // ~144hz
     void update() {
         dynamicBoop();
         sideLED.animate();
         if (millis() >= nextFrame) {
-            nextFrame = millis() + (1000 / fps);
+            nextFrame = millis() + frametime;
             renderFace();
+            // showFPS();
         }
     }
 

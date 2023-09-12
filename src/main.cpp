@@ -85,7 +85,6 @@ void setup() {
 }
 
 void loop() {
-    // showFPS();
     BLE.poll();
     controller.update();
 }
