@@ -46,7 +46,7 @@ class EyeState {
             resetBoop = millis();
         }
         currentState = newState;
-        isTransistion = true;
+        isTransition = true;
     }
 
     void savePrevState(EyeStateEnum newState) {
@@ -69,7 +69,7 @@ class EyeState {
     sensors_event_t event;
     GooglyEye googlyEye;
     EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
-    bool isTransistion = false;
+    bool isTransition = false;
     const uint8_t* eyeFrame = eyeDefault;
 
     unsigned long
@@ -81,11 +81,8 @@ class EyeState {
 
     void movingEye() {
         float zAcc = event.acceleration.z;
-
-        // Hysteresis thresholds for movement detection
         const float leftThreshold = 3.00, rightThreshold = -3.00,
                     leftMaxThreshold = 6.00, rightMaxThreshold = -6.00;
-        // Check if head is moving left or right
         if (zAcc > leftThreshold) {
             int level = mapFloat(zAcc, leftThreshold, leftMaxThreshold, 0, 19);
             display->drawEye(eyeFrame, eyeDown);
@@ -200,18 +197,17 @@ class EyeState {
     short smileIndex = 0;
     void smileFace() {
         if (isTransition) {
-            if (millis() >= nextSmile) {
-                nextSmile = millis() + 14;
-                smileIndex++;
-                if (smileIndex >= smileLength) {
-                    smileIndex = 0;
-                    isTransition = false;
-                }
-            }
             display->drawEye(smileAnimation[smileIndex]);
-        } else {
-            display->drawEye(smileAnimation[20]);
+            if (millis() >= nextSmile) {
+                nextSmile = millis() + 7;
+                smileIndex++;
+            }
+            if (smileIndex >= (smileLength - 1)) {
+                isTransition = false;
+                smileIndex = 0;
+            }
         }
+        display->drawEye(smileAnimation[smileLength - 1]);
     }
 
     void renderGooglyEye() {

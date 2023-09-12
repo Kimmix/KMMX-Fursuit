@@ -40,10 +40,15 @@ class Controller {
         }
     }
 
+    unsigned long nextFrame;
+    const short fps = 144;
     void update() {
         dynamicBoop();
-        renderFace();
         sideLED.animate();
+        if (millis() >= nextFrame) {
+            nextFrame = millis() + (1000 / fps);
+            renderFace();
+        }
     }
 
     void setEye(int i) {
