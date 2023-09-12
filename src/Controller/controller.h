@@ -57,7 +57,7 @@ class Controller {
                 eyeState.setState(EyeStateEnum::GOOGLY);
                 break;
             case 2:
-                eyeState.setState(EyeStateEnum::OEYE);
+                eyeState.setState(EyeStateEnum::HEART);
                 break;
             case 3:
                 eyeState.setState(EyeStateEnum::SMILE);

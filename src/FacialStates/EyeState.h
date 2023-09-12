@@ -1,12 +1,13 @@
 #include "RenderFunction/googlyEye.h"
 #include "Bitmaps/eyeBitmap.h"
 #include "Bitmaps/eyeBlink.h"
-#include "Bitmaps/eyeSmile.h"
+#include "Bitmaps/eyeDown.h"
 enum class EyeStateEnum { IDLE,
                           BLINK,
                           BOOP,
                           GOOGLY,
                           OEYE,
+                          HEART,
                           SMILE };
 class EyeState {
    public:
@@ -32,8 +33,11 @@ class EyeState {
             case EyeStateEnum::OEYE:
                 oFace();
                 break;
+            case EyeStateEnum::HEART:
+                display->drawEye(eyeHeart);
+                break;
             case EyeStateEnum::SMILE:
-                smileFace();
+                display->drawEye(eyeSmile);
                 break;
             default:
                 break;
@@ -46,7 +50,6 @@ class EyeState {
             resetBoop = millis();
         }
         currentState = newState;
-        isTransition = true;
     }
 
     void savePrevState(EyeStateEnum newState) {
@@ -69,26 +72,46 @@ class EyeState {
     sensors_event_t event;
     GooglyEye googlyEye;
     EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
-    bool isTransition = false;
     const uint8_t* eyeFrame = eyeDefault;
 
     unsigned long
         nextBlink,
         blinkInterval,
         nextBoop,
-        resetBoop,
-        nextSmile;
+        resetBoop;
 
+    const uint8_t* eyeDownAnimation[20] = {
+        eyeDown1,
+        eyeDown2,
+        eyeDown3,
+        eyeDown4,
+        eyeDown5,
+        eyeDown6,
+        eyeDown7,
+        eyeDown8,
+        eyeDown9,
+        eyeDown10,
+        eyeDown11,
+        eyeDown12,
+        eyeDown13,
+        eyeDown14,
+        eyeDown15,
+        eyeDown16,
+        eyeDown17,
+        eyeDown18,
+        eyeDown19,
+        eyeDown20,
+    };
     void movingEye() {
         float zAcc = event.acceleration.z;
         const float leftThreshold = 3.00, rightThreshold = -3.00,
                     leftMaxThreshold = 6.00, rightMaxThreshold = -6.00;
         if (zAcc > leftThreshold) {
             int level = mapFloat(zAcc, leftThreshold, leftMaxThreshold, 0, 19);
-            display->drawEye(eyeFrame, eyeDown);
+            display->drawEye(eyeFrame, eyeDownAnimation[level]);
         } else if (zAcc < rightThreshold) {
             int level = mapFloat(zAcc, rightThreshold, rightMaxThreshold, 0, 19);
-            display->drawEye(eyeDown, eyeFrame);
+            display->drawEye(eyeDownAnimation[level], eyeFrame);
         } else {
             display->drawEye(eyeFrame);
         }
@@ -170,44 +193,6 @@ class EyeState {
             currentOFaceIndex = esp_random() % 3;
         }
         display->drawEye(oFaceAnimation[currentOFaceIndex]);
-    }
-
-    const uint8_t* smileAnimation[20] = {
-        eyeSmile1,
-        eyeSmile2,
-        eyeSmile3,
-        eyeSmile4,
-        eyeSmile5,
-        eyeSmile6,
-        eyeSmile7,
-        eyeSmile8,
-        eyeSmile9,
-        eyeSmile10,
-        eyeSmile11,
-        eyeSmile12,
-        eyeSmile13,
-        eyeSmile14,
-        eyeSmile15,
-        eyeSmile16,
-        eyeSmile17,
-        eyeSmile18,
-        eyeSmile19,
-        eyeSmile20};
-    const short smileLength = 20;
-    short smileIndex = 0;
-    void smileFace() {
-        if (isTransition) {
-            display->drawEye(smileAnimation[smileIndex]);
-            if (millis() >= nextSmile) {
-                nextSmile = millis() + 7;
-                smileIndex++;
-            }
-            if (smileIndex >= (smileLength - 1)) {
-                isTransition = false;
-                smileIndex = 0;
-            }
-        }
-        display->drawEye(smileAnimation[smileLength - 1]);
     }
 
     void renderGooglyEye() {
