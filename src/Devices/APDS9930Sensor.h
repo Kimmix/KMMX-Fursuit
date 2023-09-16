@@ -45,7 +45,6 @@ class APDS9930Sensor {
 
    public:
     void setup() {
-        delay(200);
         // ledTest();
         if (apds.init()) {
             Serial.println(F("APDS-9930 initialization complete"));
@@ -53,7 +52,7 @@ class APDS9930Sensor {
             Serial.println(F("Something went wrong during APDS-9930 init!"));
         }
 
-        // // Adjust the Proximity sensor gain
+        // Adjust the Proximity sensor gain
         // if ( !apds.setProximityGain(PGAIN_2X) ) {
         //   Serial.println(F("Something went wrong trying to set PGAIN"));
         // }
@@ -77,19 +76,16 @@ class APDS9930Sensor {
         uint16_t proximityData;
         float ambientLight;
 
-        if (millis() >= nextRead) {
-            nextRead = millis() + 100;
-            if (readAPDSSensor(proximityData, ambientLight)) {
-                conquerTheSun(proximityData, ambientLight);
-                filterProx(proximityData);
-                // ledcWrite(0, proximityData);
-                // Serial.print(F("AmbientLight: "));
-                // Serial.print(ambientLight);
-                // Serial.print(F(",Proximity: "));
-                // Serial.println(proximityData);
-            } else {
-                Serial.println("Error reading sensor data.");
-            }
+        if (readAPDSSensor(proximityData, ambientLight)) {
+            conquerTheSun(proximityData, ambientLight);
+            filterProx(proximityData);
+            // ledcWrite(0, proximityData);
+            // Serial.print(F("AmbientLight: "));
+            // Serial.print(ambientLight);
+            // Serial.print(F(",Proximity: "));
+            // Serial.println(proximityData);
+        } else {
+            Serial.println("Error reading sensor data.");
         }
         return proximityData;
     }

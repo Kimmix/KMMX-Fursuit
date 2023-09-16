@@ -1,3 +1,4 @@
+#include "Devices/APDS9930Sensor.h"
 
 #define IR_PIN GPIO_NUM_35
 enum BoopState {
@@ -7,10 +8,12 @@ enum BoopState {
 
 class Boop {
    private:
+    APDS9930Sensor prox;
     BoopState currentBoopState = IDLE;
     const int IR_IN_RANGE_THRESHOLD = 1000, IR_OUT_RANGE_THRESHOLD = 3500;
     const unsigned long boopDuration = 1000;
     unsigned long boopStartTime = 0;
+    bool isSensorStarted = false;
 
     float calculateBoopSpeed() {
         unsigned long elapsedTime = millis() - boopStartTime;
@@ -20,8 +23,12 @@ class Boop {
 
    public:
     void getBoop(bool& isInRange, bool& isBoop, float& boopSpeed) {
+        // if (!isSensorStarted) {
+        //     isSensorStarted = true;
+        //     prox.setup();
+        // }
         int sensorValue = analogRead(IR_PIN);
-        // int sensorValue = apds.read();
+        // int sensorValue = prox.read();
         isInRange = false;
         switch (currentBoopState) {
             case IDLE:
