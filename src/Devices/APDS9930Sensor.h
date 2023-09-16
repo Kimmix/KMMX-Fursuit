@@ -22,7 +22,6 @@ class APDS9930Sensor {
         // Adjust the value based on your requirements
         const int min_value = 150,
                   max_value = 50000;
-
         value -= 200;
         if (value > max_value) {
             value = 0;
@@ -36,11 +35,11 @@ class APDS9930Sensor {
         value = map(value, 0, proximity_max, 0, 255);
     }
 
-    void conquerTheSun(uint16_t &value, float ambient_light) {
-        // Disable proximity data if ambient light is too high (e.g., sunlight)
+    // Disable proximity data if ambient light is too high (e.g., sunlight)
+    void conquerTheSun(uint16_t &proximity, float ambientLight) {
         const float sunlight_threshold = 1000.0;
-        if (ambient_light > sunlight_threshold || ambient_light == 0) {
-            value = 0;
+        if (ambientLight > sunlight_threshold || ambientLight == 0) {
+            proximity = 0;
         }
     }
 
