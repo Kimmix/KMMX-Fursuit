@@ -78,13 +78,14 @@ void setupBLE() {
 void setup() {
     Serial.begin(115200);
     while (!Serial) delay(400);
-    controller.setUpLis();
-    setupBLE();
     pinMode(IR_PIN, INPUT);
     randomSeed(analogRead(RANDOM_PIN));
+    setupBLE();
+    controller.setupSensors();
 }
 
 void loop() {
     BLE.poll();
     controller.update();
+    // showFPS();
 }

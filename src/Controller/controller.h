@@ -1,6 +1,7 @@
 #include <Adafruit_LIS3DH.h>
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/SideLED.h"
+#include "Devices/APDS9930Sensor.h"
 #include "FacialStates/MouthState.h"
 #include "FacialStates/EyeState.h"
 #include "FacialStates/FXState.h"
@@ -10,38 +11,13 @@
 #define RANDOM_PIN GPIO_NUM_36
 class Controller {
    public:
-    void setUpLis() {
-        if (!lis.begin(0x19)) {
-            Serial.println("Could not initialize LIS3DH");
-            while (1)
-                ;
-        }
-        lis.setDataRate(LIS3DH_DATARATE_25_HZ);
-        lis.setRange(LIS3DH_RANGE_2_G);
-        xTaskCreatePinnedToCore(lisEventTask, "LisEventTask", 2048, this, 1, &lisEventTaskHandle, 0);
-    }
-
-    void getLisEvent() {
-        lis.getEvent(&sensorEvent);
-        // Serial.print("X:");
-        // Serial.print(sensorEvent.acceleration.x);
-        // Serial.print(",Y:");
-        // Serial.print(sensorEvent.acceleration.y);
-        // Serial.print(",Z:");
-        // Serial.println(sensorEvent.acceleration.z);
-        mouthState.getListEvent(sensorEvent);
-        eyeState.getListEvent(sensorEvent);
-    }
-
-    static void lisEventTask(void *parameter) {
-        Controller *controller = static_cast<Controller *>(parameter);
-        while (1) {
-            controller->getLisEvent();
-        }
+    void setupSensors() {
+        // setUpLis();
+        apds.setup();
     }
 
     unsigned long nextFrame;
-    const short frametime = 7; // ~144hz
+    const short frametime = 7;  // ~144hz
     void update() {
         dynamicBoop();
         sideLED.animate();
@@ -50,6 +26,7 @@ class Controller {
             renderFace();
             // showFPS();
         }
+        apds.read();
     }
 
     void setEye(int i) {
@@ -124,6 +101,7 @@ class Controller {
 
    private:
     Adafruit_LIS3DH lis = Adafruit_LIS3DH();
+    APDS9930Sensor apds;
     LEDMatrixDisplay display;
     SideLED sideLED;
     EyeState eyeState = EyeState(&display);
@@ -131,6 +109,37 @@ class Controller {
     FXState fxState = FXState(&display);
     sensors_event_t sensorEvent;
     bool isBoop = false, isBoopPrev = false;
+
+    //? -------- LIS3DH --------
+    void setUpLis() {
+        if (!lis.begin(0x19)) {
+            Serial.println("Could not initialize LIS3DH");
+            while (1)
+                ;
+        }
+        lis.setDataRate(LIS3DH_DATARATE_25_HZ);
+        lis.setRange(LIS3DH_RANGE_2_G);
+        xTaskCreatePinnedToCore(lisEventTask, "LisEventTask", 2048, this, 1, &lisEventTaskHandle, 0);
+    }
+
+    void getLisEvent() {
+        lis.getEvent(&sensorEvent);
+        // Serial.print("X:");
+        // Serial.print(sensorEvent.acceleration.x);
+        // Serial.print(",Y:");
+        // Serial.print(sensorEvent.acceleration.y);
+        // Serial.print(",Z:");
+        // Serial.println(sensorEvent.acceleration.z);
+        mouthState.getListEvent(sensorEvent);
+        eyeState.getListEvent(sensorEvent);
+    }
+
+    static void lisEventTask(void *parameter) {
+        Controller *controller = static_cast<Controller *>(parameter);
+        while (1) {
+            controller->getLisEvent();
+        }
+    }
 
     void renderFace() {
         display.drawColorTest();
