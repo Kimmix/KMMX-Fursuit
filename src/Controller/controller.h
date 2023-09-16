@@ -1,25 +1,23 @@
 #include <Adafruit_LIS3DH.h>
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/SideLED.h"
-#include "Devices/APDS9930Sensor.h"
 #include "FacialStates/MouthState.h"
 #include "FacialStates/EyeState.h"
 #include "FacialStates/FXState.h"
+#include "RenderFunction/boop.h"
 #include "Bitmaps/Icons.h"
 
-#define IR_PIN GPIO_NUM_35
 #define RANDOM_PIN GPIO_NUM_36
 class Controller {
    public:
     void setupSensors() {
-        // setUpLis();
-        // apds.setup();
+        setUpLis();
     }
 
     unsigned long nextFrame;
     const short frametime = 7;  // ~144hz
     void update() {
-        dynamicBoop();
+        booping();
         sideLED.animate();
         if (millis() >= nextFrame) {
             nextFrame = millis() + frametime;
@@ -100,14 +98,44 @@ class Controller {
 
    private:
     Adafruit_LIS3DH lis = Adafruit_LIS3DH();
-    APDS9930Sensor apds;
     LEDMatrixDisplay display;
     SideLED sideLED;
+    Boop boop;
     EyeState eyeState = EyeState(&display);
     MouthState mouthState = MouthState(&display);
     FXState fxState = FXState(&display);
     sensors_event_t sensorEvent;
-    bool isBoop = false, isBoopPrev = false;
+    TaskHandle_t lisEventTaskHandle;
+
+    void renderFace() {
+        display.drawColorTest();
+        display.drawNose(noseNew);
+        mouthState.update();
+        eyeState.update();
+        fxState.update();
+        // Double Buffering
+        display.render();
+        display.clearScreen();
+    }
+
+    bool inRange = false, isBoop = false;
+    float boopSpeed = 0.0;
+    unsigned long nextBoop = 0;
+    void booping() {
+        if (millis() >= nextBoop) {
+            nextBoop = millis() + 100;
+            boop.getBoop(inRange, isBoop, boopSpeed);
+            if (isBoop) {
+                Serial.println(boopSpeed);
+                fxState.setFlyingSpeed(boopSpeed);
+                fxState.setState(FXStateEnum::Heart);
+                eyeState.setState(EyeStateEnum::BOOP);
+                mouthState.setState(MouthStateEnum::BOOP);
+            } else if (inRange) {
+                mouthState.setState(MouthStateEnum::BOOP);
+            }
+        }
+    }
 
     //? -------- LIS3DH --------
     void setUpLis() {
@@ -138,65 +166,5 @@ class Controller {
         while (1) {
             controller->getLisEvent();
         }
-    }
-
-    void renderFace() {
-        display.drawColorTest();
-        display.drawNose(noseNew);
-        mouthState.update();
-        eyeState.update();
-        fxState.update();
-        // Double Buffering
-        display.render();
-        display.clearScreen();
-    }
-
-    enum BoopState {
-        IDLE,
-        BOOP_IN_PROGRESS,
-    };
-    BoopState currentBoopState = IDLE;
-    const int IR_IN_RANGE_THRESHOLD = 1000, IR_OUT_RANGE_THRESHOLD = 3500;
-    const unsigned long boopDuration = 1000;
-    unsigned long boopInterval = 0, boopStartTime = 0;
-    TaskHandle_t lisEventTaskHandle;
-
-    void dynamicBoop() {
-        if (millis() - boopInterval >= 100) {
-            int sensorValue = analogRead(IR_PIN);
-            // int sensorValue = apds.read();
-            switch (currentBoopState) {
-                case IDLE:
-                    if (sensorValue < IR_OUT_RANGE_THRESHOLD && sensorValue > IR_IN_RANGE_THRESHOLD) {
-                        boopStartTime = millis();
-                        currentBoopState = BOOP_IN_PROGRESS;
-                    }
-                    break;
-                case BOOP_IN_PROGRESS:
-                    mouthState.setState(MouthStateEnum::BOOP);
-                    if (sensorValue <= IR_IN_RANGE_THRESHOLD) {
-                        float speed = calculateBoopSpeed();
-                        if (speed > 0.0) {
-                            setBoopEffects(speed);
-                        }
-                        currentBoopState = IDLE;
-                    } else if (sensorValue >= IR_OUT_RANGE_THRESHOLD) {
-                        currentBoopState = IDLE;
-                    }
-                    break;
-            }
-            boopInterval = millis();
-        }
-    }
-    float calculateBoopSpeed() {
-        unsigned long elapsedTime = millis() - boopStartTime;
-        float speed = map(elapsedTime, 100, boopDuration, 0, 100);
-        return speed / 100;
-    }
-    void setBoopEffects(float speed) {
-        fxState.setFlyingSpeed(speed);
-        fxState.setState(FXStateEnum::Heart);
-        eyeState.setState(EyeStateEnum::BOOP);
-        mouthState.setState(MouthStateEnum::BOOP);
     }
 };
