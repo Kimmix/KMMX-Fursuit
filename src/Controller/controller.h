@@ -13,7 +13,7 @@ class Controller {
    public:
     void setupSensors() {
         // setUpLis();
-        apds.setup();
+        // apds.setup();
     }
 
     unsigned long nextFrame;
@@ -26,7 +26,6 @@ class Controller {
             renderFace();
             // showFPS();
         }
-        apds.read();
     }
 
     void setEye(int i) {
@@ -165,6 +164,7 @@ class Controller {
     void dynamicBoop() {
         if (millis() - boopInterval >= 100) {
             int sensorValue = analogRead(IR_PIN);
+            // int sensorValue = apds.read();
             switch (currentBoopState) {
                 case IDLE:
                     if (sensorValue < IR_OUT_RANGE_THRESHOLD && sensorValue > IR_IN_RANGE_THRESHOLD) {

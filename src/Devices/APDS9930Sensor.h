@@ -74,7 +74,7 @@ class APDS9930Sensor {
         }
     }
 
-    void read() {
+    uint16_t read() {
         uint16_t proximityData;
         float ambientLight;
 
@@ -92,5 +92,6 @@ class APDS9930Sensor {
                 Serial.println("Error reading sensor data.");
             }
         }
+        return proximityData;
     }
 };
