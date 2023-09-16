@@ -1,4 +1,4 @@
-#include "RenderFunction/googlyEye.h"
+#include "RenderFunction/GooglyEye.h"
 #include "Bitmaps/eyeBitmap.h"
 #include "Bitmaps/eyeBlink.h"
 #include "Bitmaps/eyeDown.h"

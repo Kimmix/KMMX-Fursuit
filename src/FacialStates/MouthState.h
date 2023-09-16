@@ -2,7 +2,7 @@
 #include "Bitmaps/mouthUp.h"
 #include "Bitmaps/mouthDown.h"
 #include "Bitmaps/mouthAnimated.h"
-#include "RenderFunction/viseme.h"
+#include "RenderFunction/Viseme.h"
 enum class MouthStateEnum { IDLE,
                             BOOP,
                             TALKING };
