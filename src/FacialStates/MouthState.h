@@ -67,7 +67,7 @@ class MouthState {
     LEDMatrixDisplay* display;
     sensors_event_t event;
     MouthStateEnum prevState, currentState = MouthStateEnum::TALKING;
-    unsigned long mouthInterval;
+    unsigned long mouthInterval, nextViseme;
     const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;
 
     const uint8_t* defaultAnimation[20] = {
@@ -202,7 +202,10 @@ class MouthState {
         MouthState* mouthState = reinterpret_cast<MouthState*>(parameter);
         mouthState->visemeTaskRunning = true;
         while (mouthState->currentState != MouthStateEnum::IDLE) {
-            mouthState->visemeFrame = mouthState->viseme.renderViseme();
+            if (millis() >= nextViseme) {
+                mouthState->visemeFrame = mouthState->viseme.renderViseme();
+                nextViseme = millis() + 7;
+            }
         }
         mouthState->visemeTaskRunning = false;
         vTaskDelete(NULL);
