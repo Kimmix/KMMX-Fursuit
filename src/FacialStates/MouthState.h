@@ -201,12 +201,8 @@ class MouthState {
     static void visemeRenderingTask(void* parameter) {
         MouthState* mouthState = reinterpret_cast<MouthState*>(parameter);
         mouthState->visemeTaskRunning = true;
-        unsigned long nextViseme;
         while (mouthState->currentState != MouthStateEnum::IDLE) {
-            if (millis() >= nextViseme) {
-                mouthState->visemeFrame = mouthState->viseme.renderViseme();
-                nextViseme = millis() + 7;
-            }
+            mouthState->visemeFrame = mouthState->viseme.renderViseme();
         }
         mouthState->visemeTaskRunning = false;
         vTaskDelete(NULL);
