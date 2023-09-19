@@ -224,26 +224,25 @@ class Viseme {
     }
     unsigned int currentLoudness = 0;
     unsigned long decayStartTime = 0;
-    const double decayRate = 3;                       // Set the decay rate to 0.75
-    const unsigned long decayElapsedThreshold = 500;  // Set the decay elapsed time threshold to 1 seconds
+    const double decayRate = 0.0001;                    // Adjusted decay rate (units per millisecond)
+    const unsigned long decayElapsedThreshold = 1000;  // 1 second threshold
+
     unsigned int smoothedLoudness(unsigned int input) {
-        // If the input is greater than or equal to the current loudness, increment smoothly
+        unsigned long currentTime = millis();
+        unsigned long decayElapsedTime = currentTime - decayStartTime;
+
         if (input >= currentLoudness) {
             currentLoudness = input;
             decayStartTime = 0;
         } else {
-            // If the input is less than the current loudness, start the decay process
             if (decayStartTime == 0) {
-                decayStartTime = millis();
+                decayStartTime = currentTime;
             } else {
-                unsigned long decayElapsedTime = millis() - decayStartTime;
-                // If the decay elapsed time threshold is exceeded and the loudness is very low, reset it to 0
                 if (decayElapsedTime >= decayElapsedThreshold && currentLoudness <= 1) {
                     currentLoudness = 0;
                     decayStartTime = 0;
                 } else {
-                    unsigned int decayedInput = static_cast<unsigned int>(currentLoudness - decayRate * decayElapsedTime / 1000.0);
-                    // If the decayed input is still higher than the desired input, decay further
+                    unsigned int decayedInput = static_cast<unsigned int>(currentLoudness - decayRate * decayElapsedTime);
                     if (decayedInput < input) {
                         currentLoudness = input;
                         decayStartTime = 0;
@@ -262,22 +261,23 @@ class Viseme {
             previousLevel = level;
             return mouthDefault;
         }
-        if (level == previousLevel - 1 && viseme == previousViseme) {
+        if (level < previousLevel) {
             // If the level is decreasing by 1 and it's the same viseme as before
             previousLevel = level;
+            viseme = previousViseme;
             return visemeOutput(viseme, level);  // Recursively call with the same viseme
         }
         previousLevel = level;
         previousViseme = viseme;
         level -= 1;
-        // Serial.print("Base:");
-        // Serial.print(4);
-        // Serial.print(",Level:");
-        // Serial.print(level);
-        // Serial.print(",viseme:");
-        // Serial.print(viseme);
-        // Serial.print(",previousViseme:");
-        // Serial.println(previousViseme);
+        Serial.print("Base:");
+        Serial.print(4);
+        Serial.print(",Level:");
+        Serial.print(level);
+        Serial.print(",viseme:");
+        Serial.print(viseme);
+        Serial.print(",previousViseme:");
+        Serial.println(previousViseme);
         // auto combination = visemeCombination.find(std::make_pair(viseme, previousViseme));
         // Serial.print(",combination:");
         // Serial.println(combination->second);
