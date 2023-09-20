@@ -108,7 +108,7 @@ class Viseme {
         }
 
         // If 'AH' is still the highest viseme and the second viseme is not too far from it, return the second viseme
-        if (viseme == AH && second_amplitude >= ah_amplitude * 0.65) {
+        if (viseme == AH && second_amplitude >= ah_amplitude * 0.75) {
             viseme = second_viseme;
         }
 
