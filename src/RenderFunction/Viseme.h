@@ -224,8 +224,8 @@ class Viseme {
     }
     unsigned int currentLoudness = 0;
     unsigned long decayStartTime = 0;
-    const double decayRate = 0.0001;                    // Adjusted decay rate (units per millisecond)
-    const unsigned long decayElapsedThreshold = 1000;  // 1 second threshold
+    const unsigned long decayElapsedThreshold = 100;
+    const double decayRate = 0.001;                    // Adjusted decay rate (units per millisecond)
 
     unsigned int smoothedLoudness(unsigned int input) {
         unsigned long currentTime = millis();
@@ -238,11 +238,11 @@ class Viseme {
             if (decayStartTime == 0) {
                 decayStartTime = currentTime;
             } else {
-                if (decayElapsedTime >= decayElapsedThreshold && currentLoudness <= 1) {
+                if (decayElapsedTime >= decayElapsedThreshold && currentLoudness <= 5) {
                     currentLoudness = 0;
                     decayStartTime = 0;
                 } else {
-                    unsigned int decayedInput = static_cast<unsigned int>(currentLoudness - decayRate * decayElapsedTime);
+                    unsigned int decayedInput = static_cast<unsigned int>(currentLoudness - (decayRate * decayElapsedTime));
                     if (decayedInput < input) {
                         currentLoudness = input;
                         decayStartTime = 0;
@@ -261,23 +261,20 @@ class Viseme {
             previousLevel = level;
             return mouthDefault;
         }
-        if (level < previousLevel) {
-            // If the level is decreasing by 1 and it's the same viseme as before
-            previousLevel = level;
+        if (level < previousLevel) { // Hold viseme when level decreasing
             viseme = previousViseme;
-            return visemeOutput(viseme, level);  // Recursively call with the same viseme
         }
         previousLevel = level;
         previousViseme = viseme;
         level -= 1;
-        Serial.print("Base:");
-        Serial.print(4);
-        Serial.print(",Level:");
-        Serial.print(level);
-        Serial.print(",viseme:");
-        Serial.print(viseme);
-        Serial.print(",previousViseme:");
-        Serial.println(previousViseme);
+        // Serial.print("Base:");
+        // Serial.print(4);
+        // Serial.print(",Level:");
+        // Serial.print(level);
+        // Serial.print(",viseme:");
+        // Serial.print(viseme);
+        // Serial.print(",previousViseme:");
+        // Serial.println(previousViseme);
         // auto combination = visemeCombination.find(std::make_pair(viseme, previousViseme));
         // Serial.print(",combination:");
         // Serial.println(combination->second);
