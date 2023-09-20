@@ -199,19 +199,7 @@ class Viseme {
     }
     // Compute loudness level based on average amplitude
     unsigned int calculateLoudness(double max, double avg) {
-        const double multiples[] = {
-            1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4, 1.45, 1.5, 1.55,
-            1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5};
-        const unsigned int levels[] = {
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-            11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-
-        for (int i = 19; i >= 0; --i) {
-            if (max > avg * multiples[i]) {
-                return levels[i];
-            }
-        }
-        return 0;
+        return mapFloat(max / avg, 1, 3.2, 1, 20);
     }
 
     VisemeType previousViseme;
@@ -225,7 +213,7 @@ class Viseme {
     unsigned int currentLoudness = 0;
     unsigned long decayStartTime = 0;
     const unsigned long decayElapsedThreshold = 100;
-    const double decayRate = 0.001;                    // Adjusted decay rate (units per millisecond)
+    const double decayRate = 0.001;  // Adjusted decay rate (units per millisecond)
 
     unsigned int smoothedLoudness(unsigned int input) {
         unsigned long currentTime = millis();
@@ -261,7 +249,7 @@ class Viseme {
             previousLevel = level;
             return mouthDefault;
         }
-        if (level < previousLevel) { // Hold viseme when level decreasing
+        if (level < previousLevel) {  // Hold viseme when level decreasing
             viseme = previousViseme;
         }
         previousLevel = level;
