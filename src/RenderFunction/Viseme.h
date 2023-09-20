@@ -68,20 +68,48 @@ class Viseme {
 
         VisemeType viseme = AH;
         double viseme_amplitude = ah_amplitude;
+        VisemeType second_viseme = AH;
+        double second_amplitude = ah_amplitude * 0.8;  // Adjust the threshold as needed
+
         if (ee_amplitude > viseme_amplitude) {
-            viseme = EE;
-            viseme_amplitude = ee_amplitude;
+            if (ee_amplitude >= second_amplitude) {
+                second_viseme = viseme;
+                second_amplitude = viseme_amplitude;
+
+                viseme = EE;
+                viseme_amplitude = ee_amplitude;
+            }
         }
         if (oh_amplitude > viseme_amplitude) {
-            viseme = OH;
-            viseme_amplitude = oh_amplitude;
+            if (oh_amplitude >= second_amplitude) {
+                second_viseme = viseme;
+                second_amplitude = viseme_amplitude;
+
+                viseme = OH;
+                viseme_amplitude = oh_amplitude;
+            }
         }
         if (oo_amplitude > viseme_amplitude) {
-            viseme = OO;
-            viseme_amplitude = oo_amplitude;
+            if (oo_amplitude >= second_amplitude) {
+                second_viseme = viseme;
+                second_amplitude = viseme_amplitude;
+
+                viseme = OO;
+                viseme_amplitude = oo_amplitude;
+            }
         }
         if (th_amplitude > viseme_amplitude) {
-            viseme = TH;
+            if (th_amplitude >= second_amplitude) {
+                second_viseme = viseme;
+                second_amplitude = viseme_amplitude;
+
+                viseme = TH;
+            }
+        }
+
+        // If 'AH' is still the highest viseme and the second viseme is not too far from it, return the second viseme
+        if (viseme == AH && second_amplitude >= ah_amplitude * 0.65) {
+            viseme = second_viseme;
         }
 
         double min_amplitude, max_amplitude, avg_amplitude;
@@ -212,8 +240,8 @@ class Viseme {
     }
     unsigned int currentLoudness = 0;
     unsigned long decayStartTime = 0;
-    const unsigned long decayElapsedThreshold = 100;
-    const double decayRate = 0.001;  // Adjusted decay rate (units per millisecond)
+    const unsigned long decayElapsedThreshold = 1000;
+    const double decayRate = 0.0003;  // Adjusted decay rate (units per millisecond)
 
     unsigned int smoothedLoudness(unsigned int input) {
         unsigned long currentTime = millis();
@@ -251,9 +279,10 @@ class Viseme {
         }
         if (level < previousLevel) {  // Hold viseme when level decreasing
             viseme = previousViseme;
+        } else {
+            previousViseme = viseme;
         }
         previousLevel = level;
-        previousViseme = viseme;
         level -= 1;
         // Serial.print("Base:");
         // Serial.print(4);
