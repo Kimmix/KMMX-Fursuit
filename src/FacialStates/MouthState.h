@@ -13,6 +13,7 @@ class MouthState {
 
     void startMic() {
         viseme.initMic();
+        startVisemeTask();
     }
 
     void update() {
@@ -29,9 +30,6 @@ class MouthState {
                 }
                 break;
             case MouthStateEnum::TALKING:
-                if (!visemeTaskRunning) {
-                    startVisemeTask();
-                }
                 if (visemeFrame == mouthDefault) {
                     drawDefault();
                 } else {
@@ -71,79 +69,16 @@ class MouthState {
     LEDMatrixDisplay* display;
     sensors_event_t event;
     MouthStateEnum prevState, currentState = MouthStateEnum::TALKING;
-    unsigned long mouthInterval;
+    unsigned long mouthInterval, resetBoop;
     const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;
 
-    const uint8_t* defaultAnimation[20] = {
-        mouthDefault1,
-        mouthDefault2,
-        mouthDefault3,
-        mouthDefault4,
-        mouthDefault5,
-        mouthDefault6,
-        mouthDefault7,
-        mouthDefault8,
-        mouthDefault9,
-        mouthDefault10,
-        mouthDefault11,
-        mouthDefault12,
-        mouthDefault13,
-        mouthDefault14,
-        mouthDefault15,
-        mouthDefault16,
-        mouthDefault17,
-        mouthDefault18,
-        mouthDefault19,
-        mouthDefault20,
-    };
+    const uint8_t* defaultAnimation[20] = {mouthDefault1, mouthDefault2, mouthDefault3, mouthDefault4, mouthDefault5, mouthDefault6, mouthDefault7, mouthDefault8, mouthDefault9, mouthDefault10, mouthDefault11, mouthDefault12, mouthDefault13, mouthDefault14, mouthDefault15, mouthDefault16, mouthDefault17, mouthDefault18, mouthDefault19, mouthDefault20};
     void drawDefault() {
         display->drawMouth(mouthFrame);
     }
 
-    const uint8_t* mouthUp[20] = {
-        mouthUp1,
-        mouthUp2,
-        mouthUp3,
-        mouthUp4,
-        mouthUp5,
-        mouthUp6,
-        mouthUp7,
-        mouthUp8,
-        mouthUp9,
-        mouthUp10,
-        mouthUp11,
-        mouthUp12,
-        mouthUp13,
-        mouthUp14,
-        mouthUp15,
-        mouthUp16,
-        mouthUp17,
-        mouthUp18,
-        mouthUp19,
-        mouthUp20,
-    };
-    const uint8_t* mouthDown[20] = {
-        mouthDown1,
-        mouthDown2,
-        mouthDown3,
-        mouthDown4,
-        mouthDown5,
-        mouthDown6,
-        mouthDown7,
-        mouthDown8,
-        mouthDown9,
-        mouthDown10,
-        mouthDown11,
-        mouthDown12,
-        mouthDown13,
-        mouthDown14,
-        mouthDown15,
-        mouthDown16,
-        mouthDown17,
-        mouthDown18,
-        mouthDown19,
-        mouthDown20,
-    };
+    const uint8_t* mouthUp[20] = {mouthUp1, mouthUp2, mouthUp3, mouthUp4, mouthUp5, mouthUp6, mouthUp7, mouthUp8, mouthUp9, mouthUp10, mouthUp11, mouthUp12, mouthUp13, mouthUp14, mouthUp15, mouthUp16, mouthUp17, mouthUp18, mouthUp19, mouthUp20};
+    const uint8_t* mouthDown[20] = {mouthDown1, mouthDown2, mouthDown3, mouthDown4, mouthDown5, mouthDown6, mouthDown7, mouthDown8, mouthDown9, mouthDown10, mouthDown11, mouthDown12, mouthDown13, mouthDown14, mouthDown15, mouthDown16, mouthDown17, mouthDown18, mouthDown19, mouthDown20};
     void movingMouth() {
         float yAcc = event.acceleration.y;
 
@@ -190,25 +125,20 @@ class MouthState {
         }
     }
 
-    unsigned long resetBoop;
-    bool visemeTaskRunning = false;
-
     // Task handle for the viseme rendering task
     TaskHandle_t visemeTaskHandle = NULL;
 
     // Start the viseme rendering task on the second core
     void startVisemeTask() {
+        Serial.println(F("Start viseme task..."));
         xTaskCreatePinnedToCore(visemeRenderingTask, "VisemeTask", 2048, this, 2, &visemeTaskHandle, 0);
     }
 
     // The viseme rendering task function
     static void visemeRenderingTask(void* parameter) {
         MouthState* mouthState = reinterpret_cast<MouthState*>(parameter);
-        mouthState->visemeTaskRunning = true;
-        while (mouthState->currentState != MouthStateEnum::IDLE) {
+        while (true) {
             mouthState->visemeFrame = mouthState->viseme.renderViseme();
         }
-        mouthState->visemeTaskRunning = false;
-        vTaskDelete(NULL);
     }
 };
