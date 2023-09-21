@@ -37,7 +37,7 @@ class I2SMicrophone {
 
    public:
     void init(uint32_t sampleRate, int samples) {
-        delay(500);
+        Serial.println(F("Starting I2C mic..."));
         i2s_install(sampleRate, samples);
         i2s_setpin();
         start_i2s();

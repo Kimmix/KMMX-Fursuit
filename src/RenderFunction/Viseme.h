@@ -22,16 +22,13 @@
 
 class Viseme {
    public:
-    bool microphoneEnable = false;
+    void initMic() {
+        microphone.init(SAMPLE_RATE, SAMPLES);
+    }
     const uint8_t* renderViseme() {
-        if (!microphoneEnable) {
-            Serial.println(F("Starting I2C mic..."));
-            microphone.init(SAMPLE_RATE, SAMPLES);
-            microphoneEnable = true;
-        }
         getDigtalSample(real, imaginary, true);
         // getAnalogSample(real, imaginary, false);
-        // FFT.DCRemoval();
+        FFT.DCRemoval();
         FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
         FFT.Compute(FFT_FORWARD);
         FFT.ComplexToMagnitude();

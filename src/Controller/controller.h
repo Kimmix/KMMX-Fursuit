@@ -11,6 +11,7 @@
 class Controller {
    public:
     void setupSensors() {
+        mouthState.startMic();
         setUpLis();
     }
 

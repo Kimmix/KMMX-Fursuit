@@ -11,6 +11,10 @@ class MouthState {
     MouthState(LEDMatrixDisplay* display) : display(display) {}
     Viseme viseme;
 
+    void startMic() {
+        viseme.initMic();
+    }
+
     void update() {
         updateAnimation();
         movingMouth();

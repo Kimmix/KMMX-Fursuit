@@ -1,4 +1,3 @@
-//? Still need two screen to complete this feature
 // 3x3
 static const uint8_t PROGMEM heartBM3x3[] = {
     0xff, 0x00, 0xff,
@@ -27,14 +26,14 @@ class FlyingHeart {
     }
 
     void renderHeart() {
-        // Update heart position every X
+        // Update heart position
         if (millis() - heartSpeed >= 7) {
             for (int i = 0; i < sumHeart; i++) {
                 moveHeart(i);
             }
             heartSpeed = millis();
         }
-        // Non-blocking render
+        // Render all heart in Non-blocking render
         for (int i = 0; i < sumHeart; i++) {
             if (Hearts[i].velocityx == 0 && Hearts[i].velocityy == 0) {
                 continue;
