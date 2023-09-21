@@ -25,9 +25,9 @@ class Viseme {
     bool microphoneEnable = false;
     const uint8_t* renderViseme() {
         if (!microphoneEnable) {
+            Serial.println(F("Starting I2C mic..."));
             microphone.init(SAMPLE_RATE, SAMPLES);
             microphoneEnable = true;
-            Serial.println("******** Start Mic ********");
         }
         getDigtalSample(real, imaginary, true);
         // getAnalogSample(real, imaginary, false);
@@ -39,6 +39,8 @@ class Viseme {
         //? Compute amplitude of frequency ranges for each viseme
         double ah_amplitude = 0, ee_amplitude = 0,
                oh_amplitude = 0, oo_amplitude = 0, th_amplitude = 0;
+        double min_amplitude, max_amplitude, avg_amplitude;
+        unsigned int loudness_level;
 
         for (int i = 4; i < SAMPLES / 2; i++) {
             double freq = i * ((SAMPLE_RATE / 2.0) / (SAMPLES / 2.0));
@@ -59,62 +61,12 @@ class Viseme {
                 th_amplitude += amplitude;
             }
         }
-        //? Normalizing
-        ah_amplitude *= 0.6;
-        ee_amplitude *= 1.0;
-        oh_amplitude *= 1.8;
-        oo_amplitude *= 2.2;
-        th_amplitude *= 2.6;
-
-        VisemeType viseme = AH;
-        double viseme_amplitude = ah_amplitude;
-        VisemeType second_viseme = AH;
-        double second_amplitude = ah_amplitude * 0.8;  // Adjust the threshold as needed
-
-        if (ee_amplitude > viseme_amplitude) {
-            if (ee_amplitude >= second_amplitude) {
-                second_viseme = viseme;
-                second_amplitude = viseme_amplitude;
-
-                viseme = EE;
-                viseme_amplitude = ee_amplitude;
-            }
-        }
-        if (oh_amplitude > viseme_amplitude) {
-            if (oh_amplitude >= second_amplitude) {
-                second_viseme = viseme;
-                second_amplitude = viseme_amplitude;
-
-                viseme = OH;
-                viseme_amplitude = oh_amplitude;
-            }
-        }
-        if (oo_amplitude > viseme_amplitude) {
-            if (oo_amplitude >= second_amplitude) {
-                second_viseme = viseme;
-                second_amplitude = viseme_amplitude;
-
-                viseme = OO;
-                viseme_amplitude = oo_amplitude;
-            }
-        }
-        if (th_amplitude > viseme_amplitude) {
-            if (th_amplitude >= second_amplitude) {
-                second_viseme = viseme;
-                second_amplitude = viseme_amplitude;
-
-                viseme = TH;
-            }
-        }
-
-        // If 'AH' is still the highest viseme and the second viseme is not too far from it, return the second viseme
-        if (viseme == AH && second_amplitude >= ah_amplitude * 0.75) {
-            viseme = second_viseme;
-        }
-
-        double min_amplitude, max_amplitude, avg_amplitude;
+        normalizeViseme(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude);
+        // Find viseme
+        VisemeType dominantViseme = getDominantViseme(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude);
+        // Get viseme level
         calculateAmplitude(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude, min_amplitude, max_amplitude, avg_amplitude);
-        unsigned int loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
+        loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
         loudness_level = max_amplitude > noiseThreshold ? loudness_level : 0;
         loudness_level = smoothedLoudness(loudness_level);
 
@@ -142,7 +94,7 @@ class Viseme {
         // Serial.println(avg_amplitude > max_threshold ? max_threshold : avg_amplitude);
 
         //! Final render
-        return visemeOutput(viseme, loudness_level);
+        return visemeOutput(dominantViseme, loudness_level);
     }
 
     double getNoiseThreshold() {
@@ -151,7 +103,6 @@ class Viseme {
 
     void setNoiseThreshold(double value) {
         noiseThreshold = value;
-        Serial.println(noiseThreshold);
     };
 
    private:
@@ -220,6 +171,61 @@ class Viseme {
         }
     }
 
+    void normalizeViseme(double& ah_amplitude, double& ee_amplitude, double& oh_amplitude, double& oo_amplitude, double& th_amplitude) {
+        ah_amplitude *= 0.6;
+        ee_amplitude *= 1.0;
+        oh_amplitude *= 1.8;
+        oo_amplitude *= 2.2;
+        th_amplitude *= 2.6;
+    }
+
+    VisemeType getDominantViseme(double ah_amplitude, double ee_amplitude, double oh_amplitude, double oo_amplitude, double th_amplitude) {
+        VisemeType viseme = AH, second_viseme = AH;
+        double viseme_amplitude = ah_amplitude, second_amplitude = ah_amplitude;
+
+        if (ee_amplitude > viseme_amplitude) {
+            if (ee_amplitude >= second_amplitude) {
+                second_viseme = viseme;
+                second_amplitude = viseme_amplitude;
+
+                viseme = EE;
+                viseme_amplitude = ee_amplitude;
+            }
+        }
+        if (oh_amplitude > viseme_amplitude) {
+            if (oh_amplitude >= second_amplitude) {
+                second_viseme = viseme;
+                second_amplitude = viseme_amplitude;
+
+                viseme = OH;
+                viseme_amplitude = oh_amplitude;
+            }
+        }
+        if (oo_amplitude > viseme_amplitude) {
+            if (oo_amplitude >= second_amplitude) {
+                second_viseme = viseme;
+                second_amplitude = viseme_amplitude;
+
+                viseme = OO;
+                viseme_amplitude = oo_amplitude;
+            }
+        }
+        if (th_amplitude > viseme_amplitude) {
+            if (th_amplitude >= second_amplitude) {
+                second_viseme = viseme;
+                second_amplitude = viseme_amplitude;
+
+                viseme = TH;
+            }
+        }
+
+        // If 'AH' is still the highest viseme and the second viseme is not too far from it, return the second viseme
+        if (viseme == AH && second_amplitude >= ah_amplitude * 0.75) {
+            viseme = second_viseme;
+        }
+        return viseme;
+    }
+
     void calculateAmplitude(double ah, double ee, double oh, double oo, double th, double& minAmp, double& maxAmp, double& avgAmp) {
         minAmp = min(min(min(min(ah, ee), oh), oo), th);
         maxAmp = max(max(max(max(ah, ee), oh), oo), th);
@@ -227,7 +233,7 @@ class Viseme {
     }
     // Compute loudness level based on average amplitude
     unsigned int calculateLoudness(double max, double avg) {
-        return mapFloat(max / avg, 1, 3.2, 1, 20);
+        return mapFloat(max / avg, 1, 2.8, 1, 20);
     }
 
     VisemeType previousViseme;
