@@ -12,7 +12,7 @@ BLEByteCharacteristic displayBrightnessCharacteristic("9fdfd124-966b-44f7-8331-7
 BLEByteCharacteristic eyeStateCharacteristic("49a36bb2-1c66-4e5c-8ff3-28e55a64beb3", BLERead | BLEWrite);
 BLEByteCharacteristic visemeCharacteristic("493d06f3-0fa0-4a90-88f1-ebaed0da9b80", BLERead | BLEWrite);
 
-//? ------------------------ Blueooth
+//? ------------------------ Blueooth ------------------------
 static void blePeripheralConnectHandler(BLEDevice central) {
     Serial.print(F("Connected event, central: "));
     Serial.println(central.address());
@@ -37,14 +37,12 @@ void visemeStateWritten(BLEDevice central, BLECharacteristic characteristic) {
     const uint8_t* data = characteristic.value();
     controller.setViseme(static_cast<int>(*data));
 }
-//? ------------- Blueooth Setup
+//? ------------- Blueooth Setup -------------
 void setupBLE() {
     Serial.println(F("Booting BLE..."));
     pinMode(LED_BUILTIN, OUTPUT);
     if (!BLE.begin()) {
         Serial.println(F("--------- Failed to initialize BLE! ---------"));
-        while (1)
-            ;
     }
     BLE.setDeviceName("KMMX");
     BLE.setLocalName("KMMX-BLE");
