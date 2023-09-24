@@ -78,7 +78,7 @@ class LEDMatrixDisplay {
         mxconfig.double_buff = true;
         matrix = new MatrixPanel_I2S_DMA(mxconfig);
         if (!matrix->begin())
-            Serial.println("****** I2S memory allocation failed ***********");
+            Serial.println(F("****** I2S memory allocation failed ***********"));
         matrix->setBrightness8(panelBrightness);
         matrix->clearScreen();
     }

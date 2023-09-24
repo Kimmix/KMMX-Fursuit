@@ -14,13 +14,13 @@ BLEByteCharacteristic visemeCharacteristic("493d06f3-0fa0-4a90-88f1-ebaed0da9b80
 
 //? ------------------------ Blueooth
 static void blePeripheralConnectHandler(BLEDevice central) {
-    Serial.print("Connected event, central: ");
+    Serial.print(F("Connected event, central: "));
     Serial.println(central.address());
     digitalWrite(LED_BUILTIN, HIGH);
 }
 // On bluetooth disconnected
 static void blePeripheralDisconnectHandler(BLEDevice central) {
-    Serial.print("Disconnected event, central: ");
+    Serial.print(F("Disconnected event, central: "));
     Serial.println(central.address());
     digitalWrite(LED_BUILTIN, LOW);
 }
@@ -39,10 +39,10 @@ void visemeStateWritten(BLEDevice central, BLECharacteristic characteristic) {
 }
 //? ------------- Blueooth Setup
 void setupBLE() {
-    Serial.println("Booting BLE...");
+    Serial.println(F("Booting BLE..."));
     pinMode(LED_BUILTIN, OUTPUT);
     if (!BLE.begin()) {
-        Serial.println("failed to initialize BLE!");
+        Serial.println(F("--------- Failed to initialize BLE! ---------"));
         while (1)
             ;
     }
@@ -71,7 +71,7 @@ void setupBLE() {
 
     // Start advertising the BLE pService
     BLE.advertise();
-    Serial.println("Bluetooth® device active, waiting for connections...");
+    Serial.println(F("Bluetooth® device active, waiting for connections..."));
 }
 
 //! -------------------- Main Setup --------------------

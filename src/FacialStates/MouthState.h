@@ -5,7 +5,8 @@
 #include "RenderFunction/Viseme.h"
 enum class MouthStateEnum { IDLE,
                             BOOP,
-                            TALKING };
+                            TALKING,
+};
 class MouthState {
    public:
     MouthState(LEDMatrixDisplay* display) : display(display) {}
