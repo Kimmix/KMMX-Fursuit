@@ -8,7 +8,8 @@ enum class EyeStateEnum { IDLE,
                           GOOGLY,
                           OEYE,
                           HEART,
-                          SMILE };
+                          SMILE,
+};
 class EyeState {
    public:
     EyeState(LEDMatrixDisplay* display) : display(display) {}
@@ -80,28 +81,7 @@ class EyeState {
         nextBoop,
         resetBoop;
 
-    const uint8_t* eyeDownAnimation[20] = {
-        eyeDown1,
-        eyeDown2,
-        eyeDown3,
-        eyeDown4,
-        eyeDown5,
-        eyeDown6,
-        eyeDown7,
-        eyeDown8,
-        eyeDown9,
-        eyeDown10,
-        eyeDown11,
-        eyeDown12,
-        eyeDown13,
-        eyeDown14,
-        eyeDown15,
-        eyeDown16,
-        eyeDown17,
-        eyeDown18,
-        eyeDown19,
-        eyeDown20,
-    };
+    const uint8_t* eyeDownAnimation[20] = {eyeDown1, eyeDown2, eyeDown3, eyeDown4, eyeDown5, eyeDown6, eyeDown7, eyeDown8, eyeDown9, eyeDown10, eyeDown11, eyeDown12, eyeDown13, eyeDown14, eyeDown15, eyeDown16, eyeDown17, eyeDown18, eyeDown19, eyeDown20};
     void movingEye() {
         float zAcc = event.acceleration.z;
         const float leftThreshold = 3.00, rightThreshold = -3.00,
@@ -136,22 +116,7 @@ class EyeState {
         }
     }
 
-    const uint8_t* blinkAnimation[15] = {
-        eyeBlink1,
-        eyeBlink2,
-        eyeBlink3,
-        eyeBlink4,
-        eyeBlink5,
-        eyeBlink6,
-        eyeBlink7,
-        eyeBlink8,
-        eyeBlink9,
-        eyeBlink10,
-        eyeBlink11,
-        eyeBlink12,
-        eyeBlink13,
-        eyeBlink14,
-        eyeBlink15};
+    const uint8_t* blinkAnimation[15] = {eyeBlink1, eyeBlink2, eyeBlink3, eyeBlink4, eyeBlink5, eyeBlink6, eyeBlink7, eyeBlink8, eyeBlink9, eyeBlink10, eyeBlink11, eyeBlink12, eyeBlink13, eyeBlink14, eyeBlink15};
     const short blinkAnimationLength = 15;
     short blinkStep, currentBlinkFrameIndex;
     void blink() {
