@@ -63,6 +63,7 @@ class Viseme {
         VisemeType dominantViseme = getDominantViseme(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude);
         // Get viseme level
         calculateAmplitude(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude, min_amplitude, max_amplitude, avg_amplitude);
+        levelBoost(dominantViseme, max_amplitude);
         loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
         loudness_level = max_amplitude > noiseThreshold ? loudness_level : 0;
         loudness_level = smoothedLoudness(loudness_level);
@@ -231,6 +232,12 @@ class Viseme {
     // Compute loudness level based on average amplitude
     unsigned int calculateLoudness(double max, double avg) {
         return mapFloat(max / avg, 1, 2.8, 1, 20);
+    }
+
+    void levelBoost(VisemeType viseme, double& maxAmp) {
+        if (viseme != AH) {
+            maxAmp *= 1.5;
+        }
     }
 
     VisemeType previousViseme;
