@@ -258,6 +258,11 @@ class Viseme {
         unsigned long decayElapsedTime = currentTime - decayStartTime;
 
         if (input >= currentLoudness) {
+            // Increment limit
+            if (input - currentLoudness > 5) {
+                input = currentLoudness + 5;
+                input = input > 20 ? 20 : input;
+            }
             currentLoudness = input;
             decayStartTime = 0;
         } else {
