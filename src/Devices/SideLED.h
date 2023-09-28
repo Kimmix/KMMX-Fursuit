@@ -15,17 +15,15 @@ class SideLED {
 
     void animate() {
         if (millis() >= prevTime) {
-            prevTime = millis() + 200;
+            prevTime = millis() + 1000;
             updateLEDs();
-            moveIndex();
             FastLED.show();
         }
     }
 
    private:
     CRGB leds[NUM_LEDS];
-    uint8_t startIndex = 0;
-    bool forward = true;
+    uint8_t index = 0;
     unsigned long prevTime = 0;
 
     void updateLEDs() {
@@ -38,31 +36,10 @@ class SideLED {
         int saturationStep = (color2HSV.s - color1HSV.s) / NUM_LEDS;
         int valueStep = (color2HSV.v - color1HSV.v) / NUM_LEDS;
 
-        // Fill the LED strip with the gradient
-        for (int i = 0; i < NUM_LEDS; i++) {
-            int index = (startIndex + i) % NUM_LEDS;                   // Calculate the current index for the gradient
-            int currentHue = (color1HSV.h + hueStep * i + 256) % 256;  // Ensure the hue wraps around 256
-            int currentSaturation = color1HSV.s + saturationStep * i;
-            int currentBrightness = color1HSV.v + valueStep * i;
-            leds[index] = CHSV(currentHue, currentSaturation, currentBrightness);
-        }
-        // Fill one esp_random()
-    }
-
-    void moveIndex() {
-        // Move the starting index based on the direction
-        if (forward) {
-            startIndex++;
-            if (startIndex >= NUM_LEDS) {
-                forward = false;  // Change direction when reaching the end
-                startIndex = NUM_LEDS - 1;
-            }
-        } else {
-            startIndex--;
-            if (startIndex < 0) {
-                forward = true;  // Change direction when reaching the beginning
-                startIndex = 0;
-            }
-        }
+        index = (index + 1) % NUM_LEDS;
+        int currentHue = (color1HSV.h + hueStep * index + 256) % 256;  // Ensure the hue wraps around 256
+        int currentSaturation = color1HSV.s + saturationStep * index;
+        int currentBrightness = color1HSV.v + valueStep * index;
+        leds[esp_random() % NUM_LEDS] = CHSV(currentHue, currentSaturation, currentBrightness);
     }
 };
