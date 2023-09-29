@@ -11,6 +11,9 @@ class SideLED {
     SideLED() {
         FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
         FastLED.setBrightness(BRIGHTNESS);
+        for (short i = 0; i < NUM_LEDS; i++) {
+            leds[i] = CHSV(150, 255, 200);
+        }
     }
 
     void animate() {
