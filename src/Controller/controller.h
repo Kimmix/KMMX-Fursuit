@@ -20,11 +20,11 @@ class Controller {
     void update() {
         booping();
         sideLED.animate();
-        if (millis() >= nextFrame) {
-            nextFrame = millis() + frametime;
-            renderFace();
-            // showFPS();
-        }
+        renderFace();
+        // if (millis() >= nextFrame) {
+        //     nextFrame = millis() + frametime;
+        //     // showFPS();
+        // }
     }
 
     void setEye(int i) {
