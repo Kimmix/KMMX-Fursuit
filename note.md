@@ -62,4 +62,4 @@ Viseme
     - Update MVC
     - frame interpolate
 
-Main mac: 40:22:D8:4C:AB:98
+Main mac: 40:22:D8:4C:AB:98 {0x40, 0x22, 0xD8, 0x4C, 0xAB, 0x98};

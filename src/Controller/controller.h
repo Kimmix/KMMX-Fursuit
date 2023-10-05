@@ -20,11 +20,11 @@ class Controller {
     void update() {
         booping();
         sideLED.animate();
-        renderFace();
-        // if (millis() >= nextFrame) {
-        //     nextFrame = millis() + frametime;
-        //     // showFPS();
-        // }
+        if (millis() >= nextFrame) {
+            nextFrame = millis() + frametime;
+            renderFace();
+            // showFPS();
+        }
     }
 
     void setEye(int i) {
@@ -97,6 +97,10 @@ class Controller {
         display.setBrightnessValue(i);
     }
 
+    void updatePixelPosition(int16_t y) {
+        pixelPos = y;
+    }
+
    private:
     Adafruit_LIS3DH lis = Adafruit_LIS3DH();
     LEDMatrixDisplay display;
@@ -107,8 +111,10 @@ class Controller {
     FXState fxState = FXState(&display);
     sensors_event_t sensorEvent;
     TaskHandle_t lisEventTaskHandle;
+    int16_t pixelPos = 0;
 
     void renderFace() {
+        display.drawPixel(124, pixelPos, display.color565(0, 200, 255));
         display.drawColorTest();
         display.drawNose(noseNew);
         mouthState.update();

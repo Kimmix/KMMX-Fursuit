@@ -39,7 +39,6 @@ void visemeStateWritten(BLEDevice central, BLECharacteristic characteristic) {
     const uint8_t* data = characteristic.value();
     controller.setViseme(static_cast<int>(*data));
 }
-//? ------------- Blueooth Setup -------------
 void setupBLE() {
     Serial.println(F("Booting BLE..."));
     pinMode(LED_BUILTIN, OUTPUT);
@@ -74,16 +73,17 @@ void setupBLE() {
     Serial.println(F("Bluetooth® device active, waiting for connections..."));
 }
 
-// Structure example to receive data
-// Must match the sender structure
+//? ------------------------ ESP NOW ------------------------
+uint8_t masterMacAddress[] = {0x24, 0xDC, 0xC3, 0xAE, 0x8F, 0xF8};
+static const char* PMK_KEY_STR = "NHkeBaL5YkoAUsi6";
+static const char* LMK_KEY_STR = "eYF8CUjnkFq3Ke5f";
+
 typedef struct struct_message {
     char a[32];
     int b;
     float c;
     bool d;
 } struct_message;
-
-// Create a struct_message called myData
 struct_message myData;
 
 // callback function that will be executed when data is received
@@ -100,6 +100,7 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     Serial.print("Bool: ");
     Serial.println(myData.d);
     Serial.println();
+    controller.updatePixelPosition(myData.b);
 }
 
 void setupEspNow() {
@@ -110,8 +111,25 @@ void setupEspNow() {
         Serial.println("Error initializing ESP-NOW");
         return;
     }
-    // Once ESPNow is successfully Init, we will register for recv CB to
-    // get recv packer info
+    // Set the PMK key
+    esp_now_set_pmk((uint8_t*)PMK_KEY_STR);
+
+    // Register the master as peer
+    esp_now_peer_info_t peerInfo;
+    memcpy(peerInfo.peer_addr, masterMacAddress, 6);
+    peerInfo.channel = 0;
+    peerInfo.encrypt = true;
+    // Setting the master device LMK key
+    for (uint8_t i = 0; i < 16; i++) {
+        peerInfo.lmk[i] = LMK_KEY_STR[i];
+    }
+
+    // Add master as peer
+    if (esp_now_add_peer(&peerInfo) != ESP_OK) {
+        Serial.println("Failed to add peer");
+        return;
+    }
+
     esp_now_register_recv_cb(OnDataRecv);
 }
 
@@ -119,11 +137,11 @@ void setupEspNow() {
 void setup() {
     Serial.begin(115200);
     while (!Serial) delay(400);
-    setupEspNow();
     pinMode(IR_PIN, INPUT);
     randomSeed(analogRead(RANDOM_PIN));
-    setupBLE();
     controller.setupSensors();
+    setupBLE();
+    setupEspNow();
 }
 
 void loop() {
