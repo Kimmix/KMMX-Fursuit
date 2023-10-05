@@ -79,10 +79,8 @@ static const char* PMK_KEY_STR = "NHkeBaL5YkoAUsi6";
 static const char* LMK_KEY_STR = "eYF8CUjnkFq3Ke5f";
 
 typedef struct struct_message {
-    char a[32];
+    uint16_t debugLed;
     int b;
-    float c;
-    bool d;
 } struct_message;
 struct_message myData;
 
@@ -90,15 +88,9 @@ struct_message myData;
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     memcpy(&myData, incomingData, sizeof(myData));
     Serial.print("Bytes received: ");
-    Serial.println(len);
-    Serial.print("Char: ");
-    Serial.println(myData.a);
-    Serial.print("Int: ");
+    Serial.print(len);
+    Serial.print(", Int: ");
     Serial.println(myData.b);
-    Serial.print("Float: ");
-    Serial.println(myData.c);
-    Serial.print("Bool: ");
-    Serial.println(myData.d);
     Serial.println();
     controller.updatePixelPosition(myData.b);
 }
