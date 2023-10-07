@@ -92,7 +92,8 @@ void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     Serial.print(", Int: ");
     Serial.println(myData.b);
     Serial.println();
-    controller.updatePixelPosition(myData.b);
+    controller.updatePixelPosition(myData.debugLed);
+    controller.recieveEspNow(myData.b);
 }
 
 void setupEspNow() {

@@ -97,8 +97,36 @@ class Controller {
         display.setBrightnessValue(i);
     }
 
+    void recieveEspNow(int16_t data) {
+        switch (data) {
+            case 1:
+                eyeState.setState(EyeStateEnum::IDLE);
+                break;
+            case 2:
+                eyeState.setState(EyeStateEnum::SMILE);
+                break;
+            case 3:
+                eyeState.setState(EyeStateEnum::OEYE);
+                break;
+            default:
+                break;
+        }
+    }
+
     void updatePixelPosition(int16_t y) {
+        Serial.println(y, BIN);
         pixelPos = y;
+    }
+
+    void debugPixel(int16_t p) {
+        int bit_position = 0;
+        while (p > 0) {
+            if (p & 1) {
+                display.drawPixel(124, bit_position, display.color565(0, 200, 255));
+            }
+            p >>= 1;
+            bit_position++;
+        }
     }
 
    private:
@@ -114,7 +142,7 @@ class Controller {
     int16_t pixelPos = 0;
 
     void renderFace() {
-        display.drawPixel(124, pixelPos, display.color565(0, 200, 255));
+        debugPixel(pixelPos);
         display.drawColorTest();
         display.drawNose(noseNew);
         mouthState.update();
