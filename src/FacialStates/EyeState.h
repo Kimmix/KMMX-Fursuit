@@ -2,6 +2,7 @@
 #include "Bitmaps/eyeBitmap.h"
 #include "Bitmaps/eyeBlink.h"
 #include "Bitmaps/eyeDown.h"
+#include "Bitmaps/eyeSmile.h"
 enum class EyeStateEnum { IDLE,
                           BLINK,
                           BOOP,
@@ -9,6 +10,7 @@ enum class EyeStateEnum { IDLE,
                           OEYE,
                           HEART,
                           SMILE,
+                          DETRANSITION,
 };
 class EyeState {
    public:
@@ -38,7 +40,10 @@ class EyeState {
                 display->drawEye(eyeHeart);
                 break;
             case EyeStateEnum::SMILE:
-                display->drawEye(eyeSmile);
+                smileFace();
+                break;
+            case EyeStateEnum::DETRANSITION:
+                detransition();
                 break;
             default:
                 break;
@@ -50,7 +55,10 @@ class EyeState {
         if (newState == EyeStateEnum::BOOP) {
             resetBoop = millis();
         }
-        currentState = newState;
+        if (currentState != newState) {
+            isTransitioning = true;
+            currentState = newState;
+        }
     }
 
     void savePrevState(EyeStateEnum newState) {
@@ -74,12 +82,14 @@ class EyeState {
     GooglyEye googlyEye;
     EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
     const uint8_t* eyeFrame = eyeDefault;
+    bool isTransitioning = false;
 
     unsigned long
         nextBlink,
         blinkInterval,
         nextBoop,
-        resetBoop;
+        resetBoop,
+        nextSmile;
 
     const uint8_t* eyeDownAnimation[20] = {eyeDown1, eyeDown2, eyeDown3, eyeDown4, eyeDown5, eyeDown6, eyeDown7, eyeDown8, eyeDown9, eyeDown10, eyeDown11, eyeDown12, eyeDown13, eyeDown14, eyeDown15, eyeDown16, eyeDown17, eyeDown18, eyeDown19, eyeDown20};
     void movingEye() {
@@ -158,6 +168,45 @@ class EyeState {
             currentOFaceIndex = esp_random() % 3;
         }
         display->drawEye(oFaceAnimation[currentOFaceIndex]);
+    }
+
+    const uint8_t* smileAnimation[20] = {eyeSmile1, eyeSmile2, eyeSmile3, eyeSmile4, eyeSmile5, eyeSmile6, eyeSmile7, eyeSmile8, eyeSmile9, eyeSmile10, eyeSmile11, eyeSmile12, eyeSmile13, eyeSmile14, eyeSmile15, eyeSmile16, eyeSmile17, eyeSmile18, eyeSmile19, eyeSmile20};
+    const short smileLength = 20;
+    short smileIndex = 0;
+    void smileFace() {
+        if (isTransitioning) {
+            Serial.println(smileIndex);
+            display->drawEye(smileAnimation[smileIndex]);
+            if (millis() >= nextSmile) {
+                nextSmile = millis() + 14;
+                smileIndex++;
+                if (smileIndex == smileLength) {
+                    smileIndex = 0;
+                    isTransitioning = false;
+                }
+            }
+        } else {
+            display->drawEye(smileAnimation[smileLength - 1]);
+        }
+    }
+    // short smileIndex2 = smileLength - 1;
+    // void smileDeTransition() {
+    //     bool isDeTransitioning = true;
+    //     while (isDeTransitioning) {
+    //         Serial.println(smileIndex2);
+    //         display->drawEye(smileAnimation[smileIndex2]);
+    //         if (millis() >= nextSmile) {
+    //             nextSmile = millis() + 14;
+    //             smileIndex2--;
+    //             if (smileIndex2 == 0) {
+    //                 smileIndex2 = smileLength - 1;
+    //                 isDeTransitioning = false;
+    //             }
+    //         }
+    //     }
+    // }
+
+    void detransition() {
     }
 
     void renderGooglyEye() {
