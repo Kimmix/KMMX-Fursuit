@@ -122,7 +122,7 @@ class Controller {
         int bit_position = 0;
         while (p > 0) {
             if (p & 1) {
-                display.drawPixel(124, bit_position, display.color565(0, 200, 255));
+                display.drawPixel(0, bit_position, display.color565(0, 200, 255));
             }
             p >>= 1;
             bit_position++;

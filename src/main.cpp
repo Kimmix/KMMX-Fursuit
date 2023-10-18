@@ -74,7 +74,7 @@ void setupBLE() {
 }
 
 //? ------------------------ ESP NOW ------------------------
-uint8_t masterMacAddress[] = {0x24, 0xDC, 0xC3, 0xAE, 0x8F, 0xF8};
+uint8_t masterMacAddress[] = {0x84, 0xFC, 0xE6, 0x00, 0x23, 0xC0};
 static const char* PMK_KEY_STR = "NHkeBaL5YkoAUsi6";
 static const char* LMK_KEY_STR = "eYF8CUjnkFq3Ke5f";
 
