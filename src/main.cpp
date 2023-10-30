@@ -74,7 +74,7 @@ void setupBLE() {
 }
 
 //? ------------------------ ESP NOW ------------------------
-uint8_t masterMacAddress[] = {0x84, 0xFC, 0xE6, 0x00, 0x23, 0xC0};
+uint8_t masterMacAddress[] = {0x84, 0xFC, 0xE6, 0x00, 0x26, 0x7C};
 static const char* PMK_KEY_STR = "NHkeBaL5YkoAUsi6";
 static const char* LMK_KEY_STR = "eYF8CUjnkFq3Ke5f";
 
@@ -87,11 +87,11 @@ struct_message myData;
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
     memcpy(&myData, incomingData, sizeof(myData));
-    Serial.print("Bytes received: ");
-    Serial.print(len);
-    Serial.print(", Int: ");
-    Serial.println(myData.b);
-    Serial.println();
+    // Serial.print("Bytes received: ");
+    // Serial.print(len);
+    // Serial.print(", Int: ");
+    // Serial.println(myData.b);
+    // Serial.println();
     controller.updatePixelPosition(myData.debugLed);
     controller.recieveEspNow(myData.b);
 }
@@ -133,12 +133,12 @@ void setup() {
     pinMode(IR_PIN, INPUT);
     randomSeed(analogRead(RANDOM_PIN));
     controller.setupSensors();
-    setupBLE();
-    setupEspNow();
+    // setupBLE();
+    // setupEspNow();
 }
 
 void loop() {
-    BLE.poll();
+    // BLE.poll();
     controller.update();
     // showFPS();
 }
