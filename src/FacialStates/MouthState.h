@@ -69,7 +69,7 @@ class MouthState {
    private:
     LEDMatrixDisplay* display;
     sensors_event_t event;
-    MouthStateEnum prevState, currentState = MouthStateEnum::TALKING;
+    MouthStateEnum prevState, currentState = MouthStateEnum::IDLE;
     unsigned long mouthInterval, resetBoop;
     const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;
 
