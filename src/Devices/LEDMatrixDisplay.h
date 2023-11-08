@@ -37,6 +37,38 @@ class LEDMatrixDisplay {
         }
     }
 
+    void colorSpiral(const uint8_t brightness, const int startX, const int startY, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {
+        // Define two colors
+        const uint8_t color1R = 255; // Red
+        const uint8_t color1G = 0;   // Green
+        const uint8_t color1B = 0;   // Blue
+
+        const uint8_t color2R = 0;   // Red
+        const uint8_t color2G = 0;   // Green
+        const uint8_t color2B = 255; // Blue
+
+        // Calculate squared distance from the current position to the starting point
+        int dx = col - startX;
+        int dy = row - startY;
+        int distanceSquared = dx * dx + dy * dy;
+
+        // Determine the color based on the squared distance (even/odd alternation)
+        if (distanceSquared % 4 == 0) {
+            r = color1R;
+            g = color1G;
+            b = color1B;
+        } else {
+            r = color2R;
+            g = color2G;
+            b = color2B;
+        }
+
+        // Adjust brightness
+        r = r * brightness / 255;
+        g = g * brightness / 255;
+        b = b * brightness / 255;
+    }
+
     void getBlackWhiteWave(const uint8_t brightness, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {
         // Compute the black and white wave pattern based on the brightness, row, col, and time inputs
         double wave = (row + col) * 0.1 + millis() * 0.008;
