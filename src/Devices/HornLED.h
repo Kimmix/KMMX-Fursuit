@@ -1,14 +1,15 @@
 class HornLED {
    private:
-    unsigned short brightness,
-        frequency = 20000,
-        pwmChannel = 0,
-        resolution = 8;
+    unsigned short brightness = 100,
+                   frequency = 20000,
+                   pwmChannel = 0,
+                   resolution = 8;
 
    public:
     HornLED(int ledPin = LED_PWM) {
         ledcSetup(pwmChannel, frequency, resolution);
         ledcAttachPin(ledPin, pwmChannel);
+        ledcWrite(pwmChannel, brightness);
     }
 
     void setBrightness(unsigned short value) {

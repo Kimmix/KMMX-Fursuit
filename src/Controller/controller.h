@@ -133,6 +133,7 @@ class Controller {
     Adafruit_LIS3DH lis = Adafruit_LIS3DH();
     LEDMatrixDisplay display;
     SideLED sideLED;
+    HornLED hornLED;
     Boop boop;
     EyeState eyeState = EyeState(&display);
     MouthState mouthState = MouthState(&display);
