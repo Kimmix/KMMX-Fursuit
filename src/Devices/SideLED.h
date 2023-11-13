@@ -1,14 +1,13 @@
 #include <FastLED.h>
 
-#define BRIGHTNESS 255       // Set the initial brightness (0-255)
-#define LED_TYPE WS2812      // WS2812 or WS2812B, depending on your LEDs
-#define COLOR_ORDER GRB      // GRB or RGB, depending on your LEDs
+#define LED_TYPE WS2812  // WS2812 or WS2812B, depending on your LEDs
+#define COLOR_ORDER GRB  // GRB or RGB, depending on your LEDs
 
 class SideLED {
    public:
     SideLED() {
         FastLED.addLeds<LED_TYPE, ARGB, COLOR_ORDER>(leds, ARGB_NUM).setCorrection(TypicalLEDStrip);
-        FastLED.setBrightness(BRIGHTNESS);
+        FastLED.setBrightness(brightness);
         for (short i = 0; i < ARGB_NUM; i++) {
             leds[i] = CHSV(150, 255, 200);
         }
@@ -24,7 +23,8 @@ class SideLED {
 
    private:
     CRGB leds[ARGB_NUM];
-    const short steps = 24;
+    const short steps = 24,
+                brightness = 255;
     short stepsCycle = 0, stepsCycleAlt = steps;
     unsigned long prevTime = 0;
 
