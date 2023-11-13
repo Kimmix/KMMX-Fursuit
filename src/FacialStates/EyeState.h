@@ -211,7 +211,7 @@ class EyeState {
 
     void renderGooglyEye() {
         display->drawEye(eyeGoogly);
-        googlyEye.renderEye(event.acceleration.x, event.acceleration.y);
+        googlyEye.renderEye(event.acceleration.z, event.acceleration.x);
         display->drawEyePupil(eyePupil, googlyEye.x, googlyEye.y);
     }
 };
