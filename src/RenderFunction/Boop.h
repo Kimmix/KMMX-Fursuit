@@ -1,6 +1,5 @@
 #include "Devices/APDS9930Sensor.h"
 
-#define IR_PIN GPIO_NUM_35
 enum BoopState {
     IDLE,
     BOOP_IN_PROGRESS,

@@ -1,7 +1,5 @@
 #include <FastLED.h>
 
-#define LED_PIN GPIO_NUM_18  // Pin connected to the Data Input of WS2812
-#define NUM_LEDS 7           // Number of WS2812 LEDs in your strip
 #define BRIGHTNESS 255       // Set the initial brightness (0-255)
 #define LED_TYPE WS2812      // WS2812 or WS2812B, depending on your LEDs
 #define COLOR_ORDER GRB      // GRB or RGB, depending on your LEDs
@@ -9,9 +7,9 @@
 class SideLED {
    public:
     SideLED() {
-        FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+        FastLED.addLeds<LED_TYPE, ARGB, COLOR_ORDER>(leds, ARGB_NUM).setCorrection(TypicalLEDStrip);
         FastLED.setBrightness(BRIGHTNESS);
-        for (short i = 0; i < NUM_LEDS; i++) {
+        for (short i = 0; i < ARGB_NUM; i++) {
             leds[i] = CHSV(150, 255, 200);
         }
     }
@@ -25,7 +23,7 @@ class SideLED {
     }
 
    private:
-    CRGB leds[NUM_LEDS];
+    CRGB leds[ARGB_NUM];
     const short steps = 24;
     short stepsCycle = 0, stepsCycleAlt = steps;
     unsigned long prevTime = 0;
@@ -44,12 +42,12 @@ class SideLED {
         int currentHue = (color1HSV.h + hueStep * stepsCycle + 256) % 256;  // Ensure the hue wraps around 256
         int currentSaturation = color1HSV.s + saturationStep * stepsCycle;
         int currentBrightness = color1HSV.v + valueStep * stepsCycle;
-        leds[esp_random() % NUM_LEDS] = CHSV(currentHue, currentSaturation, currentBrightness);
+        leds[esp_random() % ARGB_NUM] = CHSV(currentHue, currentSaturation, currentBrightness);
         // Alternate
         stepsCycleAlt = ((stepsCycleAlt + 1) % (steps / 2)) + (steps / 2);
         int currentHueAlt = (color1HSV.h + hueStep * stepsCycleAlt + 256) % 256;  // Ensure the hue wraps around 256
         int currentSaturationAlt = color1HSV.s + saturationStep * stepsCycleAlt;
         int currentBrightnessAlt = color1HSV.v + valueStep * stepsCycleAlt;
-        leds[esp_random() % NUM_LEDS] = CHSV(currentHueAlt, currentSaturationAlt, currentBrightnessAlt);
+        leds[esp_random() % ARGB_NUM] = CHSV(currentHueAlt, currentSaturationAlt, currentBrightnessAlt);
     }
 };

@@ -1,10 +1,5 @@
 #include <driver/i2s.h>
 
-// Connections to I2S microphone
-#define I2S_SD GPIO_NUM_34
-#define I2S_WS GPIO_NUM_33
-#define I2S_SCK GPIO_NUM_32
-
 // Use I2S Processor 0
 #define I2S_PORT I2S_NUM_0
 

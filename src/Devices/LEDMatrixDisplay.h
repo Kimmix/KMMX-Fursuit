@@ -1,21 +1,6 @@
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 #include "Bitmaps/accColor.h"
 
-// ESP32S3 Custom board
-#define R1 4
-#define G1 5
-#define BL1 6
-#define R2 7
-#define G2 15
-#define BL2 16
-#define CH_A 18
-#define CH_B 8
-#define CH_C 19
-#define CH_D 20
-#define CH_E -1  // assign to any available pin if using two panels or 64x64 panels with 1/32 scan
-#define CLK 41
-#define LAT 40
-#define OE 39
 #define PANEL_RES_X 64
 #define PANEL_RES_Y 32
 #define PANELS_NUMBER 2
@@ -54,13 +39,13 @@ class LEDMatrixDisplay {
 
     void colorSpiral(const uint8_t brightness, const int startX, const int startY, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {
         // Define two colors
-        const uint8_t color1R = 255; // Red
-        const uint8_t color1G = 0;   // Green
-        const uint8_t color1B = 0;   // Blue
+        const uint8_t color1R = 255;  // Red
+        const uint8_t color1G = 0;    // Green
+        const uint8_t color1B = 0;    // Blue
 
-        const uint8_t color2R = 0;   // Red
-        const uint8_t color2G = 0;   // Green
-        const uint8_t color2B = 255; // Blue
+        const uint8_t color2R = 0;    // Red
+        const uint8_t color2G = 0;    // Green
+        const uint8_t color2B = 255;  // Blue
 
         // Calculate squared distance from the current position to the starting point
         int dx = col - startX;
@@ -117,7 +102,7 @@ class LEDMatrixDisplay {
 
    public:
     LEDMatrixDisplay() {
-        HUB75_I2S_CFG::i2s_pins _pins = {R1, G1, BL1, R2, G2, BL2, CH_A, CH_B, CH_C, CH_D, LAT, OE, CLK};
+        HUB75_I2S_CFG::i2s_pins _pins = {R1, G1, BL1, R2, G2, BL2, CH_A, CH_B, CH_C, CH_D, CH_E, LAT, OE, CLK};
         HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER, _pins);
         mxconfig.driver = HUB75_I2S_CFG::FM6124;
         // mxconfig.i2sspeed = HUB75_I2S_CFG::HZ_20M;

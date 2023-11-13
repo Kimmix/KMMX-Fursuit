@@ -4,9 +4,9 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
+#include "pinout.h"
 #include "helperFunction.h"
 #include "Controller/controller.h"
-#define LED_BUILTIN GPIO_NUM_2
 
 Controller controller;
 BLEService protoService("c1449275-bf34-40ab-979d-e34a1fdbb129");
@@ -128,17 +128,17 @@ void setupEspNow() {
 
 //! -------------------- Main Setup --------------------
 void setup() {
+    Wire.begin(SDA,SCL);
     Serial.begin(115200);
     while (!Serial) delay(400);
-    pinMode(IR_PIN, INPUT);
     randomSeed(analogRead(RANDOM_PIN));
     controller.setupSensors();
-    // setupBLE();
+    setupBLE();
     // setupEspNow();
 }
 
 void loop() {
-    // BLE.poll();
+    BLE.poll();
     controller.update();
     // showFPS();
 }
