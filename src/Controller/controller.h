@@ -1,24 +1,24 @@
 #include <Adafruit_LIS3DH.h>
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/SideLED.h"
+#include "Devices/HornLED.h"
 #include "FacialStates/MouthState.h"
 #include "FacialStates/EyeState.h"
 #include "FacialStates/FXState.h"
 #include "RenderFunction/boop.h"
 #include "Bitmaps/Icons.h"
 
-#define RANDOM_PIN GPIO_NUM_36
 class Controller {
    public:
     void setupSensors() {
-        mouthState.startMic();
+        // mouthState.startMic();
         setUpLis();
     }
 
     unsigned long nextFrame;
     const short frametime = 7;  // ~144hz
     void update() {
-        booping();
+        // booping();
         sideLED.animate();
         if (millis() >= nextFrame) {
             nextFrame = millis() + frametime;
@@ -174,7 +174,7 @@ class Controller {
 
     //? -------- LIS3DH --------
     void setUpLis() {
-        if (!lis.begin(0x19)) {
+        if (!lis.begin(0x18)) {
             Serial.println("Could not initialize LIS3DH");
             while (1)
                 ;
