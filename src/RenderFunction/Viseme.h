@@ -20,6 +20,8 @@
 #define NOISE_THRESHOLD 400
 #define SMOOTHING_ALPHA 0.2  // smoothing factor between 0 and 1
 
+#define VISEME_FRAME 20
+
 class Viseme {
    public:
     void initMic() {
@@ -115,19 +117,19 @@ class Viseme {
         OO,
         TH
     };
-    const uint8_t* ahViseme[20] = {
+    const uint8_t* ahViseme[VISEME_FRAME] = {
         mouthAH1, mouthAH2, mouthAH3, mouthAH4, mouthAH5, mouthAH6, mouthAH7, mouthAH8, mouthAH9, mouthAH10,
         mouthAH11, mouthAH12, mouthAH13, mouthAH14, mouthAH15, mouthAH16, mouthAH17, mouthAH18, mouthAH19, mouthAH20};
-    const uint8_t* eeViseme[20] = {
+    const uint8_t* eeViseme[VISEME_FRAME] = {
         mouthEE1, mouthEE2, mouthEE3, mouthEE4, mouthEE5, mouthEE6, mouthEE7, mouthEE8, mouthEE9, mouthEE10,
         mouthEE11, mouthEE12, mouthEE13, mouthEE14, mouthEE15, mouthEE16, mouthEE17, mouthEE18, mouthEE19, mouthEE20};
-    const uint8_t* ohViseme[20] = {
+    const uint8_t* ohViseme[VISEME_FRAME] = {
         mouthOH1, mouthOH2, mouthOH3, mouthOH4, mouthOH5, mouthOH6, mouthOH7, mouthOH8, mouthOH9, mouthOH10,
         mouthOH11, mouthOH12, mouthOH13, mouthOH14, mouthOH15, mouthOH16, mouthOH17, mouthOH18, mouthOH19, mouthOH20};
-    const uint8_t* ooViseme[20] = {
+    const uint8_t* ooViseme[VISEME_FRAME] = {
         mouthOO1, mouthOO2, mouthOO3, mouthOO4, mouthOO5, mouthOO6, mouthOO7, mouthOO8, mouthOO9, mouthOO10,
         mouthOO11, mouthOO12, mouthOO13, mouthOO14, mouthOO15, mouthOO16, mouthOO17, mouthOO18, mouthOO19, mouthOO20};
-    const uint8_t* thViseme[20] = {
+    const uint8_t* thViseme[VISEME_FRAME] = {
         mouthTH1, mouthTH2, mouthTH3, mouthTH4, mouthTH5, mouthTH6, mouthTH7, mouthTH8, mouthTH9, mouthTH10,
         mouthTH11, mouthTH12, mouthTH13, mouthTH14, mouthTH15, mouthTH16, mouthTH17, mouthTH18, mouthTH19, mouthTH20};
 
@@ -231,7 +233,7 @@ class Viseme {
     }
     // Compute loudness level based on average amplitude
     unsigned int calculateLoudness(double max, double avg) {
-        return mapFloat(max / avg, 1, 2.8, 1, 20);
+        return mapFloat(max / avg, 1, 2.8, 1, VISEME_FRAME);
     }
 
     void levelBoost(VisemeType viseme, double& maxAmp) {
@@ -261,7 +263,7 @@ class Viseme {
             // Increment limit
             if (input - currentLoudness > 5) {
                 input = currentLoudness + 5;
-                input = input > 20 ? 20 : input;
+                input = input > VISEME_FRAME ? VISEME_FRAME : input;
             }
             currentLoudness = input;
             decayStartTime = 0;
