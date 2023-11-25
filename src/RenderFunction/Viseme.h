@@ -184,49 +184,26 @@ class Viseme {
     }
 
     VisemeType getDominantViseme(double ah_amplitude, double ee_amplitude, double oh_amplitude, double oo_amplitude, double th_amplitude) {
-        VisemeType viseme = AH, second_viseme = AH;
-        double viseme_amplitude = ah_amplitude, second_amplitude = ah_amplitude;
+        std::map<double, VisemeType> amplitudeToViseme = {
+            {ah_amplitude, AH},
+            {ee_amplitude, EE},
+            {oh_amplitude, OH},
+            {oo_amplitude, OO},
+            {th_amplitude, TH},
+        };
 
-        if (ee_amplitude > viseme_amplitude) {
-            if (ee_amplitude >= second_amplitude) {
-                second_viseme = viseme;
-                second_amplitude = viseme_amplitude;
+        // Sort the map in descending order of amplitude
+        std::vector<std::pair<double, VisemeType>> sortedAmplitudes(amplitudeToViseme.begin(), amplitudeToViseme.end());
+        std::sort(sortedAmplitudes.begin(), sortedAmplitudes.end(), std::greater<std::pair<double, VisemeType>>());
 
-                viseme = EE;
-                viseme_amplitude = ee_amplitude;
-            }
-        }
-        if (oh_amplitude > viseme_amplitude) {
-            if (oh_amplitude >= second_amplitude) {
-                second_viseme = viseme;
-                second_amplitude = viseme_amplitude;
-
-                viseme = OH;
-                viseme_amplitude = oh_amplitude;
-            }
-        }
-        if (oo_amplitude > viseme_amplitude) {
-            if (oo_amplitude >= second_amplitude) {
-                second_viseme = viseme;
-                second_amplitude = viseme_amplitude;
-
-                viseme = OO;
-                viseme_amplitude = oo_amplitude;
-            }
-        }
-        if (th_amplitude > viseme_amplitude) {
-            if (th_amplitude >= second_amplitude) {
-                second_viseme = viseme;
-                second_amplitude = viseme_amplitude;
-
-                viseme = TH;
-            }
-        }
+        // Get the viseme with the highest amplitude
+        VisemeType viseme = sortedAmplitudes[0].second;
 
         // If 'AH' is still the highest viseme and the second viseme is not too far from it, return the second viseme
-        if (viseme == AH && second_amplitude >= ah_amplitude * 0.75) {
-            viseme = second_viseme;
+        if (viseme == AH && sortedAmplitudes[1].first >= sortedAmplitudes[0].first * 0.75) {
+            viseme = sortedAmplitudes[1].second;
         }
+
         return viseme;
     }
 
@@ -237,7 +214,7 @@ class Viseme {
     }
     // Compute loudness level based on average amplitude
     unsigned int calculateLoudness(double max, double avg) {
-        return mapFloat(max / avg, 1, 2.8, 1, VISEME_FRAME);
+        return mapFloat(max / avg, 0.6, 2.8, 1, VISEME_FRAME);
     }
 
     void levelBoost(VisemeType viseme, double& maxAmp) {
