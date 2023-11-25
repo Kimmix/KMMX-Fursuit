@@ -1,30 +1,29 @@
-// ESP32S3 Custom board
-#define LED_BUILTIN 45
-#define RANDOM_PIN 2  // Use any usused ADC pin for true random
+// ESP32 Dev module
+#define LED_BUILTIN 2
+#define RANDOM_PIN 36  // Use any usused ADC pin for true random
 // I2C
-#define SDA 9
-#define SCL 3
+#define SDA SDA
+#define SCL SCL
 // I2S
-#define I2S_WS 10
-#define I2S_SD 12
-#define I2S_SCK 11
+#define I2S_SD 34
+#define I2S_WS 33
+#define I2S_SCK 32
 // HUB75 pin
-#define R1 4
-#define G1 5
-#define BL1 6
-#define R2 7
-#define G2 15
-#define BL2 16
-#define CH_A 18
-#define CH_B 8
-#define CH_C 19
-#define CH_D 20
-#define CH_E 17  // assign to any available pin if using two panels or 64x64 panels with 1/32 scan
-#define CLK 41
-#define LAT 40
-#define OE 39
+#define R1 25
+#define G1 26
+#define BL1 27
+#define R2 14
+#define G2 12
+#define BL2 13
+#define CH_A 23
+#define CH_B 19
+#define CH_C 5
+#define CH_D 17
+#define CH_E -1  // assign to any available pin if using two panels or 64x64 panels with 1/32 scan
+#define CLK 4
+#define LAT 15
+#define OE 16
 // Other
-#define ARGB 14
-#define ARGB_NUM 24
-#define LED_PWM 21
-#define IR_PIN GPIO_NUM_35
+#define ARGB 18
+#define LED_PWM 37
+#define IR_PIN 35

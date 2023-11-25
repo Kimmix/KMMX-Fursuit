@@ -2,7 +2,7 @@
 
 #define LED_TYPE WS2812  // WS2812 or WS2812B, depending on your LEDs
 #define COLOR_ORDER GRB  // GRB or RGB, depending on your LEDs
-
+#define ARGB_NUM 24
 class SideLED {
    public:
     SideLED() {
