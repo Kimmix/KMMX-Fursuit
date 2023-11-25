@@ -30,10 +30,7 @@ class Viseme {
     const uint8_t* renderViseme() {
         getDigtalSample(real, imaginary, true);
         // getAnalogSample(real, imaginary, false);
-        FFT.DCRemoval();
-        FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-        FFT.Compute(FFT_FORWARD);
-        FFT.ComplexToMagnitude();
+        calcFFT();
 
         //? Compute amplitude of frequency ranges for each viseme
         double ah_amplitude = 0, ee_amplitude = 0,
@@ -60,12 +57,13 @@ class Viseme {
                 th_amplitude += amplitude;
             }
         }
+        // - Postprocessing
         normalizeViseme(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude);
-        // Find viseme
+        // -- Find dominan viseme
         VisemeType dominantViseme = getDominantViseme(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude);
-        // Get viseme level
-        calculateAmplitude(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude, min_amplitude, max_amplitude, avg_amplitude);
         levelBoost(dominantViseme, max_amplitude);
+        // -- Get viseme level
+        calculateAmplitude(ah_amplitude, ee_amplitude, oh_amplitude, oo_amplitude, th_amplitude, min_amplitude, max_amplitude, avg_amplitude);
         loudness_level = calculateLoudness(max_amplitude, avg_amplitude);
         loudness_level = max_amplitude > noiseThreshold ? loudness_level : 0;
         loudness_level = smoothedLoudness(loudness_level);
@@ -106,9 +104,18 @@ class Viseme {
     };
 
    private:
+    double noiseThreshold = NOISE_THRESHOLD;
+    double real[SAMPLES],
+        imaginary[SAMPLES];
     I2SMicrophone microphone = I2SMicrophone();
     arduinoFFT FFT = arduinoFFT(real, imaginary, SAMPLES, SAMPLE_RATE);
-    double noiseThreshold = NOISE_THRESHOLD;
+
+    void calcFFT() {
+        FFT.DCRemoval();
+        FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+        FFT.Compute(FFT_FORWARD);
+        FFT.ComplexToMagnitude();
+    }
 
     enum VisemeType {
         AH,
@@ -132,9 +139,6 @@ class Viseme {
     const uint8_t* thViseme[VISEME_FRAME] = {
         mouthTH1, mouthTH2, mouthTH3, mouthTH4, mouthTH5, mouthTH6, mouthTH7, mouthTH8, mouthTH9, mouthTH10,
         mouthTH11, mouthTH12, mouthTH13, mouthTH14, mouthTH15, mouthTH16, mouthTH17, mouthTH18, mouthTH19, mouthTH20};
-
-    double real[SAMPLES],
-        imaginary[SAMPLES];
 
     const float alpha = SMOOTHING_ALPHA;  // smoothing factor between 0 and 1
     // Read analog microphone input and fill fft_input array with samples
