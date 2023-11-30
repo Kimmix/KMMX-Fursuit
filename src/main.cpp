@@ -4,7 +4,7 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
-#include "pinout.h"
+#include "../boards/pinout.h"
 #include "helperFunction.h"
 #include "Controller/controller.h"
 
