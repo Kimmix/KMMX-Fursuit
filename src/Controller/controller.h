@@ -2,28 +2,34 @@
 #include "Devices/LEDMatrixDisplay.h"
 #include "Devices/SideLED.h"
 #include "Devices/HornLED.h"
+#include "Devices/APDS9930Sensor.h"
 #include "FacialStates/MouthState.h"
 #include "FacialStates/EyeState.h"
 #include "FacialStates/FXState.h"
 #include "RenderFunction/boop.h"
 #include "Bitmaps/Icons.h"
 
+#define VSYNC false
 class Controller {
    public:
     void setupSensors() {
         // mouthState.startMic();
         setUpLis();
+        prox.setup();
     }
 
     unsigned long nextFrame;
     const short frametime = 7;  // ~144hz
     void update() {
-        // booping();
         sideLED.animate();
-        if (millis() >= nextFrame) {
-            nextFrame = millis() + frametime;
+        booping();
+        if (VSYNC) {
+            if (millis() >= nextFrame) {
+                nextFrame = millis() + frametime;
+                renderFace();
+            }
+        } else {
             renderFace();
-            // showFPS();
         }
     }
 
@@ -131,6 +137,7 @@ class Controller {
 
    private:
     Adafruit_LIS3DH lis = Adafruit_LIS3DH();
+    APDS9930Sensor prox;
     LEDMatrixDisplay display;
     SideLED sideLED;
     HornLED hornLED;
@@ -141,6 +148,7 @@ class Controller {
     sensors_event_t sensorEvent;
     TaskHandle_t lisEventTaskHandle;
     int16_t pixelPos = 0;
+    uint16_t proxValue;
 
     void renderFace() {
         debugPixel(pixelPos);
@@ -154,21 +162,26 @@ class Controller {
         display.clearScreen();
     }
 
-    bool inRange = false, isBoop = false;
+    bool inRange = false, isBoop = false, isContinuous = false, isAngry = false;
     float boopSpeed = 0.0;
     unsigned long nextBoop = 0;
     void booping() {
         if (millis() >= nextBoop) {
-            nextBoop = millis() + 100;
-            boop.getBoop(inRange, isBoop, boopSpeed);
+            nextBoop = millis() + 50;
+            boop.getBoop(proxValue, inRange, isBoop, boopSpeed, isContinuous, isAngry);
             if (isBoop) {
-                Serial.println(boopSpeed);
+                // Serial.println(boopSpeed);
                 fxState.setFlyingSpeed(boopSpeed);
                 fxState.setState(FXStateEnum::Heart);
                 eyeState.setState(EyeStateEnum::BOOP);
                 mouthState.setState(MouthStateEnum::BOOP);
             } else if (inRange) {
                 mouthState.setState(MouthStateEnum::BOOP);
+            } else if (isContinuous) {
+                eyeState.setState(EyeStateEnum::BOOP);
+            } else if (isAngry) {
+                nextBoop = millis() + 1500;
+                eyeState.setState(EyeStateEnum::ANGRY);
             }
         }
     }
@@ -185,8 +198,14 @@ class Controller {
         xTaskCreatePinnedToCore(lisEventTask, "LisEventTask", 2048, this, 1, &lisEventTaskHandle, 0);
     }
 
+    unsigned long nextRead = 0;
     void getLisEvent() {
-        lis.getEvent(&sensorEvent);
+        if (millis() >= nextRead) {
+            nextRead = millis() + 100;
+            // Get prox value
+            prox.read(&proxValue);
+            lis.getEvent(&sensorEvent);
+        }
         // Serial.print("X:");
         // Serial.print(sensorEvent.acceleration.x);
         // Serial.print(",Y:");

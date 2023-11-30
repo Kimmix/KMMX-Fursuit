@@ -25,7 +25,7 @@ class MouthState {
                 drawDefault();
                 break;
             case MouthStateEnum::BOOP:
-                display->drawMouth(mouthOpen);
+                display->drawMouth(mouthAH10);
                 if (millis() - resetBoop >= 700) {
                     currentState = prevState;
                 }

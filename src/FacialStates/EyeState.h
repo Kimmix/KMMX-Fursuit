@@ -10,6 +10,7 @@ enum class EyeStateEnum { IDLE,
                           OEYE,
                           HEART,
                           SMILE,
+                          ANGRY,
                           DETRANSITION,
 };
 class EyeState {
@@ -42,6 +43,12 @@ class EyeState {
             case EyeStateEnum::SMILE:
                 smileFace();
                 break;
+            case EyeStateEnum::ANGRY:
+                display->drawEye(eyeDown);
+                if (millis() - resetBoop >= 1500) {
+                    currentState = prevState;
+                }
+                break;
             case EyeStateEnum::DETRANSITION:
                 detransition();
                 break;
@@ -52,7 +59,7 @@ class EyeState {
 
     void setState(EyeStateEnum newState) {
         savePrevState(currentState);
-        if (newState == EyeStateEnum::BOOP) {
+        if (newState == EyeStateEnum::BOOP || newState == EyeStateEnum::ANGRY) {
             resetBoop = millis();
         }
         if (currentState != newState) {
@@ -62,7 +69,7 @@ class EyeState {
     }
 
     void savePrevState(EyeStateEnum newState) {
-        if (newState == EyeStateEnum::BOOP) {
+        if (newState == EyeStateEnum::BOOP || newState == EyeStateEnum::ANGRY) {
             return;
         }
         prevState = newState;

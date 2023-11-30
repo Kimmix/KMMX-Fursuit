@@ -3,12 +3,6 @@
 class APDS9930Sensor {
    private:
     APDS9930 apds = APDS9930();
-    unsigned long nextRead;
-    void ledTest() {
-        // LED PWM
-        ledcSetup(0, 5000, 8);
-        ledcAttachPin(2, 0);
-    }
 
     bool readAPDSSensor(uint16_t &proximityData, float &ambientLight) {
         if (apds.readProximity(proximityData) && apds.readAmbientLightLux(ambientLight)) {
@@ -17,7 +11,7 @@ class APDS9930Sensor {
         return false;
     }
 
-    int proximity_max = 0;
+    int proximity_max = 1;
     void filterProx(uint16_t &value) {
         // Adjust the value based on your requirements
         const int min_value = 150,
@@ -32,11 +26,11 @@ class APDS9930Sensor {
         if (value < min_value) {
             value = 0;
         }
-        value = map(value, 0, proximity_max, 0, 255);
+        value = map(value, 0, proximity_max, 0, 1023);
     }
 
     // Disable proximity data if ambient light is too high (e.g., sunlight)
-    void conquerTheSun(uint16_t &proximity, float ambientLight) {
+    void conquerTheSun(uint16_t &proximity, float &ambientLight) {
         const float sunlight_threshold = 1000.0;
         if (ambientLight > sunlight_threshold || ambientLight == 0) {
             proximity = 0;
@@ -45,7 +39,6 @@ class APDS9930Sensor {
 
    public:
     void setup() {
-        // ledTest();
         if (apds.init()) {
             Serial.println(F("APDS-9930 initialization complete"));
         } else {
@@ -72,21 +65,19 @@ class APDS9930Sensor {
         }
     }
 
-    uint16_t read() {
-        uint16_t proximityData;
+    void read(uint16_t *proximityData) {
+        // uint16_t proximityData;
         float ambientLight;
 
-        if (readAPDSSensor(proximityData, ambientLight)) {
-            conquerTheSun(proximityData, ambientLight);
-            filterProx(proximityData);
-            // ledcWrite(0, proximityData);
+        if (readAPDSSensor(*proximityData, ambientLight)) {
+            conquerTheSun(*proximityData, ambientLight);
+            // filterProx(*proximityData);
             // Serial.print(F("AmbientLight: "));
             // Serial.print(ambientLight);
-            // Serial.print(F(",Proximity: "));
-            // Serial.println(proximityData);
+            // Serial.print(F("Proximity:"));
+            // Serial.println(*proximityData);
         } else {
             Serial.println("Error reading sensor data.");
         }
-        return proximityData;
     }
 };
