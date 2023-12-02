@@ -28,7 +28,7 @@ class Boop {
                 if (sensorValue > IR_IN_RANGE_THRESHOLD && sensorValue < IR_OUT_RANGE_THRESHOLD) {
                     boopStartTime = millis();
                     currentBoopState = BOOP_IN_PROGRESS;
-                } else if (sensorValue >= IR_OUT_RANGE_THRESHOLD) {
+                } else if (sensorValue >= 1023) {
                     currentBoopState = ANGRY;
                 }
                 isBoop = false;
