@@ -102,13 +102,8 @@ class LEDMatrixDisplay {
 
    public:
     LEDMatrixDisplay() {
-        HUB75_I2S_CFG mxconfig;
-        if (R1) {
-            HUB75_I2S_CFG::i2s_pins _pins = {R1, G1, BL1, R2, G2, BL2, CH_A, CH_B, CH_C, CH_D, CH_E, LAT, OE, CLK};
-            HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER, _pins);
-        } else {
-            HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER);
-        }
+        HUB75_I2S_CFG::i2s_pins _pins = {R1, G1, BL1, R2, G2, BL2, CH_A, CH_B, CH_C, CH_D, CH_E, LAT, OE, CLK};
+        HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER, _pins);
         mxconfig.driver = HUB75_I2S_CFG::FM6124;
         // mxconfig.i2sspeed = HUB75_I2S_CFG::HZ_20M;
         mxconfig.clkphase = false;
