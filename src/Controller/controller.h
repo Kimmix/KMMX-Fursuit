@@ -167,7 +167,7 @@ class Controller {
     unsigned long nextBoop = 0;
     void booping() {
         if (millis() >= nextBoop) {
-            nextBoop = millis() + 50;
+            nextBoop = millis() + 100;
             boop.getBoop(proxValue, inRange, isBoop, boopSpeed, isContinuous, isAngry);
             if (isBoop) {
                 // Serial.println(boopSpeed);

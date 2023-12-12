@@ -8,7 +8,7 @@ enum BoopState {
 class Boop {
    private:
     BoopState currentBoopState = IDLE;
-    const int IR_IN_RANGE_THRESHOLD = 100, IR_OUT_RANGE_THRESHOLD = 900;
+    const int IR_IN_RANGE_THRESHOLD = 20, IR_OUT_RANGE_THRESHOLD = 900;
     const unsigned long boopDuration = 1000;
     unsigned long boopStartTime = 0;
     bool isSensorStarted = false;
@@ -21,22 +21,25 @@ class Boop {
 
    public:
     void getBoop(uint16_t& sensorValue, bool& isInRange, bool& isBoop, float& boopSpeed, bool& isContinuous, bool& isAngry) {
-        isInRange = false;
         // Serial.println(sensorValue);
         switch (currentBoopState) {
             case IDLE:
-                if (sensorValue > IR_IN_RANGE_THRESHOLD && sensorValue < IR_OUT_RANGE_THRESHOLD) {
-                    boopStartTime = millis();
-                    currentBoopState = BOOP_IN_PROGRESS;
-                } else if (sensorValue >= 1023) {
-                    currentBoopState = ANGRY;
-                }
+                isInRange = false;
                 isBoop = false;
                 isContinuous = false;
                 isAngry = false;
+                if (sensorValue > IR_IN_RANGE_THRESHOLD && sensorValue < IR_OUT_RANGE_THRESHOLD) {
+                    currentBoopState = BOOP_IN_PROGRESS;
+                    boopStartTime = millis();
+                } else if (sensorValue >= 1023) {
+                    currentBoopState = ANGRY;
+                }
                 break;
             case BOOP_IN_PROGRESS:
                 isInRange = true;
+                isBoop = false;
+                isContinuous = false;
+                isAngry = false;
                 if (sensorValue >= IR_OUT_RANGE_THRESHOLD) {
                     boopSpeed = calculateBoopSpeed();
                     if (boopSpeed > 0.0) {
@@ -52,18 +55,20 @@ class Boop {
                 }
                 break;
             case BOOP_CONTINUOUS:
+                isInRange = false;
                 isBoop = false;
                 isContinuous = true;
                 isAngry = false;
-                if (sensorValue < IR_IN_RANGE_THRESHOLD) {
+                if (sensorValue < IR_OUT_RANGE_THRESHOLD) {
                     currentBoopState = IDLE;
                 }
                 break;
             case ANGRY:
+                isInRange = false;
                 isBoop = false;
                 isContinuous = false;
                 isAngry = true;
-                if (sensorValue < IR_IN_RANGE_THRESHOLD) {
+                if (sensorValue < IR_OUT_RANGE_THRESHOLD) {
                     currentBoopState = IDLE;
                 }
                 break;

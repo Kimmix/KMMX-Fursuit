@@ -32,7 +32,7 @@ class APDS9930Sensor {
     // Disable proximity data if ambient light is too high (e.g., sunlight)
     void conquerTheSun(uint16_t &proximity, float &ambientLight) {
         const float sunlight_threshold = 1000.0;
-        if (ambientLight > sunlight_threshold || ambientLight == 0) {
+        if (ambientLight > sunlight_threshold) {
             proximity = 0;
         }
     }
