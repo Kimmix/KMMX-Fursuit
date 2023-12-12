@@ -1,8 +1,11 @@
 #include <Arduino.h>
 #include <ArduinoBLE.h>
 #include <esp_random.h>
-
-#include "../boards/pinout.h"
+#ifdef CUSTOMBOARD
+#include "../boards/config.h"
+#else
+#include "config.h"
+#endif
 #include "helperFunction.h"
 #include "Controller/controller.h"
 
