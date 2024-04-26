@@ -1,3 +1,5 @@
+#define FFT_SPEED_OVER_PRECISION
+#define FFT_SQRT_APPROXIMATION
 #include <map>
 #include <arduinoFFT.h>
 #include "Devices/I2SMicrophone.h"
