@@ -108,13 +108,13 @@ class Viseme {
     double real[SAMPLES],
         imaginary[SAMPLES];
     I2SMicrophone microphone = I2SMicrophone();
-    arduinoFFT FFT = arduinoFFT(real, imaginary, SAMPLES, SAMPLE_RATE);
+    ArduinoFFT<double> FFT = ArduinoFFT<double>(real, imaginary, SAMPLES, SAMPLE_RATE);
 
     void calcFFT() {
-        FFT.DCRemoval();
-        FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-        FFT.Compute(FFT_FORWARD);
-        FFT.ComplexToMagnitude();
+        FFT.dcRemoval();
+        FFT.windowing(FFTWindow::Hamming, FFTDirection::Forward);
+        FFT.compute(FFTDirection::Forward);
+        FFT.complexToMagnitude();
     }
 
     enum VisemeType {
