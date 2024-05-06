@@ -152,7 +152,7 @@ class Controller {
 
     void renderFace() {
         debugPixel(pixelPos);
-        display.drawColorTest();
+        // display.drawColorTest();
         display.drawNose(noseNew);
         mouthState.update();
         eyeState.update();
