@@ -180,11 +180,11 @@ class LEDMatrixDisplay {
     }
 
     void drawEye(const uint8_t* bitmap) {
-        drawBitmap(bitmap, eyeWidth, eyeHeight, 12, 0);
+        drawBitmap(bitmap, eyeWidth, eyeHeight, 7, 0);
     }
 
     void drawEye(const uint8_t* bitmapL, const uint8_t* bitmapR) {
-        drawBitmap(bitmapL, bitmapR, eyeWidth, eyeHeight, 12, 0);
+        drawBitmap(bitmapL, bitmapR, eyeWidth, eyeHeight, 7, 0);
     }
 
     void drawEyePupil(const uint8_t* bitmap, int x, int y) {
@@ -192,7 +192,7 @@ class LEDMatrixDisplay {
     }
 
     void drawNose(const uint8_t* bitmap) {
-        drawBitmap(bitmap, 8, 5, 56, 5);
+        drawBitmap(bitmap, 8, 5, 56, 7);
     }
 
     void drawMouth(const uint8_t* bitmap) {
