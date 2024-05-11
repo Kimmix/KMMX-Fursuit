@@ -44,8 +44,8 @@ class EyeState {
                 smileFace();
                 break;
             case EyeStateEnum::ANGRY:
-                display->drawEye(eyeDown);
-                if (millis() - resetBoop >= 1500) {
+                downFace();
+                if (millis() - resetBoop >= 2000) {
                     currentState = prevState;
                 }
                 break;
@@ -96,7 +96,21 @@ class EyeState {
         blinkInterval,
         nextBoop,
         resetBoop,
-        nextSmile;
+        nextSmile,
+        nextDown;
+
+    short defaultAnimationIndex = 0;
+    const uint8_t* defaultAnimation[3] = {eyeDefault, eyeBlink2, eyeDown15};
+    void changeDefaultFace() {
+        if ((esp_random() % 10) <= 3) {
+            defaultAnimationIndex = (esp_random() % 2) + 1;
+        } else {
+            defaultAnimationIndex = 0;
+        }
+        Serial.print(F("Changing faces to:"));
+        Serial.println(defaultAnimationIndex);
+        eyeFrame = defaultAnimation[defaultAnimationIndex];
+    }
 
     const uint8_t* eyeDownAnimation[20] = {eyeDown1, eyeDown2, eyeDown3, eyeDown4, eyeDown5, eyeDown6, eyeDown7, eyeDown8, eyeDown9, eyeDown10, eyeDown11, eyeDown12, eyeDown13, eyeDown14, eyeDown15, eyeDown16, eyeDown17, eyeDown18, eyeDown19, eyeDown20};
     void movingEye() {
@@ -111,16 +125,6 @@ class EyeState {
             display->drawEye(eyeDownAnimation[level], eyeFrame);
         } else {
             display->drawEye(eyeFrame);
-        }
-    }
-
-    short defaultAnimationIndex = 0;
-    const uint8_t* defaultAnimation[3] = {eyeDefault, eyeUp, eyeDown};
-    void changeDefaultFace() {
-        if ((esp_random() % 10) <= 3) {
-            defaultAnimationIndex = (esp_random() % 2) + 1;
-        } else {
-            defaultAnimationIndex = 0;
         }
     }
 
@@ -182,7 +186,6 @@ class EyeState {
     short smileIndex = 0;
     void smileFace() {
         if (isTransitioning) {
-            Serial.println(smileIndex);
             display->drawEye(smileAnimation[smileIndex]);
             if (millis() >= nextSmile) {
                 nextSmile = millis() + 14;
@@ -194,6 +197,25 @@ class EyeState {
             }
         } else {
             display->drawEye(smileAnimation[smileLength - 1]);
+        }
+    }
+
+    // const uint8_t* downAnimation[20] = {eyeDown1, eyeDown2, eyeDown3, eyeDown4, eyeDown5, eyeDown6, eyeDown7, eyeDown8, eyeDown9, eyeDown10, eyeDown11, eyeDown12, eyeDown13, eyeDown14, eyeDown15, eyeDown16, eyeDown17, eyeDown18, eyeDown19, eyeDown20};
+    const short downLength = 20;
+    short downIndex = 0;
+    void downFace() {
+        if (isTransitioning) {
+            display->drawEye(eyeDownAnimation[downIndex]);
+            if (millis() >= nextDown) {
+                nextDown = millis() + 5;
+                downIndex++;
+                if (downIndex == downLength) {
+                    downIndex = 0;
+                    isTransitioning = false;
+                }
+            }
+        } else {
+            display->drawEye(eyeDownAnimation[downLength - 1]);
         }
     }
     // short smileIndex2 = smileLength - 1;
