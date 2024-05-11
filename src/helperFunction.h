@@ -3,7 +3,8 @@ unsigned long fps_timer;
 void showFPS() {
     ++fps;
     if (millis() > fps_timer) {
-        Serial.printf_P(PSTR("Effect fps: %d\n"), fps);
+        Serial.printf_P(PSTR("Effect fps: %d"), fps);
+        Serial.printf_P(PSTR(" Heap: %d\n"), ESP.getFreeHeap());
         fps_timer = millis() + 1000;
         fps = 0;
     }
