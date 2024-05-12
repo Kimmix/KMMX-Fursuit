@@ -182,6 +182,7 @@ class Controller {
             } else if (isAngry) {
                 nextBoop = millis() + 1500;
                 eyeState.setState(EyeStateEnum::ANGRY);
+                mouthState.setState(MouthStateEnum::ANGRYBOOP);
             }
         }
     }

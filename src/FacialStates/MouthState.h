@@ -5,6 +5,7 @@
 #include "RenderFunction/Viseme.h"
 enum class MouthStateEnum { IDLE,
                             BOOP,
+                            ANGRYBOOP,
                             TALKING,
 };
 class MouthState {
@@ -19,14 +20,20 @@ class MouthState {
 
     void update() {
         updateAnimation();
-        movingMouth();
         switch (currentState) {
             case MouthStateEnum::IDLE:
+                movingMouth();
                 drawDefault();
                 break;
             case MouthStateEnum::BOOP:
-                display->drawMouth(mouthAH10);
+                display->drawMouth(mouthOH15);
                 if (millis() - resetBoop >= 700) {
+                    currentState = prevState;
+                }
+                break;
+            case MouthStateEnum::ANGRYBOOP:
+                angryBoop();
+                if (millis() - resetBoop >= 1500) {
                     currentState = prevState;
                 }
                 break;
@@ -38,21 +45,23 @@ class MouthState {
                 }
                 break;
             default:
-                currentState = MouthStateEnum::IDLE;
                 break;
         }
     }
 
     void setState(MouthStateEnum newState) {
         savePrevState(currentState);
-        if (newState == MouthStateEnum::BOOP) {
+        if (newState == MouthStateEnum::BOOP || newState == MouthStateEnum::ANGRYBOOP) {
             resetBoop = millis();
         }
-        currentState = newState;
+        if (currentState != newState) {
+            isTransitioning = true;
+            currentState = newState;
+        }
     }
 
     void savePrevState(MouthStateEnum newState) {
-        if (newState == MouthStateEnum::BOOP) {
+        if (newState == MouthStateEnum::BOOP || newState == MouthStateEnum::ANGRYBOOP) {
             return;
         }
         prevState = newState;
@@ -70,7 +79,8 @@ class MouthState {
     LEDMatrixDisplay* display;
     sensors_event_t event;
     MouthStateEnum prevState, currentState = MouthStateEnum::IDLE;
-    unsigned long mouthInterval, resetBoop;
+    unsigned long mouthInterval, resetBoop, nextAngry;
+    bool isTransitioning = false;
     const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;
 
     const uint8_t* defaultAnimation[20] = {mouthDefault1, mouthDefault2, mouthDefault3, mouthDefault4, mouthDefault5, mouthDefault6, mouthDefault7, mouthDefault8, mouthDefault9, mouthDefault10, mouthDefault11, mouthDefault12, mouthDefault13, mouthDefault14, mouthDefault15, mouthDefault16, mouthDefault17, mouthDefault18, mouthDefault19, mouthDefault20};
@@ -101,7 +111,6 @@ class MouthState {
 
     unsigned long previousMillis = 0;
     const unsigned long interval = 5;
-    bool increasingIndex = true;
     void updateAnimation() {
         if (millis() >= mouthInterval) {
             updateIndex();
@@ -110,6 +119,7 @@ class MouthState {
     }
 
     short defaultAnimationIndex = 0;
+    bool increasingIndex = true;
     void updateIndex() {
         if (increasingIndex) {
             defaultAnimationIndex++;
@@ -123,6 +133,25 @@ class MouthState {
                 defaultAnimationIndex = 0;
                 increasingIndex = true;
             }
+        }
+    }
+
+    const uint8_t* mouthAngryAnimation[20] = {mouthAH1, mouthAH2, mouthAH3, mouthAH4, mouthAH5, mouthAH6, mouthAH7, mouthAH8, mouthAH9, mouthAH10, mouthAH11, mouthAH12, mouthAH13, mouthAH14, mouthAH15, mouthAH16, mouthAH17, mouthAH18, mouthAH19, mouthAH20};
+    const short angryLength = 20;
+    short angryIndex = 0;
+    void angryBoop() {
+        if (isTransitioning) {
+            display->drawMouth(mouthAngryAnimation[angryIndex]);
+            if (millis() >= nextAngry) {
+                nextAngry = millis() + 7;
+                angryIndex++;
+                if (angryIndex == angryLength) {
+                    angryIndex = 0;
+                    isTransitioning = false;
+                }
+            }
+        } else {
+            display->drawMouth(mouthAngryAnimation[angryLength - 1]);
         }
     }
 
