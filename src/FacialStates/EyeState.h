@@ -1,7 +1,10 @@
 #include "RenderFunction/GooglyEye.h"
 #include "Bitmaps/eyeBitmap.h"
 #include "Bitmaps/eyeBlink.h"
+#include "Bitmaps/eyeUp.h"
 #include "Bitmaps/eyeDown.h"
+#include "Bitmaps/eyeAngry.h"
+#include "Bitmaps/eyeLookSharp.h"
 #include "Bitmaps/eyeSmile.h"
 enum class EyeStateEnum { IDLE,
                           BLINK,
@@ -44,7 +47,7 @@ class EyeState {
                 smileFace();
                 break;
             case EyeStateEnum::ANGRY:
-                downFace();
+                angryFace();
                 if (millis() - resetBoop >= 2000) {
                     currentState = prevState;
                 }
@@ -92,15 +95,16 @@ class EyeState {
     bool isTransitioning = false;
 
     unsigned long
-        nextBlink,
-        blinkInterval,
-        nextBoop,
         resetBoop,
+        blinkInterval,
+        nextBlink,
+        nextBoop,
         nextSmile,
-        nextDown;
+        nextDown,
+        nextAngry;
 
     short defaultAnimationIndex = 0;
-    const uint8_t* defaultAnimation[3] = {eyeDefault, eyeBlink2, eyeDown15};
+    const uint8_t* defaultAnimation[3] = {eyeDefault, eyeUp20, eyeLookSharp5};
     void changeDefaultFace() {
         if ((esp_random() % 10) <= 3) {
             defaultAnimationIndex = (esp_random() % 2) + 1;
@@ -113,16 +117,17 @@ class EyeState {
     }
 
     const uint8_t* eyeDownAnimation[20] = {eyeDown1, eyeDown2, eyeDown3, eyeDown4, eyeDown5, eyeDown6, eyeDown7, eyeDown8, eyeDown9, eyeDown10, eyeDown11, eyeDown12, eyeDown13, eyeDown14, eyeDown15, eyeDown16, eyeDown17, eyeDown18, eyeDown19, eyeDown20};
+    const uint8_t* eyeUpAnimation[20] = {eyeUp1, eyeUp2, eyeUp3, eyeUp4, eyeUp5, eyeUp6, eyeUp7, eyeUp8, eyeUp9, eyeUp10, eyeUp11, eyeUp12, eyeUp13, eyeUp14, eyeUp15, eyeUp16, eyeUp17, eyeUp18, eyeUp19, eyeUp20};
     void movingEye() {
         float zAcc = event.acceleration.z;
         const float leftThreshold = 3.00, rightThreshold = -3.00,
                     leftMaxThreshold = 6.00, rightMaxThreshold = -6.00;
         if (zAcc > leftThreshold) {
             int level = mapFloat(zAcc, leftThreshold, leftMaxThreshold, 0, 19);
-            display->drawEye(eyeFrame, eyeDownAnimation[level]);
+            display->drawEye(eyeUpAnimation[level], eyeDownAnimation[level]);
         } else if (zAcc < rightThreshold) {
             int level = mapFloat(zAcc, rightThreshold, rightMaxThreshold, 0, 19);
-            display->drawEye(eyeDownAnimation[level], eyeFrame);
+            display->drawEye(eyeDownAnimation[level], eyeUpAnimation[level]);
         } else {
             display->drawEye(eyeFrame);
         }
@@ -200,22 +205,22 @@ class EyeState {
         }
     }
 
-    // const uint8_t* downAnimation[20] = {eyeDown1, eyeDown2, eyeDown3, eyeDown4, eyeDown5, eyeDown6, eyeDown7, eyeDown8, eyeDown9, eyeDown10, eyeDown11, eyeDown12, eyeDown13, eyeDown14, eyeDown15, eyeDown16, eyeDown17, eyeDown18, eyeDown19, eyeDown20};
-    const short downLength = 20;
-    short downIndex = 0;
-    void downFace() {
+    const uint8_t* eyeangryAnimation[20] = {eyeAngry1, eyeAngry2, eyeAngry3, eyeAngry4, eyeAngry5, eyeAngry6, eyeAngry7, eyeAngry8, eyeAngry9, eyeAngry10, eyeAngry11, eyeAngry12, eyeAngry13, eyeAngry14, eyeAngry15, eyeAngry16, eyeAngry17, eyeAngry18, eyeAngry19, eyeAngry20};
+    const short angryLength = 20;
+    short angryIndex = 0;
+    void angryFace() {
         if (isTransitioning) {
-            display->drawEye(eyeDownAnimation[downIndex]);
-            if (millis() >= nextDown) {
-                nextDown = millis() + 5;
-                downIndex++;
-                if (downIndex == downLength) {
-                    downIndex = 0;
+            display->drawEye(eyeangryAnimation[angryIndex]);
+            if (millis() >= nextAngry) {
+                nextAngry = millis() + 5;
+                angryIndex++;
+                if (angryIndex == angryLength) {
+                    angryIndex = 0;
                     isTransitioning = false;
                 }
             }
         } else {
-            display->drawEye(eyeDownAnimation[downLength - 1]);
+            display->drawEye(eyeangryAnimation[angryLength - 1]);
         }
     }
     // short smileIndex2 = smileLength - 1;
