@@ -2,11 +2,13 @@ const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 
+const bitmapName = 'eyeSleep';
+
 // Directory containing GIF files
 const inputDirectory = './input';
 
 // Output file path
-const outputFile = './output/output.h';
+const outputFile = `./output/${bitmapName}.h`;
 
 // Process each GIF file in the directory
 fs.readdir(inputDirectory, async (err, files) => {
@@ -51,7 +53,7 @@ function generateOutputFileContent(greyscaleArrays) {
     const lines = ['// Generated output'];
 
     for (const { data, index } of greyscaleArrays) {
-        const sectionName = `eyeSmile${index}`;
+        const sectionName = `${bitmapName}${index}`;
         const sectionLines = [
             `static const uint8_t PROGMEM ${sectionName}[576] = {`
         ];
