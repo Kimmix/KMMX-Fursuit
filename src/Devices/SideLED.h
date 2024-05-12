@@ -36,8 +36,8 @@ class SideLED {
     }
 
     CRGBPalette16 lavaLampPalette() {
-        CHSV color1HSV(239, 240, 135);  // Start color: #FF446C (Reddish Pink)
-        CHSV color2HSV(22, 185, 125);   // End color: #F9826C (Coral)
+        CHSV color1HSV(239, 255, 255);  // Start color: #FF446C (Reddish Pink)
+        CHSV color2HSV(22, 255, 255);   // End color: #F9826C (Coral)
         return CRGBPalette16(
             color1HSV, color2HSV, color1HSV, color2HSV,
             color1HSV, color2HSV, color1HSV, color2HSV,
