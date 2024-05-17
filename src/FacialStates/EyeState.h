@@ -85,6 +85,7 @@ class EyeState {
 
     void playPrevState() {
         setState(prevState);
+        resetSleepFace();
     }
 
     EyeStateEnum getState() const {
@@ -235,22 +236,41 @@ class EyeState {
     }
 
     const uint8_t* eyesleepAnimation[20] = {eyeSleep1, eyeSleep2, eyeSleep3, eyeSleep4, eyeSleep5, eyeSleep6, eyeSleep7, eyeSleep8, eyeSleep9, eyeSleep10, eyeSleep11, eyeSleep12, eyeSleep13, eyeSleep14, eyeSleep15, eyeSleep16, eyeSleep17, eyeSleep18, eyeSleep19, eyeSleep20};
-    const short sleepLength = 20;
-    short sleepIndex = 0;
-    void sleepFace() {
-        if (isTransitioning) {
-            display->drawEye(eyesleepAnimation[sleepIndex]);
-            if (millis() >= nextSleep) {
-                nextSleep = millis() + 5;
-                sleepIndex++;
-                if (sleepIndex == sleepLength) {
-                    sleepIndex = 0;
-                    isTransitioning = false;
-                }
-            }
-        } else {
-            display->drawEye(eyesleepAnimation[sleepLength - 1]);
+    const int sleepLength = 20;
+    int sleepIndex = 0, sleepRand = 0;
+    unsigned long startTime = millis();
+    // Function to calculate the next sleep index
+    int calculateSleepIndex(int currentIndex, int randomValue) {
+        int minIndex = min(pow((millis() - startTime) / 10000, 2), 19.0);
+        Serial.print("minIndex: ");
+        Serial.println(minIndex);
+        if (randomValue > 7) {
+            return min(currentIndex + 1, sleepLength - 1);
+        } else if (randomValue < 3) {
+            return max(currentIndex - 1, minIndex);
         }
+        return currentIndex;
+    }
+
+    // Updated sleepFace function
+    void sleepFace() {
+        if (millis() >= nextSleep) {
+            if(sleepIndex < sleepLength - 1) {
+                nextSleep = millis() + 300;
+                sleepRand = esp_random() % 10;
+                sleepIndex = calculateSleepIndex(sleepIndex, sleepRand);
+                Serial.print("sleepIndex: ");
+                Serial.println(sleepIndex);
+            }
+        }
+        display->drawEye(eyesleepAnimation[sleepIndex]);
+    }
+
+    // Function to reset sleep face
+    void resetSleepFace() {
+        sleepIndex = 0;
+        startTime = millis();
+        Serial.println("Sleep face reset.");
     }
     // short smileIndex2 = smileLength - 1;
     // void smileDeTransition() {
