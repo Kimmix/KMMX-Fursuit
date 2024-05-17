@@ -53,43 +53,14 @@ class Controller {
     }
 
     void setViseme(int b) {
-        switch (b) {
-            case 0:
-                mouthState.setState(MouthStateEnum::IDLE);
-                break;
-            case 1:
-                mouthState.setState(MouthStateEnum::TALKING);
-                break;
-            case 2:
-                mouthState.viseme.setNoiseThreshold(400);
-                break;
-            case 3:
-                mouthState.viseme.setNoiseThreshold(600);
-                break;
-            case 4:
-                mouthState.viseme.setNoiseThreshold(1000);
-                break;
-            case 5:
-                mouthState.viseme.setNoiseThreshold(1600);
-                break;
-            case 6:
-                mouthState.viseme.setNoiseThreshold(3200);
-                break;
-            case 7:
-                mouthState.viseme.setNoiseThreshold(6400);
-                break;
-            case 8:
-                mouthState.viseme.setNoiseThreshold(1200);
-                break;
-            case 9:
-                mouthState.viseme.setNoiseThreshold(18000);
-                break;
-            case 10:
-                mouthState.viseme.setNoiseThreshold(25000);
-                break;
-            default:
-                mouthState.setState(MouthStateEnum::TALKING);
-                break;
+        static const int noiseThresholds[] = {400, 600, 1000, 1600, 3200, 6400, 1200, 18000, 25000};
+        static const int numThresholds = sizeof(noiseThresholds) / sizeof(noiseThresholds[0]);
+        if (b == 0) {
+            mouthState.setState(MouthStateEnum::IDLE);
+        } else if (b == 1 || b > numThresholds) {
+            mouthState.setState(MouthStateEnum::TALKING);
+        } else {
+            mouthState.viseme.setNoiseThreshold(noiseThresholds[b - 2]);
         }
     }
 
@@ -181,12 +152,14 @@ class Controller {
                 mouthState.setState(MouthStateEnum::BOOP);
             } else if (inRange) {
                 mouthState.setState(MouthStateEnum::BOOP);
+                resetIdletime();
             } else if (isContinuous) {
                 eyeState.setState(EyeStateEnum::BOOP);
             } else if (isAngry) {
                 nextBoop = millis() + 1500;
                 eyeState.setState(EyeStateEnum::ANGRY);
                 mouthState.setState(MouthStateEnum::ANGRYBOOP);
+                resetIdletime();
             }
         }
     }
@@ -213,6 +186,10 @@ class Controller {
         lastZ = sensorEvent->acceleration.z;
     }
 
+    void resetIdletime() {
+        stillTime = 0;
+    }
+
     const float THRESHOLD = 0.6;
     unsigned long stillTime = 0;  // Time when the accelerometer became still
     void checkIdleAndSleep(unsigned long currentTime) {
@@ -223,11 +200,11 @@ class Controller {
                 stillTime = currentTime;
             } else if (currentTime - stillTime >= 30000) {
                 sleep();
-                stillTime = 0;
+                resetIdletime();
             }
         } else {
             Serial.println("Oh Hai");
-            stillTime = 0;
+            resetIdletime();
         }
     }
 
