@@ -1,11 +1,11 @@
 #include "RenderFunction/GooglyEye.h"
-#include "Bitmaps/eyeBitmap.h"
-#include "Bitmaps/eyeBlink.h"
-#include "Bitmaps/eyeUp.h"
-#include "Bitmaps/eyeDown.h"
-#include "Bitmaps/eyeAngry.h"
-#include "Bitmaps/eyeLookSharp.h"
-#include "Bitmaps/eyeSmile.h"
+#include "Bitmaps/eye/eyeBitmap.h"
+#include "Bitmaps/eye/eyeBlink.h"
+#include "Bitmaps/eye/eyeUp.h"
+#include "Bitmaps/eye/eyeDown.h"
+#include "Bitmaps/eye/eyeAngry.h"
+#include "Bitmaps/eye/eyeLookSharp.h"
+#include "Bitmaps/eye/eyeSmile.h"
 enum class EyeStateEnum { IDLE,
                           BLINK,
                           BOOP,

@@ -3,7 +3,7 @@
 #include <map>
 #include <arduinoFFT.h>
 #include "Devices/I2SMicrophone.h"
-#include "Bitmaps/mouthViseme.h"
+#include "Bitmaps/mouth/mouthViseme.h"
 
 #define AH_MIN 600
 #define AH_MAX 1200

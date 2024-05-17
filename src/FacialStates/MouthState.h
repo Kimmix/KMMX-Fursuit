@@ -1,7 +1,7 @@
-#include "Bitmaps/mouthBitmap.h"
-#include "Bitmaps/mouthUp.h"
-#include "Bitmaps/mouthDown.h"
-#include "Bitmaps/mouthAnimated.h"
+#include "Bitmaps/mouth/mouthBitmap.h"
+#include "Bitmaps/mouth/mouthUp.h"
+#include "Bitmaps/mouth/mouthDown.h"
+#include "Bitmaps/mouth/mouthAnimated.h"
 #include "RenderFunction/Viseme.h"
 enum class MouthStateEnum { IDLE,
                             BOOP,
