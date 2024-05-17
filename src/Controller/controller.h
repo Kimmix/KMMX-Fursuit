@@ -191,15 +191,55 @@ class Controller {
         }
     }
 
-    // Read sensor on second core
-    unsigned long nextRead = 0;
+    void sleep() {
+        // Implement your sleep function here
+        Serial.println("Going to sleep...");
+    }
+
+    float lastX, lastY, lastZ;
+    float prevX, prevY, prevZ;
+    void updateSensorValues() {
+        // Get proxSensor value
+        proxSensor.read(&proxValue);
+        sensorEvent = accSensor.getSensorEvent();
+        // Store the current acceleration values
+        prevX = lastX;
+        prevY = lastY;
+        prevZ = lastZ;
+
+        // Update the last acceleration values
+        lastX = sensorEvent->acceleration.x;
+        lastY = sensorEvent->acceleration.y;
+        lastZ = sensorEvent->acceleration.z;
+    }
+
+    const float THRESHOLD = 0.6;
+    unsigned long stillTime = 0;  // Time when the accelerometer became still
+    void checkIdleAndSleep(unsigned long currentTime) {
+        if (abs(lastX - prevX) < THRESHOLD &&
+            abs(lastY - prevY) < THRESHOLD &&
+            abs(lastZ - prevZ) < THRESHOLD) {
+            if (stillTime == 0) {
+                stillTime = currentTime;
+            } else if (currentTime - stillTime >= 30000) {
+                sleep();
+                stillTime = 0;
+            }
+        } else {
+            Serial.println("Oh Hai");
+            stillTime = 0;
+        }
+    }
+
+    unsigned long nextRead;
     static void readSensor(void *parameter) {
         Controller *controller = static_cast<Controller *>(parameter);
         while (1) {
-            if (millis() >= controller->nextRead) {
-                controller->nextRead = millis() + 100;
-                controller->proxSensor.read(&(controller->proxValue));
-                controller->sensorEvent = controller->accSensor.getSensorEvent();
+            unsigned long currentTime = millis();
+            if (currentTime >= controller->nextRead) {
+                controller->nextRead = currentTime + 100;
+                controller->updateSensorValues();
+                controller->checkIdleAndSleep(currentTime);
             }
             controller->mouthState.getListEvent(*(controller->sensorEvent));
             controller->eyeState.getListEvent(*(controller->sensorEvent));
