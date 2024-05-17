@@ -4,6 +4,7 @@
 #include "Bitmaps/eye/eyeUp.h"
 #include "Bitmaps/eye/eyeDown.h"
 #include "Bitmaps/eye/eyeAngry.h"
+#include "Bitmaps/eye/eyeSleep.h"
 #include "Bitmaps/eye/eyeLookSharp.h"
 #include "Bitmaps/eye/eyeSmile.h"
 enum class EyeStateEnum { IDLE,
@@ -14,6 +15,7 @@ enum class EyeStateEnum { IDLE,
                           HEART,
                           SMILE,
                           ANGRY,
+                          SLEEP,
                           DETRANSITION,
 };
 class EyeState {
@@ -52,6 +54,9 @@ class EyeState {
                     currentState = prevState;
                 }
                 break;
+            case EyeStateEnum::SLEEP:
+                sleepFace();
+                break;
             case EyeStateEnum::DETRANSITION:
                 detransition();
                 break;
@@ -72,10 +77,14 @@ class EyeState {
     }
 
     void savePrevState(EyeStateEnum newState) {
-        if (newState == EyeStateEnum::BOOP || newState == EyeStateEnum::ANGRY) {
+        if (newState == EyeStateEnum::BOOP || newState == EyeStateEnum::ANGRY || newState == EyeStateEnum::SLEEP) {
             return;
         }
         prevState = newState;
+    }
+
+    void playPrevState() {
+        setState(prevState);
     }
 
     EyeStateEnum getState() const {
@@ -101,7 +110,8 @@ class EyeState {
         nextBoop,
         nextSmile,
         nextDown,
-        nextAngry;
+        nextAngry,
+        nextSleep;
 
     short defaultAnimationIndex = 0;
     const uint8_t* defaultAnimation[3] = {eyeDefault, eyeUp20, eyeLookSharp5};
@@ -221,6 +231,25 @@ class EyeState {
             }
         } else {
             display->drawEye(eyeangryAnimation[angryLength - 1]);
+        }
+    }
+
+    const uint8_t* eyesleepAnimation[20] = {eyeSleep1, eyeSleep2, eyeSleep3, eyeSleep4, eyeSleep5, eyeSleep6, eyeSleep7, eyeSleep8, eyeSleep9, eyeSleep10, eyeSleep11, eyeSleep12, eyeSleep13, eyeSleep14, eyeSleep15, eyeSleep16, eyeSleep17, eyeSleep18, eyeSleep19, eyeSleep20};
+    const short sleepLength = 20;
+    short sleepIndex = 0;
+    void sleepFace() {
+        if (isTransitioning) {
+            display->drawEye(eyesleepAnimation[sleepIndex]);
+            if (millis() >= nextSleep) {
+                nextSleep = millis() + 5;
+                sleepIndex++;
+                if (sleepIndex == sleepLength) {
+                    sleepIndex = 0;
+                    isTransitioning = false;
+                }
+            }
+        } else {
+            display->drawEye(eyesleepAnimation[sleepLength - 1]);
         }
     }
     // short smileIndex2 = smileLength - 1;

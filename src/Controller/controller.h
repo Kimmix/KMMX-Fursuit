@@ -152,21 +152,14 @@ class Controller {
                 mouthState.setState(MouthStateEnum::BOOP);
             } else if (inRange) {
                 mouthState.setState(MouthStateEnum::BOOP);
-                resetIdletime();
             } else if (isContinuous) {
                 eyeState.setState(EyeStateEnum::BOOP);
             } else if (isAngry) {
                 nextBoop = millis() + 1500;
                 eyeState.setState(EyeStateEnum::ANGRY);
                 mouthState.setState(MouthStateEnum::ANGRYBOOP);
-                resetIdletime();
             }
         }
-    }
-
-    void sleep() {
-        // Implement your sleep function here
-        Serial.println("Going to sleep...");
     }
 
     float lastX, lastY, lastZ;
@@ -186,25 +179,34 @@ class Controller {
         lastZ = sensorEvent->acceleration.z;
     }
 
-    void resetIdletime() {
+    bool isSleeping = false;
+    void resetIdletime(Controller *controller) {
+        Serial.println("Wake!");
+        controller->eyeState.playPrevState();
         stillTime = 0;
+        isSleeping = false;
+    }
+
+    void sleep(Controller *controller) {
+        // Implement your sleep function here
+        Serial.println("Going to sleep...");
+        controller->eyeState.setState(EyeStateEnum::SLEEP);
+        isSleeping = true;
     }
 
     const float THRESHOLD = 0.6;
     unsigned long stillTime = 0;  // Time when the accelerometer became still
-    void checkIdleAndSleep(unsigned long currentTime) {
+    void checkIdleAndSleep(Controller *controller, unsigned long currentTime) {
         if (abs(lastX - prevX) < THRESHOLD &&
             abs(lastY - prevY) < THRESHOLD &&
             abs(lastZ - prevZ) < THRESHOLD) {
             if (stillTime == 0) {
                 stillTime = currentTime;
-            } else if (currentTime - stillTime >= 30000) {
-                sleep();
-                resetIdletime();
+            } else if (currentTime - stillTime >= 10000 && !isSleeping) {
+                sleep(controller);
             }
         } else {
-            Serial.println("Oh Hai");
-            resetIdletime();
+            resetIdletime(controller);
         }
     }
 
@@ -216,7 +218,7 @@ class Controller {
             if (currentTime >= controller->nextRead) {
                 controller->nextRead = currentTime + 100;
                 controller->updateSensorValues();
-                controller->checkIdleAndSleep(currentTime);
+                controller->checkIdleAndSleep(controller, currentTime);
             }
             controller->mouthState.getListEvent(*(controller->sensorEvent));
             controller->eyeState.getListEvent(*(controller->sensorEvent));
