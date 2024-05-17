@@ -3,6 +3,7 @@
 #include "Devices/SideLED.h"
 #include "Devices/HornLED.h"
 #include "Devices/APDS9930Sensor.h"
+#include "Devices/LIS3DH.h"
 #include "FacialStates/MouthState.h"
 #include "FacialStates/EyeState.h"
 #include "FacialStates/FXState.h"
@@ -14,8 +15,9 @@ class Controller {
    public:
     void setupSensors() {
         // mouthState.startMic();
-        setUpLis();
-        prox.setup();
+        accSensor.setUp();
+        proxSensor.setup();
+        xTaskCreatePinnedToCore(readSensor, "SensorEventTask", 4096, this, 1, &sensorEventTaskHandle, 0);
     }
 
     unsigned long nextFrame;
@@ -136,17 +138,19 @@ class Controller {
     }
 
    private:
-    Adafruit_LIS3DH lis = Adafruit_LIS3DH();
-    APDS9930Sensor prox;
+    // Setup devices
+    LIS3DH accSensor;
+    APDS9930Sensor proxSensor;
     LEDMatrixDisplay display;
     SideLED sideLED;
     HornLED hornLED;
-    Boop boop;
+    sensors_event_t *sensorEvent;
+    TaskHandle_t sensorEventTaskHandle;
+    // setup renderer state
     EyeState eyeState = EyeState(&display);
     MouthState mouthState = MouthState(&display);
     FXState fxState = FXState(&display);
-    sensors_event_t sensorEvent;
-    TaskHandle_t lisEventTaskHandle;
+    Boop boop;
     int16_t pixelPos = 0;
     uint16_t proxValue;
 
@@ -187,40 +191,18 @@ class Controller {
         }
     }
 
-    //? -------- LIS3DH --------
-    void setUpLis() {
-        if (!lis.begin(0x18)) {
-            Serial.println("Could not initialize LIS3DH");
-            while (1)
-                ;
-        }
-        lis.setDataRate(LIS3DH_DATARATE_25_HZ);
-        lis.setRange(LIS3DH_RANGE_2_G);
-        xTaskCreatePinnedToCore(lisEventTask, "LisEventTask", 2048, this, 1, &lisEventTaskHandle, 0);
-    }
-
+    // Read sensor on second core
     unsigned long nextRead = 0;
-    void getLisEvent() {
-        if (millis() >= nextRead) {
-            nextRead = millis() + 100;
-            // Get prox value
-            prox.read(&proxValue);
-            lis.getEvent(&sensorEvent);
-        }
-        // Serial.print("X:");
-        // Serial.print(sensorEvent.acceleration.x);
-        // Serial.print(",Y:");
-        // Serial.print(sensorEvent.acceleration.y);
-        // Serial.print(",Z:");
-        // Serial.println(sensorEvent.acceleration.z);
-        mouthState.getListEvent(sensorEvent);
-        eyeState.getListEvent(sensorEvent);
-    }
-
-    static void lisEventTask(void *parameter) {
+    static void readSensor(void *parameter) {
         Controller *controller = static_cast<Controller *>(parameter);
         while (1) {
-            controller->getLisEvent();
+            if (millis() >= controller->nextRead) {
+                controller->nextRead = millis() + 100;
+                controller->proxSensor.read(&(controller->proxValue));
+                controller->sensorEvent = controller->accSensor.getSensorEvent();
+            }
+            controller->mouthState.getListEvent(*(controller->sensorEvent));
+            controller->eyeState.getListEvent(*(controller->sensorEvent));
         }
     }
 };
