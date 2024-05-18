@@ -181,15 +181,12 @@ class Controller {
 
     bool isSleeping = false;
     void resetIdletime(Controller *controller) {
-        Serial.println("Wake!");
         controller->eyeState.playPrevState();
         stillTime = 0;
         isSleeping = false;
     }
 
     void sleep(Controller *controller) {
-        // Implement your sleep function here
-        Serial.println("Going to sleep...");
         controller->eyeState.setState(EyeStateEnum::SLEEP);
         isSleeping = true;
     }

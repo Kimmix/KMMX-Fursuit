@@ -242,8 +242,6 @@ class EyeState {
     // Function to calculate the next sleep index
     int calculateSleepIndex(int currentIndex, int randomValue) {
         int minIndex = min(pow((millis() - startTime) / 10000, 2), 19.0);
-        Serial.print("minIndex: ");
-        Serial.println(minIndex);
         if (randomValue > 7) {
             return min(currentIndex + 1, sleepLength - 1);
         } else if (randomValue < 3) {
@@ -255,12 +253,10 @@ class EyeState {
     // Updated sleepFace function
     void sleepFace() {
         if (millis() >= nextSleep) {
-            if(sleepIndex < sleepLength - 1) {
+            if (sleepIndex < sleepLength - 1) {
                 nextSleep = millis() + 300;
                 sleepRand = esp_random() % 10;
                 sleepIndex = calculateSleepIndex(sleepIndex, sleepRand);
-                Serial.print("sleepIndex: ");
-                Serial.println(sleepIndex);
             }
         }
         display->drawEye(eyesleepAnimation[sleepIndex]);
@@ -270,7 +266,6 @@ class EyeState {
     void resetSleepFace() {
         sleepIndex = 0;
         startTime = millis();
-        Serial.println("Sleep face reset.");
     }
     // short smileIndex2 = smileLength - 1;
     // void smileDeTransition() {
