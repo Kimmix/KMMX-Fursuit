@@ -12,17 +12,10 @@ class HornLED {
         ledcWrite(pwmChannel, brightness);
     }
 
+    const unsigned short minBrightness = 50;
+    const unsigned short maxBrightness = 180;
     void setBrightness(unsigned short value) {
-        const unsigned short minBrightness = 50;
-        const unsigned short maxBrightness = 200;
-
-        if (value > maxBrightness) {
-            value = maxBrightness;
-        } else if (value < minBrightness) {
-            value = minBrightness;
-        }
-
-        brightness = value;
+        brightness = map(value, 0, 100, minBrightness, maxBrightness);
         ledcWrite(pwmChannel, brightness);
     }
 
