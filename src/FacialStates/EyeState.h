@@ -244,7 +244,7 @@ class EyeState {
         int minIndex = min(pow((millis() - startTime) / 10000, 2), 19.0);
         if (randomValue > 7) {
             return min(currentIndex + 1, sleepLength - 1);
-        } else if (randomValue < 3) {
+        } else if (randomValue < 5) {
             return max(currentIndex - 1, minIndex);
         }
         return currentIndex;
