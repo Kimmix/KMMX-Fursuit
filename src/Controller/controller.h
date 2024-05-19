@@ -152,12 +152,14 @@ class Controller {
                 mouthState.setState(MouthStateEnum::BOOP);
             } else if (inRange) {
                 mouthState.setState(MouthStateEnum::BOOP);
+                resetIdletime();
             } else if (isContinuous) {
                 eyeState.setState(EyeStateEnum::BOOP);
             } else if (isAngry) {
                 nextBoop = millis() + 1500;
                 eyeState.setState(EyeStateEnum::ANGRY);
                 mouthState.setState(MouthStateEnum::ANGRYBOOP);
+                resetIdletime();
             }
         }
     }
@@ -182,13 +184,18 @@ class Controller {
     bool isSleeping = false;
     void resetIdletime(Controller *controller) {
         controller->eyeState.playPrevState();
+        controller->stillTime = 0;
+        controller->isSleeping = false;
+    }
+    void resetIdletime() {
+        eyeState.playPrevState();
         stillTime = 0;
         isSleeping = false;
     }
 
     void sleep(Controller *controller) {
         controller->eyeState.setState(EyeStateEnum::SLEEP);
-        isSleeping = true;
+        controller->isSleeping = true;
     }
 
     const float THRESHOLD = 0.6;
@@ -197,8 +204,8 @@ class Controller {
         if (abs(lastX - prevX) < THRESHOLD &&
             abs(lastY - prevY) < THRESHOLD &&
             abs(lastZ - prevZ) < THRESHOLD) {
-            if (stillTime == 0) {
-                stillTime = currentTime;
+            if (controller->stillTime == 0) {
+                controller->stillTime = currentTime;
             } else if (currentTime - stillTime >= 10000 && !isSleeping) {
                 sleep(controller);
             }
