@@ -150,9 +150,9 @@ class Controller {
                 fxState.setState(FXStateEnum::Heart);
                 eyeState.setState(EyeStateEnum::BOOP);
                 mouthState.setState(MouthStateEnum::BOOP);
+                resetIdletime();
             } else if (inRange) {
                 mouthState.setState(MouthStateEnum::BOOP);
-                resetIdletime();
             } else if (isContinuous) {
                 eyeState.setState(EyeStateEnum::BOOP);
             } else if (isAngry) {
