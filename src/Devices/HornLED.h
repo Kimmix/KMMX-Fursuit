@@ -1,6 +1,6 @@
 class HornLED {
    private:
-    unsigned short brightness = 100,
+    unsigned short brightness = 30,
                    frequency = 20000,
                    pwmChannel = 0,
                    resolution = 8;
@@ -13,7 +13,7 @@ class HornLED {
     }
 
     const unsigned short minBrightness = 50;
-    const unsigned short maxBrightness = 180;
+    const unsigned short maxBrightness = 200;
     void setBrightness(unsigned short value) {
         brightness = map(value, 0, 100, minBrightness, maxBrightness);
         ledcWrite(pwmChannel, brightness);
