@@ -69,6 +69,7 @@ class EyeState {
         savePrevState(currentState);
         if (newState == EyeStateEnum::BOOP || newState == EyeStateEnum::ANGRY) {
             resetBoop = millis();
+            startSleepTime = millis();
         }
         if (currentState != newState) {
             isTransitioning = true;
@@ -238,10 +239,10 @@ class EyeState {
     const uint8_t* eyesleepAnimation[20] = {eyeSleep1, eyeSleep2, eyeSleep3, eyeSleep4, eyeSleep5, eyeSleep6, eyeSleep7, eyeSleep8, eyeSleep9, eyeSleep10, eyeSleep11, eyeSleep12, eyeSleep13, eyeSleep14, eyeSleep15, eyeSleep16, eyeSleep17, eyeSleep18, eyeSleep19, eyeSleep20};
     const int sleepLength = 20;
     int sleepIndex = 0, sleepRand = 0;
-    unsigned long startTime = millis();
+    unsigned long startSleepTime = millis();
     // Function to calculate the next sleep index
     int calculateSleepIndex(int currentIndex, int randomValue) {
-        int minIndex = min(pow((millis() - startTime) / 10000, 2), 19.0);
+        int minIndex = min(pow((millis() - startSleepTime) / 5000, 2), 19.0);
         if (randomValue > 7) {
             return min(currentIndex + 1, sleepLength - 1);
         } else if (randomValue < 5) {
@@ -265,7 +266,7 @@ class EyeState {
     // Function to reset sleep face
     void resetSleepFace() {
         sleepIndex = 0;
-        startTime = millis();
+        startSleepTime = millis();
     }
     // short smileIndex2 = smileLength - 1;
     // void smileDeTransition() {

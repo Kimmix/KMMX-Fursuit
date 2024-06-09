@@ -188,7 +188,7 @@ class Controller {
         controller->isSleeping = false;
     }
     void resetIdletime() {
-        eyeState.playPrevState();
+        // eyeState.resetSleepFace();
         stillTime = 0;
         isSleeping = false;
     }
@@ -206,7 +206,7 @@ class Controller {
             abs(lastZ - prevZ) < THRESHOLD) {
             if (controller->stillTime == 0) {
                 controller->stillTime = currentTime;
-            } else if (currentTime - stillTime >= 10000 && !isSleeping) {
+            } else if (currentTime - stillTime >= 30000 && !isSleeping) {
                 sleep(controller);
             }
         } else {
