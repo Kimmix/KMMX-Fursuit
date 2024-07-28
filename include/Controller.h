@@ -39,7 +39,7 @@ class Controller {
     LIS3DH accSensor;
     APDS9930Sensor proxSensor;
     LEDMatrixDisplay display;
-    SideLED sideLED;
+    ARGBStrip sideLED;
     HornLED hornLED;
     sensors_event_t *sensorEvent;
     TaskHandle_t sensorEventTaskHandle;
