@@ -69,7 +69,9 @@ class EyeState {
         savePrevState(currentState);
         if (newState == EyeStateEnum::BOOP || newState == EyeStateEnum::ANGRY) {
             resetBoop = millis();
-            startSleepTime = millis();
+        }
+        if (newState == EyeStateEnum::SLEEP) {
+            resetSleepFace();
         }
         if (currentState != newState) {
             isTransitioning = true;

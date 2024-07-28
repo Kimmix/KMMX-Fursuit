@@ -183,17 +183,20 @@ class Controller {
 
     bool isSleeping = false;
     void resetIdletime(Controller *controller) {
+        // Serial.printf_P(PSTR("Reset idle 0"));
         controller->eyeState.playPrevState();
         controller->stillTime = 0;
         controller->isSleeping = false;
     }
     void resetIdletime() {
+        // Serial.printf_P(PSTR("Reset idle 0"));
         // eyeState.resetSleepFace();
         stillTime = 0;
         isSleeping = false;
     }
 
     void sleep(Controller *controller) {
+        // Serial.printf_P(PSTR("Begin sleep"));
         controller->eyeState.setState(EyeStateEnum::SLEEP);
         controller->isSleeping = true;
     }
