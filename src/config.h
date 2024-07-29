@@ -65,8 +65,8 @@ const short hornInitBrightness = 30;
 const short hornPwmChannel = 0;
 const short hornFrequency = 20000;
 const short hornResolution = 8;
-const short hornMinBrightness = 50;
-const short hornMaxBrightness = 200;
+const short hornMinBrightness = 50;    // Minimum range for PWM
+const short hornMaxBrightness = 200;   // Mamimum range for PWM (255 can cause high heat!!)
 
 // Controller etc. configuration
 const bool vsync = false;
@@ -87,12 +87,12 @@ const short mouthOffsetX = 14;
 const short mouthOffsetY = 18;
 
 // Boop configuration
-const int IrMinThreshold = 100;
-const int IrMaxThreshold = 900;
-const long BoopTimeMaxDuration = 2000;
+const int IrMinThreshold = 100;         // Minimum proximity distance to activate
+const int IrMaxThreshold = 900;         // Maximum range of proximity
+const long BoopTimeMaxDuration = 2000;  // Total duration for calculate speed of boop
 
 // Idle configuration
-const float idleAccThreshold = 0.6;
+const float idleAccThreshold = 0.6;     // Minimum acceleration to wake up
 
 // Sample Rate and Samples
 const double i2sSampleRate = 8000;
