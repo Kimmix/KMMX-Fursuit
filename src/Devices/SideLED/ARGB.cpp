@@ -1,7 +1,8 @@
 #include "ARGBStrip.h"
 
 ARGBStrip::ARGBStrip() {
-    FastLED.addLeds<LED_TYPE, ARGB, COLOR_ORDER>(leds, argbNum).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<LED_TYPE, ARGB_PIN, COLOR_ORDER>(leds, argbNum)
+        .setCorrection(TypicalLEDStrip);
     FastLED.setBrightness(sideLEDBrightness);
 }
 

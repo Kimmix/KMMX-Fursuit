@@ -24,7 +24,7 @@ void FlyingHeart::renderHeart() {
 void FlyingHeart::reset() {
     for (int i = setIndex * numHeart; i < (setIndex + 1) * numHeart; i++) {
         if (Hearts[i].velocityx == 0 && Hearts[i].velocityy == 0) {
-            Hearts[i].xpos = SCREEN_WIDTH / 2;
+            Hearts[i].xpos = screenWidth / 2;
             Hearts[i].ypos = 3 + (esp_random() % 5);
             if (esp_random() % 2 == 0) {
                 Hearts[i].velocityx = -1.0f * (static_cast<float>(esp_random()) / static_cast<float>(RAND_MAX) * speedModifier);
@@ -86,15 +86,15 @@ void FlyingHeart::moveHeart(int i) {
     if (Hearts[i].velocityx == 0 && Hearts[i].velocityy == 0) {
         return;
     }
-    if (Hearts[i].ypos >= SCREEN_HEIGHT) {
+    if (Hearts[i].ypos >= screenHeight) {
         Hearts[i].velocityy *= -1;
         Hearts[i].velocityx *= 1.5;
     } else if (Hearts[i].ypos <= 0) {
         Hearts[i].velocityy = abs(Hearts[i].velocityy);
         Hearts[i].velocityx *= 1.5;
     }
-    if (Hearts[i].xpos >= SCREEN_WIDTH || Hearts[i].xpos <= 0) {
-        Hearts[i].xpos = SCREEN_WIDTH;
+    if (Hearts[i].xpos >= screenWidth || Hearts[i].xpos <= 0) {
+        Hearts[i].xpos = screenWidth;
         Hearts[i].velocityx = 0;
         Hearts[i].velocityy = 0;
     }

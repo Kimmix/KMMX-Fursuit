@@ -1,36 +1,29 @@
 #pragma once
-#include <FastLED.h>
 
 // Undefine existing definitions
-#ifdef SDA
-#undef SDA
-#endif
-#ifdef SCL
-#undef SCL
-#endif
-#ifdef LED_BUILTIN
-#undef LED_BUILTIN
-#endif
+// #ifdef SDA
+// #undef SDA
+// #endif
+// #ifdef SCL
+// #undef SCL
+// #endif
+// #ifdef LED_BUILTIN
+// #undef LED_BUILTIN
+// #endif
 
 // ESP32S3 Custom board PINS
-#define LED_BUILTIN 45
+// #define LED_BUILTIN 45
+// // I2C
+// #define SDA 9
+// #define SCL 3
 #define RANDOM_PIN 2  // Use any usused ADC pin for true random
-// I2C
-#define SDA 9
-#define SCL 3
 // I2S
 #define I2S_WS 10
 #define I2S_SD 12
 #define I2S_SCK 11
 // I2S Processor
 #define I2S_PORT I2S_NUM_0
-// HUB75 Config
-#define PANEL_RES_X 64
-#define PANEL_RES_Y 32
-#define PANELS_NUMBER 2
-#define SCREEN_WIDTH PANEL_RES_X* PANELS_NUMBER
-#define SCREEN_HEIGHT PANEL_RES_Y
-// HUB75 pin
+// HUB75 pin (Avoid and QSPI pins)
 #define R1 4
 #define G1 5
 #define BL1 6
@@ -45,10 +38,16 @@
 #define CLK 41
 #define LAT 40
 #define OE 39
+// HUB75 Config
+const int panelResX = 64;
+const int panelResY = 32;
+const int panelsNumber = 2;
+const int screenWidth = panelResX * panelsNumber;
+const int screenHeight = panelResY;
 // Other
-#define ARGB 14
-#define LED_PWM 21
-#define IR_PIN GPIO_NUM_35
+#define ARGB_PIN 14     // Side ARGB
+#define LED_PWM_PIN 21  // Horn LED
+#define IR_PIN 35       // Front proximity sensor
 
 // BLE settings
 #define BLE_DEVICE_NAME "KMMX"
@@ -59,50 +58,53 @@
 #define BLE_VISEME_CHARACTERISTIC_UUID "493d06f3-0fa0-4a90-88f1-ebaed0da9b80"
 
 // SideLED configuration
-#define LED_TYPE WS2812                            // WS2812 or WS2812B, depending on your LEDs
-#define COLOR_ORDER GRB                            // GRB or RGB, depending on your LEDs
-const int argbNum = 24;                            // Number of LEDs
-const short sideLEDBrightness = 255;               // LED brightness
-const unsigned long sideLEDAnimateInterval = 400;  // Animation interval in milliseconds
-const CHSV sideColor1HSV(239, 255, 255);           // Start color: #FF446C (Reddish Pink)
-const CHSV sideColor2HSV(22, 255, 255);            // End color: #F9826C (Coral)
+#define LED_TYPE WS2812                                                              // WS2812 or WS2812B, depending on your LEDs
+#define COLOR_ORDER GRB                                                              // GRB or RGB, depending on your LEDs
+const int argbNum = 24;                                                              // Number of LEDs
+const short sideLEDBrightness = 255;                                                 // LED brightness
+const long sideLEDAnimateInterval = 400;                                             // Animation interval in milliseconds
+const short sideColor1Hue = 239, sideColor1Saturation = 255, sideColor1Value = 255;  // #FF446C (Reddish Pink)
+const short sideColor2Hue = 22, sideColor2Saturation = 255, sideColor2Value = 255;   // #F9826C (Coral)
 
 // HornLED configuration
-const unsigned short hornInitBrightness = 30;
-const unsigned short hornPin = 2;  // Define your LED_PWM pin number here
-const unsigned short hornPwmChannel = 0;
-const unsigned short hornFrequency = 20000;
-const unsigned short hornResolution = 8;
-const unsigned short hornMinBrightness = 50;
-const unsigned short hornMaxBrightness = 200;
+const short hornInitBrightness = 30,
+            hornPwmChannel = 0,
+            hornFrequency = 20000,
+            hornResolution = 8,
+            hornMinBrightness = 50,
+            hornMaxBrightness = 200;
 
 // Controller etc. configuration
 const bool vsync = false;
+const short frametime = 7;  // Frame time in milliseconds (~144hz) when vsync enable
 const int sensorUpdateInterval = 100;     // Sensor update interval in milliseconds
-const int sleepThreshold = 5000;          // Time in milliseconds before the controller goes to sleep
-const float accelerationThreshold = 0.6;  // Threshold for detecting stillness in accelerometer readings
 
-// Display configuration
-const short frametime = 7;  // Frame time in milliseconds (~144hz)
+// Boop configuration
+const int IrMinThreshold = 20;
+const int IrMaxThreshold = 900;
+const long BoopTimeMaxDuration = 1000;
 
-// Viseme configuration
-const int AH_MIN = 600;
-const int AH_MAX = 1200;
-const int EE_MIN = 1000;
-const int EE_MAX = 2000;
-const int OH_MIN = 1800;
-const int OH_MAX = 2800;
-const int OO_MIN = 2600;
-const int OO_MAX = 3600;
-const int TH_MIN = 3400;
-const int TH_MAX = 4000;
-const int VISEME_FRAME = 20;
-const double NOISE_THRESHOLD = 400;
-const double SMOOTHING_ALPHA = 0.2;  // smoothing factor between 0 and 1
+// Idle configuration
+const float idleAccThreshold = 0.6;
 
 // Sample Rate and Samples
-const double SAMPLE_RATE = 8000;
-const int SAMPLES = 256;
+const double i2sSampleRate = 8000;
+const int i2sSamples = 256;
+
+// Viseme configuration
+const int AHFreqMin = 600;      // Start freq of AH viseme
+const int AHFreqMax = 1200;     // End freq of AH viseme
+const int EEFreqMin = 1000;     // Start freq of EE viseme
+const int EEFreqMax = 2000;     // End freq of EE viseme
+const int OHFreqMin = 1800;     // Start freq of OH viseme
+const int OHFreqMax = 2800;     // End freq of OH viseme
+const int OOFreqMin = 2600;     // Start freq of OO viseme
+const int OOFreqMax = 3600;     // End freq of OO viseme
+const int THFreqMin = 3400;     // Start freq of TH viseme
+const int THFreqMax = 4000;     // End freq of TH viseme
+const double visemeNoiseThreshold = 400;  // Minimum noise threshold for viseme to activate
+const double visemeSmoothingAlpha = 0.2;  // Smoothing factor between 0 and 1
+const double visemeDecayRate = 0.0003;  // Adjusted decay rate (units per millisecond)
 
 // GooglyEye constants
 const float G_SCALE = 1.0;      // Accel scale; no science, just looks good

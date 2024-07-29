@@ -1,14 +1,5 @@
 #pragma once
-
-#include "Arduino.h"
-#include <Adafruit_LIS3DH.h>
-// #include "Devices/APDS9930Sensor.h"
-// #include "Devices/LIS3DH.h"
-// #include "FacialStates/MouthState.h"
-// #include "FacialStates/EyeState.h"
-// #include "FacialStates/FXState.h"
-// #include "RenderFunction/boop.h"
-// #include "Bitmaps/Icons.h"
+#include <Arduino.h>
 
 #include "config.h"
 #include "Utils/Utils.h"
@@ -17,9 +8,13 @@
 #include "FacialStates/MouthState/MouthState.h"
 #include "FacialStates/FXState/FXState.h"
 
+#include "Renderer/Boop.h"
+
 #include "Devices/LEDMatrixDisplay/Hub75DMA.h"
 #include "Devices/HornLED/HornLED.h"
 #include "Devices/SideLED/ARGBStrip.h"
+#include "Devices/Accelerometer/LIS3DH.h"
+#include "Devices/Proximity/APDS9930Sensor.h"
 
 class KMMXController {
    public:
@@ -36,8 +31,8 @@ class KMMXController {
 
    private:
     // Setup devices
-    // LIS3DH accSensor;
-    // APDS9930Sensor proxSensor;
+    LIS3DH accSensor;
+    APDS9930Sensor proxSensor;
     Hub75DMA display;
     ARGBStrip sideLED;
     HornLED hornLED;
@@ -47,7 +42,7 @@ class KMMXController {
     EyeState eyeState = EyeState(&display);
     MouthState mouthState = MouthState(&display);
     FXState fxState = FXState(&display);
-    // Boop boop;
+    Boop boop;
     int16_t pixelPos = 0;
     uint16_t proxValue;
 
@@ -66,7 +61,7 @@ class KMMXController {
     unsigned long stillTime = 0;  // Time when the accelerometer became still
     unsigned long nextFrame;
     unsigned long nextBoop = 0;
-    bool inRange = false, isBoop = false, isContinuous = false, isAngry = false;
+    bool initBoop = false, inRange = false, isBoop = false, isContinuous = false, isAngry = false;
     float boopSpeed = 0.0;
     unsigned long nextRead;
 };

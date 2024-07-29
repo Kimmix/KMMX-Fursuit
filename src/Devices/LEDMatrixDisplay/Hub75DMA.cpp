@@ -2,7 +2,7 @@
 
 Hub75DMA::Hub75DMA() {
     HUB75_I2S_CFG::i2s_pins _pins = {R1, G1, BL1, R2, G2, BL2, CH_A, CH_B, CH_C, CH_D, CH_E, LAT, OE, CLK};
-    HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, PANELS_NUMBER, _pins);
+    HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, panelsNumber, _pins);
     mxconfig.driver = HUB75_I2S_CFG::FM6124;
     mxconfig.clkphase = false;
     mxconfig.min_refresh_rate = 143;
@@ -27,7 +27,7 @@ int Hub75DMA::getBrightnessValue() {
 }
 
 int Hub75DMA::getResX() {
-    return PANEL_RES_X;
+    return panelResX;
 }
 
 uint16_t Hub75DMA::color565(uint8_t r, uint8_t g, uint8_t b) {

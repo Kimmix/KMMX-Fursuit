@@ -1,18 +1,15 @@
 #include "KMMXController.h"
 
-void KMMXController::update() {
-    sideLED.animate();
-    booping();
-    if (vsync) {
-        if (millis() >= nextFrame) {
-            nextFrame = millis() + frametime;
-            renderFace();
-        }
-    } else {
-        renderFace();
-    }
+// Brightness Control
+int KMMXController::getDisplayBrightness() {
+    return display.getBrightnessValue();
 }
 
+void KMMXController::setDisplayBrightness(int i) {
+    display.setBrightnessValue(i);
+}
+
+// State control for BLE
 void KMMXController::setEye(int i) {
     switch (i) {
         case 1:
@@ -46,14 +43,7 @@ int KMMXController::getViseme() {
     return mouthState.getState() == MouthStateEnum::TALKING;
 }
 
-int KMMXController::getDisplayBrightness() {
-    return display.getBrightnessValue();
-}
-
-void KMMXController::setDisplayBrightness(int i) {
-    display.setBrightnessValue(i);
-}
-
+// ESP-NOW! - Unused!!
 void KMMXController::recieveEspNow(int16_t data) {
     switch (data) {
         case 1:

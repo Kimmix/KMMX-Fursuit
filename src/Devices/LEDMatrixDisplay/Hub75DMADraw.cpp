@@ -28,9 +28,9 @@ void Hub75DMA::drawColorTest() {
     uint8_t r, g, b;
     for (int i = 0; i < 64; i++) {
         getColorMap(255, i, r, g, b);
-        matrix->drawPixelRGB888(SCREEN_WIDTH - 1, i, r, g, b);
-        matrix->drawPixelRGB888(SCREEN_WIDTH - 2, i, r, g, b);
-        matrix->drawPixelRGB888(SCREEN_WIDTH - 3, i, r, g, b);
+        matrix->drawPixelRGB888(screenWidth - 1, i, r, g, b);
+        matrix->drawPixelRGB888(screenWidth - 2, i, r, g, b);
+        matrix->drawPixelRGB888(screenWidth - 3, i, r, g, b);
     }
 }
 
