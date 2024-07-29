@@ -1,8 +1,9 @@
 #include <Arduino.h>
-#include "Controller.h"
-#include "BLEManager.h"
+#include "config.h"
+#include "KMMXController/KMMXController.h"
+#include "Network/BLE.h"
 
-Controller controller;
+KMMXController controller;
 BLEManager& bleManager = BLEManager::getInstance(controller);
 
 void setup() {
