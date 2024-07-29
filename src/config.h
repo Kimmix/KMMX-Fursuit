@@ -87,9 +87,9 @@ const short mouthOffsetX = 14;
 const short mouthOffsetY = 18;
 
 // Boop configuration
-const int IrMinThreshold = 20;
+const int IrMinThreshold = 100;
 const int IrMaxThreshold = 900;
-const long BoopTimeMaxDuration = 1000;
+const long BoopTimeMaxDuration = 2000;
 
 // Idle configuration
 const float idleAccThreshold = 0.6;

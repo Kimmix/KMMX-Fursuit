@@ -12,6 +12,9 @@ void KMMXController::booping() {
             resetIdletime();
         } else if (inRange) {
             mouthState.setState(MouthStateEnum::BOOP);
+            if (isSleeping) {
+                resetIdletime();
+            }
         } else if (isContinuous) {
             eyeState.setState(EyeStateEnum::BOOP);
         } else if (isAngry) {

@@ -57,10 +57,10 @@ class KMMXController {
 
     float lastX, lastY, lastZ;
     float prevX, prevY, prevZ;
-    bool isSleeping = false;
     unsigned long stillTime = 0;  // Time when the accelerometer became still
     unsigned long nextFrame;
     unsigned long nextBoop = 0;
+    bool isSleeping = false;
     bool initBoop = false, inRange = false, isBoop = false, isContinuous = false, isAngry = false;
     float boopSpeed = 0.0;
     unsigned long nextRead;
