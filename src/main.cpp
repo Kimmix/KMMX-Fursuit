@@ -77,7 +77,7 @@ void setupBLE() {
 //! -------------------- Main Setup --------------------
 void setup() {
     Wire.begin(SDA, SCL);
-    // Serial.begin(115200);
+    Serial.begin(115200);
     // while (!Serial) delay(400);
     randomSeed(analogRead(RANDOM_PIN));
     controller.setupSensors();

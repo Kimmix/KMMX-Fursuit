@@ -8,7 +8,7 @@ enum BoopState {
 class Boop {
    private:
     BoopState currentBoopState = IDLE;
-    const int IR_IN_RANGE_THRESHOLD = 20, IR_OUT_RANGE_THRESHOLD = 900;
+    const int IR_IN_RANGE_THRESHOLD = 100, IR_OUT_RANGE_THRESHOLD = 900;
     const unsigned long boopDuration = 1000;
     unsigned long boopStartTime = 0;
     bool isSensorStarted = false;

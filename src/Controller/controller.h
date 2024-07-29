@@ -124,6 +124,7 @@ class Controller {
     Boop boop;
     int16_t pixelPos = 0;
     uint16_t proxValue;
+    bool isSleeping = false;
 
     void renderFace() {
         debugPixel(pixelPos);
@@ -153,6 +154,9 @@ class Controller {
                 resetIdletime();
             } else if (inRange) {
                 mouthState.setState(MouthStateEnum::BOOP);
+                if(isSleeping) {
+                    resetIdletime();
+                }
             } else if (isContinuous) {
                 eyeState.setState(EyeStateEnum::BOOP);
             } else if (isAngry) {
@@ -181,22 +185,21 @@ class Controller {
         lastZ = sensorEvent->acceleration.z;
     }
 
-    bool isSleeping = false;
     void resetIdletime(Controller *controller) {
-        // Serial.printf_P(PSTR("Reset idle 0"));
+        Serial.printf_P(PSTR("Reset idle 0\n"));
         controller->eyeState.playPrevState();
         controller->stillTime = 0;
         controller->isSleeping = false;
     }
     void resetIdletime() {
-        // Serial.printf_P(PSTR("Reset idle 0"));
-        // eyeState.resetSleepFace();
+        Serial.printf_P(PSTR("Reset idle 1\n"));
+        eyeState.playPrevState();
         stillTime = 0;
         isSleeping = false;
     }
 
     void sleep(Controller *controller) {
-        // Serial.printf_P(PSTR("Begin sleep"));
+        Serial.printf_P(PSTR("Begin sleep\n"));
         controller->eyeState.setState(EyeStateEnum::SLEEP);
         controller->isSleeping = true;
     }
