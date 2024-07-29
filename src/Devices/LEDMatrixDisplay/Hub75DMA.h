@@ -9,9 +9,7 @@ class Hub75DMA {
     MatrixPanel_I2S_DMA* matrix;  // Pointer to the matrix panel object
     const int panelWidth = panelResX, // Panel width from config
               panelHeight = panelResY; // Panel height from config
-    uint8_t panelBrightness = 40; // Default brightness
-    int eyeWidth = 32, eyeHeight = 18, // Dimensions for eye bitmaps
-        mouthWidth = 50, mouthHeight = 14; // Dimensions for mouth bitmaps
+    uint8_t panelBrightness = panelInitBrightness; // Default brightness
 
     // Helper functions to generate colors and patterns
     /**

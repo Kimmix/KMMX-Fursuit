@@ -4,9 +4,11 @@ Hub75DMA::Hub75DMA() {
     HUB75_I2S_CFG::i2s_pins _pins = {R1, G1, BL1, R2, G2, BL2, CH_A, CH_B, CH_C, CH_D, CH_E, LAT, OE, CLK};
     HUB75_I2S_CFG mxconfig(panelWidth, panelHeight, panelsNumber, _pins);
     mxconfig.driver = HUB75_I2S_CFG::FM6124;
-    mxconfig.clkphase = false;
-    mxconfig.min_refresh_rate = 143;
-    mxconfig.double_buff = true;
+    mxconfig.i2sspeed = HUB75_I2S_CFG::HZ_10M;
+    mxconfig.clkphase = clockPhase;
+    mxconfig.latch_blanking = latchBlanking;
+    mxconfig.min_refresh_rate = minRefreshRate;
+    mxconfig.double_buff = doubleBuffer;
     matrix = new MatrixPanel_I2S_DMA(mxconfig);
     if (!matrix->begin())
         Serial.println(F("****** I2S memory allocation failed ***********"));
@@ -63,12 +65,7 @@ void Hub75DMA::getTextBounds(const String& str, int16_t x, int16_t y, int16_t* x
 }
 
 void Hub75DMA::setBrightnessValue(uint8_t value) {
-    if (value < 0) {
-        value = 0;
-    } else if (value > 255) {
-        value = 255;
-    }
-    panelBrightness = value;
+    panelBrightness = constrain(value, 0, 255);
     matrix->setBrightness8(panelBrightness);
 }
 

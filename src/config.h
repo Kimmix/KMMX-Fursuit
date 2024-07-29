@@ -27,16 +27,9 @@
 #define CLK 41
 #define LAT 40
 #define OE 39
-// HUB75 Config
-const int panelResX = 64;
-const int panelResY = 32;
-const int panelsNumber = 2;
-const int screenWidth = panelResX * panelsNumber;
-const int screenHeight = panelResY;
 // Other
 #define ARGB_PIN 14     // Side ARGB
 #define LED_PWM_PIN 21  // Horn LED
-#define IR_PIN 35       // Front proximity sensor
 
 // BLE settings
 #define BLE_DEVICE_NAME "KMMX"
@@ -45,6 +38,18 @@ const int screenHeight = panelResY;
 #define BLE_DISPLAY_BRIGHTNESS_CHARACTERISTIC_UUID "9fdfd124-966b-44f7-8331-778c4d1512fc"
 #define BLE_EYE_STATE_CHARACTERISTIC_UUID "49a36bb2-1c66-4e5c-8ff3-28e55a64beb3"
 #define BLE_VISEME_CHARACTERISTIC_UUID "493d06f3-0fa0-4a90-88f1-ebaed0da9b80"
+
+// HUB75 Config
+const int panelResX = 64;
+const int panelResY = 32;
+const int panelsNumber = 2;
+const int screenWidth = panelResX * panelsNumber;
+const int screenHeight = panelResY;
+const int panelInitBrightness = 50;
+const bool clockPhase = true;
+const int latchBlanking = 1;
+const int minRefreshRate = 143;
+const bool doubleBuffer = true;
 
 // SideLED configuration
 #define LED_TYPE WS2812                                                              // WS2812 or WS2812B, depending on your LEDs
@@ -55,18 +60,31 @@ const long sideLEDAnimateInterval = 400;                                        
 const short sideColor1Hue = 239, sideColor1Saturation = 255, sideColor1Value = 255;  // #FF446C (Reddish Pink)
 const short sideColor2Hue = 22, sideColor2Saturation = 255, sideColor2Value = 255;   // #F9826C (Coral)
 
-// HornLED configuration
-const short hornInitBrightness = 30,
-            hornPwmChannel = 0,
-            hornFrequency = 20000,
-            hornResolution = 8,
-            hornMinBrightness = 50,
-            hornMaxBrightness = 200;
+// HornLED PWM configuration
+const short hornInitBrightness = 30;
+const short hornPwmChannel = 0;
+const short hornFrequency = 20000;
+const short hornResolution = 8;
+const short hornMinBrightness = 50;
+const short hornMaxBrightness = 200;
 
 // Controller etc. configuration
 const bool vsync = false;
-const short frametime = 7;  // Frame time in milliseconds (~144hz) when vsync enable
+const short frametime = 7;                // Frame time in milliseconds (~144hz) when vsync enable
 const int sensorUpdateInterval = 100;     // Sensor update interval in milliseconds
+const short minimumPixelBrightness = 30;  // Minimum pixel brightness to draw on screen
+const short noseWidth = 8;
+const short noseHeight = 5;
+const short noseOffsetX = 56;
+const short noseOffsetY = 7;
+const short eyeWidth = 32;
+const short eyeHeight = 18;
+const short eyeOffsetX = 7;
+const short eyeOffsetY = 0;
+const short mouthWidth = 50;
+const short mouthHeight = 14;
+const short mouthOffsetX = 14;
+const short mouthOffsetY = 18;
 
 // Boop configuration
 const int IrMinThreshold = 20;
@@ -81,19 +99,19 @@ const double i2sSampleRate = 8000;
 const int i2sSamples = 256;
 
 // Viseme configuration
-const int AHFreqMin = 600;      // Start freq of AH viseme
-const int AHFreqMax = 1200;     // End freq of AH viseme
-const int EEFreqMin = 1000;     // Start freq of EE viseme
-const int EEFreqMax = 2000;     // End freq of EE viseme
-const int OHFreqMin = 1800;     // Start freq of OH viseme
-const int OHFreqMax = 2800;     // End freq of OH viseme
-const int OOFreqMin = 2600;     // Start freq of OO viseme
-const int OOFreqMax = 3600;     // End freq of OO viseme
-const int THFreqMin = 3400;     // Start freq of TH viseme
-const int THFreqMax = 4000;     // End freq of TH viseme
+const int AHFreqMin = 600;                // Start freq of AH viseme
+const int AHFreqMax = 1200;               // End freq of AH viseme
+const int EEFreqMin = 1000;               // Start freq of EE viseme
+const int EEFreqMax = 2000;               // End freq of EE viseme
+const int OHFreqMin = 1800;               // Start freq of OH viseme
+const int OHFreqMax = 2800;               // End freq of OH viseme
+const int OOFreqMin = 2600;               // Start freq of OO viseme
+const int OOFreqMax = 3600;               // End freq of OO viseme
+const int THFreqMin = 3400;               // Start freq of TH viseme
+const int THFreqMax = 4000;               // End freq of TH viseme
 const double visemeNoiseThreshold = 400;  // Minimum noise threshold for viseme to activate
 const double visemeSmoothingAlpha = 0.2;  // Smoothing factor between 0 and 1
-const double visemeDecayRate = 0.0003;  // Adjusted decay rate (units per millisecond)
+const double visemeDecayRate = 0.0003;    // Adjusted decay rate (units per millisecond)
 
 // GooglyEye constants
 const float G_SCALE = 1.0;      // Accel scale; no science, just looks good
@@ -103,3 +121,7 @@ const float EYE_RADIUS = 3.0;   // Radius of eye, floating-point pixel units
 const float PUPIL_SIZE = 16.0;
 const float PUPIL_RADIUS = PUPIL_SIZE / 2.0;           // Radius of pupil, same units
 const float INNER_RADIUS = EYE_RADIUS - PUPIL_RADIUS;  // Radius of pupil motion
+const short eyePupilWidth = 6;
+const short eyePupilHeight = 6;
+const short eyePupilOffsetX = 21;
+const short eyePupilOffsetY = 5;
