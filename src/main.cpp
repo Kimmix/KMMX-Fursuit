@@ -7,7 +7,7 @@ KMMXController controller;
 BLEManager& bleManager = BLEManager::getInstance(controller);
 
 void setup() {
-    Wire.begin(SDA, SCL);
+    Wire.begin(S3_SDA, S3_SCL);
     Serial.begin(115200);
     // while (!Serial) delay(400);
     randomSeed(analogRead(RANDOM_PIN));

@@ -1,21 +1,10 @@
 #pragma once
 
-// Undefine existing definitions
-// #ifdef SDA
-// #undef SDA
-// #endif
-// #ifdef SCL
-// #undef SCL
-// #endif
-// #ifdef LED_BUILTIN
-// #undef LED_BUILTIN
-// #endif
-
 // ESP32S3 Custom board PINS
 // #define LED_BUILTIN 45
 // // I2C
-// #define SDA 9
-// #define SCL 3
+#define S3_SDA 9
+#define S3_SCL 3
 #define RANDOM_PIN 2  // Use any usused ADC pin for true random
 // I2S
 #define I2S_WS 10
