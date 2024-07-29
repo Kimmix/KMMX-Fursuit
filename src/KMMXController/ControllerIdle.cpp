@@ -23,7 +23,7 @@ void KMMXController::checkIdleAndSleep(KMMXController *controller, unsigned long
         abs(lastZ - prevZ) < idleAccThreshold) {
         if (controller->stillTime == 0) {
             controller->stillTime = currentTime;
-        } else if (currentTime - stillTime >= 30000 && !isSleeping) {
+        } else if (currentTime - stillTime >= idleTimeout && !isSleeping) {
             sleep(controller);
         }
     } else {

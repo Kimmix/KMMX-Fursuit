@@ -92,6 +92,7 @@ const int IrMaxThreshold = 900;         // Maximum range of proximity
 const long BoopTimeMaxDuration = 2000;  // Total duration for calculate speed of boop
 
 // Idle configuration
+unsigned long idleTimeout = 60000;      // Time till sleep in ms
 const float idleAccThreshold = 0.6;     // Minimum acceleration to wake up
 
 // Sample Rate and Samples
