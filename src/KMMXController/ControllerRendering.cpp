@@ -2,7 +2,7 @@
 
 void KMMXController::update() {
     statusLED.update();
-    // cheekPanel.update();
+    cheekPanel.update();
     if (initBoop) {
         booping();
     }
