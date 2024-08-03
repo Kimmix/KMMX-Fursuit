@@ -5,17 +5,20 @@
 
 class CheekPanel {
    public:
-    CheekPanel(uint16_t pin, uint16_t numLeds = argbCount);
+    CheekPanel(int pin, int numLeds = argbCount);
     void init();
     void update();
 
    private:
+    int pin;
+    int numLeds;
     Adafruit_NeoPixel strip;
-    uint16_t numLeds;
-    uint16_t hue1;
-    uint16_t hue2;
-    float offset;
-    unsigned long lastUpdateTime;
+    unsigned long previousMillis;
+    const long interval;
+    int shimmerIncrement;
 
-    uint32_t colorFromHue(uint16_t hue);
+    int lerpColorComponent(int startValue, int endValue, float t);
+    int gammaCorrection(int value);
+
+    static const int gammaTable[256];
 };

@@ -1,47 +1,81 @@
 #include "CheekPanel.h"
 
-CheekPanel::CheekPanel(uint16_t pin, uint16_t numLeds)
-    : strip(numLeds, pin, NEO_GRB + NEO_KHZ800), numLeds(numLeds), hue1(15000), hue2(42000), offset(0), lastUpdateTime(0) {}
+// Gamma correction lookup table (precomputed for gamma ~2.2)
+const int CheekPanel::gammaTable[256] PROGMEM = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2,
+    2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5,
+    5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10,
+    10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16,
+    17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 24, 24, 25,
+    25, 26, 27, 27, 28, 29, 29, 30, 31, 32, 32, 33, 34, 35, 35, 36,
+    37, 38, 39, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 50,
+    51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68,
+    69, 70, 72, 73, 74, 75, 77, 78, 79, 81, 82, 83, 85, 86, 87, 89,
+    90, 92, 93, 95, 96, 98, 99, 101, 102, 104, 105, 107, 109, 110, 112, 114,
+    115, 117, 119, 120, 122, 124, 126, 127, 129, 131, 133, 135, 137, 138, 140, 142,
+    144, 146, 148, 150, 152, 154, 156, 158, 160, 162, 164, 167, 169, 171, 173, 175,
+    177, 180, 182, 184, 186, 189, 191, 193, 196, 198, 200, 203, 205, 208, 210, 213,
+    215, 218, 220, 223, 225, 228, 231, 233, 236, 239, 241, 244, 247, 249, 252, 255};
+
+CheekPanel::CheekPanel(int pin, int numLeds)
+    : pin(pin), numLeds(numLeds), strip(numLeds, pin, NEO_GRB + NEO_KHZ800), previousMillis(0), interval(1000), shimmerIncrement(5) {}
 
 void CheekPanel::init() {
     strip.begin();
-    strip.show(); // Initialize all pixels to 'off'
+    strip.show();  // Initialize all pixels to 'off'
 }
 
 void CheekPanel::update() {
     unsigned long currentMillis = millis();
-    if (currentMillis - lastUpdateTime >= 50) { // Update rate in milliseconds
-        for (uint16_t i = 0; i < numLeds; i++) {
-            float ratio = (sin((i + offset) * 2 * PI / numLeds) + 1) / 2;
-            uint16_t hue = hue1 * (1 - ratio) + hue2 * ratio;
-            strip.setPixelColor(i, colorFromHue(hue));
+
+    if (currentMillis - previousMillis >= interval) {
+        previousMillis = currentMillis;
+
+        static uint32_t startColor = strip.Color(255, 68, 108);  // Start color (CSS rgba(255,68,108,1))
+        static uint32_t endColor = strip.Color(249, 130, 108);   // End color (CSS rgba(249,130,108,1))
+
+        // Shift colors by one position (like a lava lamp)
+        uint32_t tempColor = startColor;
+        startColor = endColor;
+        endColor = tempColor;
+
+        // Add a subtle shimmer (randomly adjust brightness)
+        for (int i = 0; i < numLeds; i++) {
+            float t = float(i) / float(numLeds - 1);  // Interpolation factor (0.0 to 1.0)
+            int r = lerpColorComponent((startColor >> 16) & 0xFF, (endColor >> 16) & 0xFF, t);
+            int g = lerpColorComponent((startColor >> 8) & 0xFF, (endColor >> 8) & 0xFF, t);
+            int b = lerpColorComponent(startColor & 0xFF, endColor & 0xFF, t);
+
+            // Apply gamma correction
+            r = gammaCorrection(r);
+            g = gammaCorrection(g);
+            b = gammaCorrection(b);
+
+            // Add random shimmer (adjust brightness up or down)
+            // Randomly choose whether to increase or decrease brightness
+            int shimmerDirection = random(2) == 0 ? -1 : 1;
+            shimmerIncrement += shimmerDirection;
+            shimmerIncrement = max(-5, min(5, shimmerIncrement));
+
+            // Update color values
+            r = min(255, r + shimmerIncrement);
+            g = min(255, g + shimmerIncrement);
+            b = min(255, b + shimmerIncrement);
+
+            uint32_t color = strip.Color(r, g, b);
+            strip.setPixelColor(i, color);
         }
+
         strip.show();
-        offset += 0.1; // Adjust speed of color transition
-        if (offset >= numLeds) offset = 0;
-        lastUpdateTime = currentMillis;
     }
 }
 
-uint32_t CheekPanel::colorFromHue(uint16_t hue) {
-    float r, g, b;
-    float s = 1.0;
-    float v = 1.0;
+int CheekPanel::lerpColorComponent(int startValue, int endValue, float t) {
+    return int(startValue + t * (endValue - startValue));
+}
 
-    int i = hue / 65536;
-    float f = hue / 65536.0 - i;
-    float p = v * (1 - s);
-    float q = v * (1 - s * f);
-    float t = v * (1 - s * (1 - f));
-
-    switch (i % 6) {
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
-    }
-
-    return strip.Color(r * 255, g * 255, b * 255);
+int CheekPanel::gammaCorrection(int value) {
+    return pgm_read_byte(&gammaTable[value]);
 }

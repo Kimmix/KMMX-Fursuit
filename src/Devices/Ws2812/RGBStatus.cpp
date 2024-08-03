@@ -1,6 +1,6 @@
 #include "RGBStatus.h"
 
-RGBStatus::RGBStatus(uint16_t pin, uint8_t pixelCount)
+RGBStatus::RGBStatus(int pin, int pixelCount)
     : pixel(pixelCount, pin, NEO_GRB + NEO_KHZ800), lastChangeTime(0), isOn(false) {}
 
 void RGBStatus::init() {
@@ -8,7 +8,7 @@ void RGBStatus::init() {
     pixel.show();  // Initialize all pixels to 'off'
 }
 
-void RGBStatus::setColor(uint8_t r, uint8_t g, uint8_t b) {
+void RGBStatus::setColor(int r, int g, int b) {
     setColorInternal(pixel.Color(r, g, b));
 }
 
@@ -49,7 +49,7 @@ void RGBStatus::update() {
     }
 }
 
-void RGBStatus::setColorInternal(uint32_t color) {
+void RGBStatus::setColorInternal(int color) {
     pixel.setPixelColor(0, color);
     pixel.show();
     lastChangeTime = millis();
