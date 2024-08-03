@@ -55,9 +55,9 @@ void CheekPanel::update() {
 
             // Add random shimmer (adjust brightness up or down)
             // Randomly choose whether to increase or decrease brightness
-            int shimmerDirection = random(2) == 0 ? -1 : 1;
+            int shimmerDirection = esp_random() % 2 == 0 ? -1 : 1;
             shimmerIncrement += shimmerDirection;
-            shimmerIncrement = max(-5, min(5, shimmerIncrement));
+            shimmerIncrement = max(-10, min(10, shimmerIncrement));
 
             // Update color values
             r = min(255, r + shimmerIncrement);
