@@ -7,7 +7,9 @@ void KMMXController::resetIdletime(KMMXController *controller) {
 }
 
 void KMMXController::resetIdletime() {
-    eyeState.playPrevState();
+    if (isSleeping) {
+        eyeState.playPrevState();
+    }
     stillTime = 0;
     isSleeping = false;
 }

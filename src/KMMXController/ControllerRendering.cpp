@@ -1,7 +1,8 @@
 #include "KMMXController.h"
 
 void KMMXController::update() {
-    sideLED.animate();
+    statusLED.update();
+    // cheekPanel.update();
     if (initBoop) {
         booping();
     }

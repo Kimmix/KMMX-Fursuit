@@ -1,8 +1,7 @@
 #pragma once
 
 // ESP32S3 Custom board PINS
-// #define LED_BUILTIN 45
-// // I2C
+// I2C
 #define S3_SDA 9
 #define S3_SCL 3
 #define RANDOM_PIN 2  // Use any usused ADC pin for true random
@@ -28,8 +27,8 @@
 #define LAT 40
 #define OE 39
 // Other
-#define ARGB_PIN 14     // Side ARGB
 #define LED_PWM_PIN 21  // Horn LED
+#define RGB_BUILTIN 45  // RGB onboard pin
 
 // BLE settings
 #define BLE_DEVICE_NAME "KMMX"
@@ -52,9 +51,8 @@ const int minRefreshRate = 143;
 const bool doubleBuffer = true;
 
 // SideLED configuration
-#define LED_TYPE WS2812                                                              // WS2812 or WS2812B, depending on your LEDs
-#define COLOR_ORDER GRB                                                              // GRB or RGB, depending on your LEDs
-const int argbNum = 24;                                                              // Number of LEDs
+#define ARGB_PIN 14     // Side ARGB Strip
+const int argbCount = 24;                                                            // Number of LEDs
 const short sideLEDBrightness = 255;                                                 // LED brightness
 const long sideLEDAnimateInterval = 400;                                             // Animation interval in milliseconds
 const short sideColor1Hue = 239, sideColor1Saturation = 255, sideColor1Value = 255;  // #FF446C (Reddish Pink)

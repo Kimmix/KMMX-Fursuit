@@ -22,6 +22,8 @@ void KMMXController::booping() {
             eyeState.setState(EyeStateEnum::ANGRY);
             mouthState.setState(MouthStateEnum::ANGRYBOOP);
             resetIdletime();
+            Serial.println("Angry!!!!");
+            statusLED.setColor(255, 0, 0);
         }
     }
 }

@@ -12,9 +12,10 @@
 
 #include "Devices/LEDMatrixDisplay/Hub75DMA.h"
 #include "Devices/HornLED/HornLED.h"
-#include "Devices/SideLED/ARGBStrip.h"
 #include "Devices/Accelerometer/LIS3DH.h"
 #include "Devices/Proximity/APDS9930Sensor.h"
+#include "Devices/Ws2812/RGBStatus.h"
+#include "Devices/Ws2812/CheekPanel.h"
 
 class KMMXController {
    public:
@@ -31,11 +32,12 @@ class KMMXController {
 
    private:
     // Setup devices
+    Hub75DMA display;
+    RGBStatus statusLED = RGBStatus(RGB_BUILTIN);
+    CheekPanel cheekPanel = CheekPanel(ARGB_PIN);
+    HornLED hornLED;
     LIS3DH accSensor;
     APDS9930Sensor proxSensor;
-    Hub75DMA display;
-    ARGBStrip sideLED;
-    HornLED hornLED;
     sensors_event_t *sensorEvent;
     TaskHandle_t sensorEventTaskHandle;
     // setup renderer state
