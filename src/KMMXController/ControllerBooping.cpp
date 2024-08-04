@@ -10,20 +10,23 @@ void KMMXController::booping() {
             eyeState.setState(EyeStateEnum::BOOP);
             mouthState.setState(MouthStateEnum::BOOP);
             resetIdletime();
+            statusLED.setColor(Color::CYAN);
         } else if (inRange) {
             mouthState.setState(MouthStateEnum::BOOP);
             if (isSleeping) {
                 resetIdletime();
             }
+            statusLED.setColor(Color::LIGHT_PINK);
         } else if (isContinuous) {
             eyeState.setState(EyeStateEnum::BOOP);
+            statusLED.setColor(Color::PINK);
         } else if (isAngry) {
             nextBoop = millis() + 1500;
             eyeState.setState(EyeStateEnum::ANGRY);
             mouthState.setState(MouthStateEnum::ANGRYBOOP);
             resetIdletime();
             Serial.println("Angry!!!!");
-            statusLED.setColor(255, 0, 0);
+            statusLED.setColor(Color::RED);
         }
     }
 }
