@@ -1,8 +1,9 @@
 #include "KMMXController.h"
 
 void KMMXController::booping() {
+    static bool lastIsAngry = false;
     if (millis() >= nextBoop) {
-        nextBoop = millis() + 100;
+        nextBoop = millis() + 50;
         boop.getBoop(proxValue, inRange, isBoop, boopSpeed, isContinuous, isAngry);
         if (isBoop) {
             fxState.setFlyingSpeed(boopSpeed);
@@ -20,13 +21,13 @@ void KMMXController::booping() {
         } else if (isContinuous) {
             eyeState.setState(EyeStateEnum::BOOP);
             statusLED.setColor(Color::PINK);
-        } else if (isAngry) {
+        } else if (isAngry && !lastIsAngry) {
             nextBoop = millis() + 1500;
             eyeState.setState(EyeStateEnum::ANGRY);
             mouthState.setState(MouthStateEnum::ANGRYBOOP);
             resetIdletime();
-            Serial.println("Angry!!!!");
             statusLED.setColor(Color::RED);
         }
+        lastIsAngry = isAngry;
     }
 }
