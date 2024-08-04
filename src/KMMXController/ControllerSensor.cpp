@@ -2,6 +2,7 @@
 
 void KMMXController::setupSensors() {
     statusLED.init();
+    cheekPanel.configure(0xFF446C, 0xF9826C, 500, 2000);
     cheekPanel.init();
     accSensor.setUp();
     initBoop = proxSensor.setup();
