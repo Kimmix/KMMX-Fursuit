@@ -32,7 +32,7 @@ void CheekPanel::update() {
 
             // Check if the delay before picking a new position has elapsed
             if (currentMillis - positionChangeMillis >= positionChangeDelay) {
-                randomPosition = random(strip.numPixels());
+                randomPosition = esp_random() % strip.numPixels();
                 positionChangeMillis = currentMillis;  // Reset the position change timer
             }
         }
