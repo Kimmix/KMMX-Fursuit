@@ -183,7 +183,7 @@ void EyeState::angryFace() {
             }
         }
     } else {
-        display->drawEye(eyeangryAnimation[angryLength - 1]);
+        display->drawEye(eyeangryAnimation[angryLength - 9]);
     }
 }
 

@@ -120,7 +120,7 @@ void MouthState::angryBoop() {
             }
         }
     } else {
-        display->drawMouth(mouthAngryAnimation[angryLength - 1]);
+        display->drawMouth(mouthAngryAnimation[angryLength - 8]);
     }
 }
 
