@@ -51,7 +51,6 @@ void EyeState::update() {
 }
 
 void EyeState::setState(EyeStateEnum newState) {
-    savePrevState(currentState);
     if (newState == EyeStateEnum::BOOP || newState == EyeStateEnum::ANGRY) {
         resetBoop = millis();
     }
@@ -60,8 +59,9 @@ void EyeState::setState(EyeStateEnum newState) {
     }
     if (currentState != newState) {
         isTransitioning = true;
-        currentState = newState;
     }
+    currentState = newState;
+    savePrevState(currentState);
 }
 
 void EyeState::savePrevState(EyeStateEnum newState) {
