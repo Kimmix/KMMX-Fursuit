@@ -90,8 +90,6 @@ void EyeState::changeDefaultFace() {
     } else {
         defaultAnimationIndex = 0;
     }
-    Serial.print(F("Changing faces to:"));
-    Serial.println(defaultAnimationIndex);
     eyeFrame = defaultAnimation[defaultAnimationIndex];
 }
 
