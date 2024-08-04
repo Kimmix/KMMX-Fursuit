@@ -122,5 +122,5 @@ const float PUPIL_RADIUS = PUPIL_SIZE / 2.0;           // Radius of pupil, same 
 const float INNER_RADIUS = EYE_RADIUS - PUPIL_RADIUS;  // Radius of pupil motion
 const short eyePupilWidth = 6;
 const short eyePupilHeight = 6;
-const short eyePupilOffsetX = 21;
+const short eyePupilOffsetX = 15;
 const short eyePupilOffsetY = 5;
