@@ -77,7 +77,7 @@ class EyeState {
     const int sleepLength = arrayLength(eyesleepAnimation);
     int sleepIndex = 0, sleepRand = 0;
     unsigned long startSleepTime;
-    int calculateSleepIndex(int currentIndex, int randomValue);
+    int calculateSleepIndex(int currentIndex);
 
     void changeDefaultFace();
     void movingEye();

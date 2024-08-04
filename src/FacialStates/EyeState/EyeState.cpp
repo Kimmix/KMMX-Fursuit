@@ -187,22 +187,28 @@ void EyeState::angryFace() {
     }
 }
 
-int EyeState::calculateSleepIndex(int currentIndex, int randomValue) {
-    int minIndex = min(pow((millis() - startSleepTime) / 5000, 2), 19.0);
-    if (randomValue > 7) {
+int EyeState::calculateSleepIndex(int currentIndex) {
+    unsigned long elapsedTime = millis() - startSleepTime;
+    // Calculate minIndex based on elapsed time
+    int minIndex = min(pow(elapsedTime / 5000.0, 2), 19.0);
+    // Calculate decrease probability based on elapsed time
+    float decreaseProbability = min(1.0f, elapsedTime / 20000.0f);
+    // Randomly determine whether to increase or decrease the index
+    if (esp_random() % 100 < (100 * decreaseProbability)) {
+        // Chance to increase index
         return min(currentIndex + 1, sleepLength - 1);
-    } else if (randomValue < 5) {
+    } else {
+        // Chance to decrease index
         return max(currentIndex - 1, minIndex);
     }
-    return currentIndex;
 }
 
 void EyeState::sleepFace() {
-    if (millis() >= nextSleep) {
+    unsigned long currentMillis = millis();
+    if (currentMillis >= nextSleep) {
         if (sleepIndex < sleepLength - 1) {
-            nextSleep = millis() + 300;
-            sleepRand = esp_random() % 10;
-            sleepIndex = calculateSleepIndex(sleepIndex, sleepRand);
+            sleepIndex = calculateSleepIndex(sleepIndex);
+            nextSleep = currentMillis + 300;
         }
     }
     display->drawEye(eyesleepAnimation[sleepIndex]);
