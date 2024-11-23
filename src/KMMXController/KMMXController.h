@@ -64,6 +64,7 @@ class KMMXController {
     unsigned long nextBoop = 0;
     bool isSleeping = false;
     bool initBoop = false, inRange = false, isBoop = false, isContinuous = false, isAngry = false;
+    unsigned short prevHornBright = hornInitBrightness;
     float boopSpeed = 0.0;
     unsigned long nextRead;
 };

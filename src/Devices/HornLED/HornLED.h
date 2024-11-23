@@ -1,20 +1,23 @@
 #pragma once
-
 #include "config.h"
 
 class HornLED {
-   private:
-    // Variable to store the brightness level of the horn LED
-    unsigned short brightness = hornInitBrightness;
-
    public:
     HornLED();
 
-    // Method to set the brightness of the horn LED
-    // @param value: The desired brightness level (0-100)
-    void setBrightness(unsigned short value);
+    // Set brightness with fade speed
+    void setBrightness(int value, int speed = 1);
 
-    // Method to get the current brightness of the horn LED
-    // @return: The current brightness level
-    unsigned short getBrightness() const;
+    // Get the current brightness
+    int getBrightness() const;
+
+    // Update brightness gradually
+    void update();
+
+   private:
+    int currentBrightness = 0;  // Current brightness level (0-100)
+    int targetBrightness = 0;   // Target brightness level (0-100)
+    int fadeSpeed = 1;          // Speed of transition per update
+    float pwmValue = 0;           // Cached PWM value for efficiency
+    unsigned long previousMillis;
 };
