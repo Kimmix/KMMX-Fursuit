@@ -18,7 +18,7 @@ void KMMXController::resetIdletime() {
 
 void KMMXController::sleep(KMMXController *controller) {
     controller->prevHornBright = controller->hornLED.getBrightness();
-    controller->hornLED.setBrightness(10);
+    controller->hornLED.setBrightness(5);
     controller->eyeState.setState(EyeStateEnum::SLEEP);
     controller->isSleeping = true;
 }

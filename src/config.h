@@ -59,11 +59,11 @@ const short sideColor1Hue = 239, sideColor1Saturation = 255, sideColor1Value = 2
 const short sideColor2Hue = 22, sideColor2Saturation = 255, sideColor2Value = 255;   // #F9826C (Coral)
 
 // HornLED PWM configuration
-const int hornInitBrightness = 30;
+const int hornInitBrightness = 70;
 const int hornPwmChannel = 0;
 const int hornFrequency = 20000;
 const int hornResolution = 8;
-const int hornMinBrightness = 10;    // Minimum range for PWM
+const int hornMinBrightness = 2;    // Minimum range for PWM
 const int hornMaxBrightness = 200;   // Mamimum range for PWM (255 can cause high heat!!)
 
 // Controller etc. configuration
