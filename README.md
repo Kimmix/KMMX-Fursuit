@@ -1,6 +1,12 @@
-# KMMX-Fursuit Controller
+<div align="left">
 
-An advanced electronic fursuit controller system that powers LED matrix displays and sensors for interactive and animated fursuit faces.
+# ✨ KMMX-Fursuit Controller ✨
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Platform: ESP32](https://img.shields.io/badge/Platform-ESP32-blue.svg)](https://www.espressif.com/en/products/socs/esp32)
+[![IDE: PlatformIO](https://img.shields.io/badge/IDE-PlatformIO-orange.svg)](https://platformio.org/)
+
+</div>
 
 ## 🌟 Features
 
@@ -10,9 +16,18 @@ An advanced electronic fursuit controller system that powers LED matrix displays
 - **Proximity sensing** for interactive "booping" responses
 - **Accelerometer integration** for motion-based animations and responses
 - **Bluetooth connectivity** for remote control and configuration
-- **Power-efficient** sleep mode and smart idle detection
+- **Customizable expressions** with easy bitmap conversion tools
+
+## 🦊 Demo & Gallery
+
+<div align="center">
+  <i>[ Future gallery of photos/videos showing the fursuit in action ]</i>
+</div>
 
 ## 🛠️ Hardware
+
+<details>
+<summary>Click to expand hardware details</summary>
 
 This project is designed to run on an ESP32-based custom board (specifically the ESP32-S3) and includes:
 
@@ -23,7 +38,12 @@ This project is designed to run on an ESP32-based custom board (specifically the
 - **WS2812 RGB LEDs** for cheek panels and status indicators
 - **PWM-controlled LEDs** for horn illumination
 
+</details>
+
 ## 📋 Project Structure
+
+<details>
+<summary>Click to expand project structure</summary>
 
 - **`src/`** - Main source code
   - **`Bitmaps/`** - Bitmap assets for eye and mouth animations
@@ -38,6 +58,8 @@ This project is designed to run on an ESP32-based custom board (specifically the
 - **`lib/`** - External libraries
 - **`boards/`** - Custom board definitions
 
+</details>
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -48,7 +70,11 @@ This project is designed to run on an ESP32-based custom board (specifically the
 
 ### Setup
 
+<details>
+<summary>Click to expand setup instructions</summary>
+
 1. Clone the repository:
+
    ```
    git clone https://github.com/yourusername/KMMX-Fursuit.git
    ```
@@ -68,6 +94,8 @@ This project is designed to run on an ESP32-based custom board (specifically the
 4. Configure your hardware connections in `src/config.h`
 
 5. Build and upload to your ESP32 board
+
+</details>
 
 ## ⚙️ Configuration
 
@@ -90,9 +118,14 @@ Once programmed, the controller will:
 5. Respond to physical movement via the accelerometer
 6. Accept Bluetooth commands for changing expressions and settings
 
-## 👥 Contributing
+## ✨ Animation Creation
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Create your own custom animations using the bitmap tool:
+
+1. Design your animations in Adobe Photoshop or After Effects
+2. Use the provided converter tool in `bitmapTool/` to convert to the proper format
+3. Add the generated header files to your project
+4. Configure the new animations in the controller
 
 ## 📄 License
 
@@ -100,4 +133,17 @@ This project is licensed under the terms specified in the LICENSE file.
 
 ## 📱 Contact
 
-For questions or support, please open an issue in the GitHub repository.
+<div align="center">
+
+  <a href="https://github.com/yourusername/KMMX-Fursuit/issues">
+    <img src="https://img.shields.io/badge/GitHub-Issues-red.svg">
+  </a>
+  <a href="https://discord.com/">
+    <img src="https://img.shields.io/badge/Discord-kimmix-7289DA.svg">
+  </a>
+
+  <p>For questions or support, please open an issue in the GitHub repository or reach out on Discord: kimmix</p>
+
+</div>
+
+---
