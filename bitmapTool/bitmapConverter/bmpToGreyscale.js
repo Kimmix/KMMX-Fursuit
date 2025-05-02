@@ -2,7 +2,8 @@ const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 
-const bitmapName = 'eyeSleep';
+// Get bitmapName from command line arguments, with fallback
+const bitmapName = process.argv[2] || 'defaultBitmap';
 
 // Directory containing GIF files
 const inputDirectory = './input';
