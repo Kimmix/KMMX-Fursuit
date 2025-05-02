@@ -21,7 +21,27 @@
 ## 🦊 Demo & Gallery
 
 <div align="center">
-  <i>[ Future gallery of photos/videos showing the fursuit in action ]</i>
+  <h3>Sleeping Idle Animation</h3>
+  <a href="https://x.com/kimmix00/status/1792751189395927293/video/1" target="_blank">
+    <img src="https://img.shields.io/badge/View%20on%20X-Sleeping%20Animation-1DA1F2" alt="Sleeping Animation Demo">
+  </a>
+
+  <h3>Booping Interaction</h3>
+  <a href="https://x.com/kimmix00/status/1687878110430339072/video/1" target="_blank">
+    <img src="https://img.shields.io/badge/View%20on%20X-Booping%20Demo-1DA1F2" alt="Booping Demo">
+  </a>
+
+  <h3>Bluetooth Smartphone Control</h3>
+  <a href="https://x.com/kimmix00/status/1704465522497397001/video/1" target="_blank">
+    <img src="https://img.shields.io/badge/View%20on%20X-BLE%20Control%20Demo-1DA1F2" alt="BLE Control Demo">
+  </a>
+
+  <h3>Viseme</h3>
+  <a href="https://x.com/kimmix00/status/1638887564550754306/video/1" target="_blank">
+    <img src="https://img.shields.io/badge/View%20on%20X-BLE%20Control%20Demo-1DA1F2" alt="Viseme Demo">
+  </a>
+
+  <i>[ Future gallery of additional photos/videos showing the fursuit in action ]</i>
 </div>
 
 ## 🛠️ Hardware
