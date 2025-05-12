@@ -1,4 +1,7 @@
+# Note
+
 ## BLE Controlable
+
 Feature
     - Toggle BOOP: True/False
     - Toggle GooglyEye: True/False
@@ -37,6 +40,7 @@ Viseme
         - hold_time: 5000
 
 ## Viseme combination
+
     - AH
     - EE
     - OH
@@ -53,13 +57,14 @@ Viseme
     - OHTH
     - OOTH
 
-# TO-DO
+## TO-DO
+
 - Viseme
-    - Add dynamic noise threhold funtion
-    - Cross viseme
+  - Add dynamic noise threhold funtion
+  - Cross viseme
 
 - LEXMatrixDisplay
-    - Update MVC
-    - frame interpolate
+  - Update MVC
+  - frame interpolate
 
 Main mac: 40:22:D8:4C:AB:98 {0x40, 0x22, 0xD8, 0x4C, 0xAB, 0x98};
