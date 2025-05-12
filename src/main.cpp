@@ -13,6 +13,9 @@ void setup() {
     controller.setupSensors();
     bleManager.setup();
     // setupEspNow();
+    Serial.printf("Free heap: %d, Free PSRAM: %d\n",
+                  ESP.getFreeHeap(),
+                  ESP.getFreePsram());
 }
 
 void loop() {
