@@ -2,17 +2,13 @@ const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 
-// Get bitmapName from command line arguments, with fallback
+// Get bitmapName and encoding type from command line arguments
 const bitmapName = process.argv[2] || 'defaultBitmap';
 const encoding = (process.argv[3] || 'raw').toLowerCase(); // 'raw' or 'rle'
 
-// Directory containing GIF files
 const inputDirectory = './input';
-
-// Output file path
 const outputFile = `./output/${bitmapName}.h`;
 
-// Process each GIF file in the directory
 fs.readdir(inputDirectory, async (err, files) => {
     if (err) {
         console.error('Error reading directory:', err);
@@ -49,11 +45,28 @@ async function processGif(inputPath) {
                     reject(err);
                     return;
                 }
-
                 const greyscaleArray = Array.from(buffer);
                 resolve(greyscaleArray);
             });
     });
+}
+
+function generateOutputFileContent(greyscaleArrays) {
+    const lines = ['// Generated output'];
+    for (const { data, index } of greyscaleArrays) {
+        const sectionName = `${bitmapName}${index}`;
+        const sectionLines = [
+            `static const uint8_t PROGMEM ${sectionName}[576] = {`
+        ];
+        for (let i = 0; i < data.length; i += 16) {
+            const chunk = data.slice(i, i + 16);
+            const line = chunk.map(value => `0x${value.toString(16).padStart(2, '0')}`).join(', ');
+            sectionLines.push(`    ${line},`);
+        }
+        sectionLines.push(`};`);
+        lines.push(...sectionLines, '');
+    }
+    return lines.join('\n');
 }
 
 function rleEncode(data) {
@@ -86,27 +99,5 @@ function generateRLEOutputFileContent(greyscaleArrays) {
         sectionLines.push(`};`);
         lines.push(...sectionLines, '');
     }
-    return lines.join('\n');
-}
-
-function generateOutputFileContent(greyscaleArrays) {
-    const lines = ['// Generated output'];
-
-    for (const { data, index } of greyscaleArrays) {
-        const sectionName = `${bitmapName}${index}`;
-        const sectionLines = [
-            `static const uint8_t PROGMEM ${sectionName}[576] = {`
-        ];
-
-        for (let i = 0; i < data.length; i += 16) {
-            const chunk = data.slice(i, i + 16);
-            const line = chunk.map(value => `0x${value.toString(16).padStart(2, '0')}`).join(', ');
-            sectionLines.push(`    ${line},`);
-        }
-
-        sectionLines.push(`};`);
-        lines.push(...sectionLines, ''); // Empty line between sections
-    }
-
     return lines.join('\n');
 }
