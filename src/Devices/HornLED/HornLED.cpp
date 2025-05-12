@@ -44,17 +44,17 @@ void HornLED::update() {
 
         // Gradually adjust the actual PWM value
         if (abs(pwmValue - targetPwm) > 0.5) {  // Only update if there's a noticeable difference
-            Serial.print(targetPwm);
-            Serial.print(" : ");
-            Serial.print(pwmValue);
+            // Serial.print(targetPwm);
+            // Serial.print(" : ");
+            // Serial.print(pwmValue);
             pwmValue += (targetPwm - pwmValue) * fadeSpeed / 100.0f;
 
             // Snap to the target if close enough
             if (abs(pwmValue - targetPwm) < 1.0f) {
                 pwmValue = targetPwm;
             }
-            Serial.print("  | ledcWrite:");
-            Serial.println(pwmValue);
+            // Serial.print("  | ledcWrite:");
+            // Serial.println(pwmValue);
             ledcWrite(hornPwmChannel, round(pwmValue));  // Write the new PWM value
         }
     }
