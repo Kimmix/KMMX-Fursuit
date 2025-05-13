@@ -30,6 +30,9 @@
 #define LED_PWM_PIN 21  // Horn LED
 #define RGB_BUILTIN 45  // RGB onboard pin
 
+// Enable RLE bitmap support
+#define USE_RLE_BITMAPS 1
+
 // BLE settings
 #define BLE_DEVICE_NAME "KMMX"
 #define BLE_LOCAL_NAME "KMMX-BLE"

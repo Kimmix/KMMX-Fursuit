@@ -233,4 +233,38 @@ class Hub75DMA {
      * @param b Blue component (0-255)
      */
     void drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY, uint8_t r, uint8_t g, uint8_t b);
+
+    /**
+     * @brief Draws an RLE-encoded bitmap at specified coordinates.
+     * @param rleBitmap RLE-encoded bitmap array
+     * @param imageWidth Width of the bitmap
+     * @param imageHeight Height of the bitmap
+     * @param offsetX X offset
+     * @param offsetY Y offset
+     */
+    void drawBitmapRLE(const uint8_t* rleBitmap, int imageWidth, int imageHeight, int offsetX, int offsetY);
+
+    /**
+     * @brief Draws an RLE-encoded bitmap with specified color at specified coordinates.
+     * @param rleBitmap RLE-encoded bitmap array
+     * @param imageWidth Width of the bitmap
+     * @param imageHeight Height of the bitmap
+     * @param offsetX X offset
+     * @param offsetY Y offset
+     * @param r Red component (0-255)
+     * @param g Green component (0-255)
+     * @param b Blue component (0-255)
+     */
+    void drawBitmapRLE(const uint8_t* rleBitmap, int imageWidth, int imageHeight, int offsetX, int offsetY, uint8_t r, uint8_t g, uint8_t b);
+
+    /**
+     * @brief Draws separate left and right RLE-encoded bitmaps at specified coordinates.
+     * @param rleBitmapL Left RLE-encoded bitmap array
+     * @param rleBitmapR Right RLE-encoded bitmap array
+     * @param imageWidth Width of the bitmaps
+     * @param imageHeight Height of the bitmaps
+     * @param offsetX X offset
+     * @param offsetY Y offset
+     */
+    void drawBitmapRLE(const uint8_t* rleBitmapL, const uint8_t* rleBitmapR, int imageWidth, int imageHeight, int offsetX, int offsetY);
 };
