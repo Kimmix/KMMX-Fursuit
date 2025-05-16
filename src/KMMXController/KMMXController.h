@@ -56,9 +56,9 @@ class KMMXController {
     void sleep(KMMXController *controller);
     void checkIdleAndSleep(KMMXController *controller, unsigned long currentTime);
     static void readSensor(void *parameter);
-
     float lastX, lastY, lastZ;
     float prevX, prevY, prevZ;
+    unsigned long lastMotionTime;  // Tracks when motion was last detected
     unsigned long stillTime = 0;  // Time when the accelerometer became still
     unsigned long nextFrame;
     unsigned long nextBoop = 0;

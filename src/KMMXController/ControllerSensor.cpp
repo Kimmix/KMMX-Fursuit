@@ -11,11 +11,13 @@ void KMMXController::setupSensors() {
     #if defined(ESP32)
         Wire.setTimeOut(1000); // 1000ms timeout
     #endif
-
     statusLED.init();
     cheekPanel.configure(0xFF446C, 0xF9826C, 500, 2000);
     cheekPanel.init();
+
     accSensor.setUp();
+    accSensor.setMotionThreshold(0.3); // Threshold for motion detection
+
     initBoop = proxSensor.setup();
 
     // Create sensor reading task
@@ -34,6 +36,7 @@ void KMMXController::updateSensorValues() {
     // Get proxSensor value
     proxSensor.read(&proxValue);
     sensorEvent = accSensor.getSensorEvent();
+
     // Store the current acceleration values
     prevX = lastX;
     prevY = lastY;
@@ -43,6 +46,12 @@ void KMMXController::updateSensorValues() {
     lastX = sensorEvent->acceleration.x;
     lastY = sensorEvent->acceleration.y;
     lastZ = sensorEvent->acceleration.z;
+
+    // Check for motion detection
+    if (accSensor.isMotionDetected()) {
+        // Motion was detected - reset idle timer
+        lastMotionTime = millis();
+    }
 }
 
 void KMMXController::readSensor(void *parameter) {

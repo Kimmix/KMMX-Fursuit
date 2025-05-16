@@ -27,9 +27,7 @@ void KMMXController::checkIdleAndSleep(KMMXController *controller, unsigned long
     if (controller->eyeState.getState() != EyeStateEnum::IDLE) {
         return;
     }
-    if (abs(lastX - prevX) < idleAccThreshold &&
-        abs(lastY - prevY) < idleAccThreshold &&
-        abs(lastZ - prevZ) < idleAccThreshold) {
+    if (!accSensor.isMotionDetected()) {
         if (controller->stillTime == 0) {
             controller->stillTime = currentTime;
         } else if (currentTime - stillTime >= idleTimeout && !isSleeping) {
