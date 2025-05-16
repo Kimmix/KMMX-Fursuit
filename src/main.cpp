@@ -7,7 +7,6 @@ KMMXController controller;
 BLEManager& bleManager = BLEManager::getInstance(controller);
 
 void setup() {
-    Wire.begin(SDA, SCL);
     Serial.begin(115200);
     if (psramInit()) {
         Serial.println("PSRAM initialized successfully");
