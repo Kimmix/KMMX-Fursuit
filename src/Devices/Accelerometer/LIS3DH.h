@@ -12,4 +12,5 @@ class LIS3DH {
     LIS3DH();
     void setUp();
     sensors_event_t* getSensorEvent();
+    void setDataRate(uint8_t rate);
 };

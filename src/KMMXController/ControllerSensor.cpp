@@ -35,9 +35,10 @@ void KMMXController::updateSensorValues() {
     proxSensor.read(&proxValue);
     sensorEvent = accSensor.getSensorEvent();
     // Store the current acceleration values
-    prevX = lastX;
-    prevY = lastY;
-    prevZ = lastZ;
+    // Only update prevX/Y/Z if lastX/Y/Z changed
+    if (lastX != sensorEvent->acceleration.x) prevX = lastX;
+    if (lastY != sensorEvent->acceleration.y) prevY = lastY;
+    if (lastZ != sensorEvent->acceleration.z) prevZ = lastZ;
 
     // Update the last acceleration values
     lastX = sensorEvent->acceleration.x;
