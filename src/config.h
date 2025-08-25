@@ -28,7 +28,7 @@
 #define OE 39
 // Other
 #define LED_PWM_PIN 21  // Horn LED
-#define RGB_BUILTIN 45  // RGB onboard pin
+#define RGB_STATUS_PIN 45  // RGB onboard pin
 
 // Enable RLE bitmap support
 #define USE_RLE_BITMAPS 1

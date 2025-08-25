@@ -33,7 +33,7 @@ class KMMXController {
    private:
     // Setup devices
     Hub75DMA display;
-    RGBStatus statusLED = RGBStatus(RGB_BUILTIN);
+    RGBStatus statusLED = RGBStatus(RGB_STATUS_PIN);
     CheekPanel cheekPanel = CheekPanel(argbCount, ARGB_PIN);
     HornLED hornLED;
     LIS3DH accSensor;
