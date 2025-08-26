@@ -3,9 +3,7 @@
 #include <Arduino.h>
 #include "Bitmaps/Bitmaps.h"
 
-EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis()) {
-    // Initialization if needed, but animation arrays are already initialized in the header file.
-}
+EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis()) {}
 
 void EyeState::update() {
     switch (currentState) {
@@ -97,25 +95,20 @@ void EyeState::movingEye() {
     float zAcc = event.acceleration.z;
     const float leftThreshold = 3.00, rightThreshold = -3.00,
                 leftMaxThreshold = 6.00, rightMaxThreshold = -6.00;
-
-    // Static variables to maintain smoothing state
     static float smoothedLeftAcc = 0.0f;
     static float smoothedRightAcc = 0.0f;
-
     // Check for left movement (positive direction)
     int leftLevel = smoothAccelerometerMovement(zAcc, smoothedLeftAcc, leftThreshold, leftMaxThreshold, 0.3f, 0.5f, 19, false);
     if (leftLevel >= 0) {
         display->drawEye(eyeUpAnimation[leftLevel], eyeDownAnimation[leftLevel]);
         return;
     }
-
     // Check for right movement (negative direction)
     int rightLevel = smoothAccelerometerMovement(zAcc, smoothedRightAcc, rightThreshold, rightMaxThreshold, 0.3f, 0.5f, 19, true);
     if (rightLevel >= 0) {
         display->drawEye(eyeDownAnimation[rightLevel], eyeUpAnimation[rightLevel]);
         return;
     }
-
     // Default eye frame when no significant movement
     display->drawEye(eyeFrame);
 }
@@ -123,9 +116,7 @@ void EyeState::movingEye() {
 void EyeState::idleFace() {
     movingEye();
     if (millis() >= nextBlink) {
-        // Natural blink patterns with simplified random selection
         uint8_t randValue = esp_random() % 100;
-
         if (randValue < 70) {
             // 70% normal interval (2-6s) + normal blink
             nextBlink = millis() + 2000 + (esp_random() % 4000);
@@ -139,7 +130,6 @@ void EyeState::idleFace() {
             nextBlink = millis() + 8000 + (esp_random() % 7000);
             blinkType = 2;
         }
-
         currentState = EyeStateEnum::BLINK;
     }
 }
@@ -148,19 +138,13 @@ void EyeState::blink() {
     if (millis() >= blinkInterval) {
         // Get base timing from lookup table
         uint8_t baseDelay = blinkTimings[blinkType][blinkDirection ? 0 : 1];
-
-        // Add frame position variance (faster in middle of animation)
         int frameVariance = blinkDirection ?
             (currentBlinkFrameIndex < 7 ? -1 : 1) :
             ((blinkAnimationLength - currentBlinkFrameIndex) < 7 ? 2 : -1);
-
         // Apply variance and add randomness (±1ms)
         int frameDelay = baseDelay + frameVariance + ((esp_random() % 3) - 1);
         frameDelay = max(frameDelay, 2); // Minimum 2ms
-
         blinkInterval = millis() + frameDelay;
-
-        // Update animation frame
         if (blinkDirection) {
             // Closing eye
             if (++currentBlinkFrameIndex >= blinkAnimationLength) {
@@ -179,7 +163,6 @@ void EyeState::blink() {
             }
         }
     }
-
     display->drawEye(blinkAnimation[currentBlinkFrameIndex]);
 }
 
