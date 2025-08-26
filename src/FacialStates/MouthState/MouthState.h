@@ -43,6 +43,7 @@ class MouthState {
     void updateAnimation();
     void updateIndex();
     void angryBoop();
+    int getAnimationPhaseVariance();
 
     short defaultAnimationIndex = 0;
     bool increasingIndex = true;

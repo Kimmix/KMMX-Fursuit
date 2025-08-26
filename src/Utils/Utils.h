@@ -18,6 +18,27 @@
 float mapFloat(float x, float inMin, float inMax, float outMin, float outMax);
 
 /**
+ * @brief Smooths accelerometer data and calculates animation levels with natural movement.
+ *
+ * This function applies smoothing, dead zones, and easing curves to raw accelerometer
+ * data to create more natural and fluid animations for facial expressions.
+ *
+ * @param rawValue The raw accelerometer reading.
+ * @param smoothedValue Reference to the smoothed value (maintains state between calls).
+ * @param threshold The activation threshold.
+ * @param maxThreshold The maximum threshold for full animation.
+ * @param smoothingFactor The smoothing factor (0.0-1.0, lower = smoother).
+ * @param deadZone The dead zone around the threshold to prevent micro-movements.
+ * @param maxLevel The maximum animation level (e.g., 19 for 20 frames).
+ * @param isNegativeDirection True if checking for negative direction movement.
+ * @return The calculated animation level, or -1 if no movement detected.
+ */
+int smoothAccelerometerMovement(float rawValue, float& smoothedValue,
+                               float threshold, float maxThreshold,
+                               float smoothingFactor = 0.3f, float deadZone = 0.5f,
+                               int maxLevel = 19, bool isNegativeDirection = false);
+
+/**
  * @brief Returns the length of a fixed-size array.
  *
  * This function template returns the number of elements in a

@@ -97,15 +97,27 @@ void EyeState::movingEye() {
     float zAcc = event.acceleration.z;
     const float leftThreshold = 3.00, rightThreshold = -3.00,
                 leftMaxThreshold = 6.00, rightMaxThreshold = -6.00;
-    if (zAcc > leftThreshold) {
-        int level = mapFloat(zAcc, leftThreshold, leftMaxThreshold, 0, 19);
-        display->drawEye(eyeUpAnimation[level], eyeDownAnimation[level]);
-    } else if (zAcc < rightThreshold) {
-        int level = mapFloat(zAcc, rightThreshold, rightMaxThreshold, 0, 19);
-        display->drawEye(eyeDownAnimation[level], eyeUpAnimation[level]);
-    } else {
-        display->drawEye(eyeFrame);
+
+    // Static variables to maintain smoothing state
+    static float smoothedLeftAcc = 0.0f;
+    static float smoothedRightAcc = 0.0f;
+
+    // Check for left movement (positive direction)
+    int leftLevel = smoothAccelerometerMovement(zAcc, smoothedLeftAcc, leftThreshold, leftMaxThreshold, 0.3f, 0.5f, 19, false);
+    if (leftLevel >= 0) {
+        display->drawEye(eyeUpAnimation[leftLevel], eyeDownAnimation[leftLevel]);
+        return;
     }
+
+    // Check for right movement (negative direction)
+    int rightLevel = smoothAccelerometerMovement(zAcc, smoothedRightAcc, rightThreshold, rightMaxThreshold, 0.3f, 0.5f, 19, true);
+    if (rightLevel >= 0) {
+        display->drawEye(eyeDownAnimation[rightLevel], eyeUpAnimation[rightLevel]);
+        return;
+    }
+
+    // Default eye frame when no significant movement
+    display->drawEye(eyeFrame);
 }
 
 void EyeState::idleFace() {

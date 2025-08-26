@@ -74,37 +74,101 @@ void MouthState::movingMouth() {
     float yAcc = event.acceleration.x;
     const float upThreshold = -2.00, downThreshold = 3.00,
                 upMaxThreshold = -7.00, downMaxThreshold = 8.00;
-    if (yAcc < upThreshold) {
-        int level = mapFloat(yAcc, upThreshold, upMaxThreshold, 0, 19);
-        mouthFrame = mouthUp[level];
-    } else if (yAcc > downThreshold) {
-        int level = mapFloat(yAcc, downThreshold, downMaxThreshold, 0, 19);
-        mouthFrame = mouthDown[level];
-    } else {
-        mouthFrame = defaultAnimation[defaultAnimationIndex];
+
+    // Static variables to maintain smoothing state
+    static float smoothedUpAcc = 0.0f;
+    static float smoothedDownAcc = 0.0f;
+
+    // Check for upward movement (negative direction)
+    int upLevel = smoothAccelerometerMovement(yAcc, smoothedUpAcc, upThreshold, upMaxThreshold, 0.3f, 0.5f, 19, true);
+    if (upLevel >= 0) {
+        mouthFrame = mouthUp[upLevel];
+        return;
     }
+
+    // Check for downward movement (positive direction)
+    int downLevel = smoothAccelerometerMovement(yAcc, smoothedDownAcc, downThreshold, downMaxThreshold, 0.3f, 0.5f, 19, false);
+    if (downLevel >= 0) {
+        mouthFrame = mouthDown[downLevel];
+        return;
+    }
+
+    // Default animation when no significant movement
+    mouthFrame = defaultAnimation[defaultAnimationIndex];
 }
 
 void MouthState::updateAnimation() {
     if (millis() >= mouthInterval) {
         updateIndex();
-        mouthInterval = millis() + 80;
+        // Natural breathing timing with phase variance and randomness
+        int baseDelay = 80;
+        int phaseVariance = getAnimationPhaseVariance();
+        int randomVariance = (esp_random() % 31) - 15; // ±15ms randomness
+
+        // Add breathing phase timing
+        if (defaultAnimationIndex == 0 || defaultAnimationIndex == 19) {
+            baseDelay += 100 + (esp_random() % 200); // Pause at extremes
+        }
+
+        mouthInterval = millis() + baseDelay + phaseVariance + randomVariance;
     }
 }
 
 void MouthState::updateIndex() {
+    // Simple natural breathing with occasional variable steps
+    static bool shouldPause = false;
+    static unsigned long pauseEnd = 0;
+
+    // Handle breathing pauses
+    if (shouldPause) {
+        if (millis() < pauseEnd) return;
+        shouldPause = false;
+    }
+
+    // Variable step size for more organic movement
+    int step = (esp_random() % 100 < 20) ? 2 : 1; // 20% chance of double step
+
     if (increasingIndex) {
-        defaultAnimationIndex++;
+        defaultAnimationIndex += step;
         if (defaultAnimationIndex >= 19) {
             defaultAnimationIndex = 19;
             increasingIndex = false;
+            // Random pause at peak (40% chance)
+            if (esp_random() % 100 < 40) {
+                shouldPause = true;
+                pauseEnd = millis() + (esp_random() % 250 + 150);
+            }
         }
     } else {
-        defaultAnimationIndex--;
+        defaultAnimationIndex -= step;
         if (defaultAnimationIndex <= 0) {
             defaultAnimationIndex = 0;
             increasingIndex = true;
+            // Random pause at rest (60% chance, longer)
+            if (esp_random() % 100 < 60) {
+                shouldPause = true;
+                pauseEnd = millis() + (esp_random() % 400 + 200);
+            }
         }
+    }
+}
+
+int MouthState::getAnimationPhaseVariance() {
+    // Simplified phase-based timing for natural breathing rhythm
+    float progress = defaultAnimationIndex / 19.0f;
+
+    if (increasingIndex) {
+        // Inhale: slower at start and end, faster in middle
+        if (progress < 0.4f) {
+            return 15; // Slower start
+        } else if (progress < 0.8f) {
+            return -8; // Faster middle
+        } else {
+            return 12; // Slower end
+        }
+    } else {
+        // Exhale: more consistent, slightly faster overall
+        return -5 + (int)(progress * 8); // -5 to 3ms variance
     }
 }
 
