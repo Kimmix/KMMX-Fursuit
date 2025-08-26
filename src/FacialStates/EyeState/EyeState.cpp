@@ -111,29 +111,63 @@ void EyeState::movingEye() {
 void EyeState::idleFace() {
     movingEye();
     if (millis() >= nextBlink) {
-        nextBlink = millis() + (1000 * (esp_random() % 20));
+        // Natural blink patterns with simplified random selection
+        uint8_t randValue = esp_random() % 100;
+
+        if (randValue < 70) {
+            // 70% normal interval (2-6s) + normal blink
+            nextBlink = millis() + 2000 + (esp_random() % 4000);
+            blinkType = 0;
+        } else if (randValue < 90) {
+            // 20% quick interval (0.5-1.5s) + quick blink
+            nextBlink = millis() + 500 + (esp_random() % 1000);
+            blinkType = 1;
+        } else {
+            // 10% long pause (8-15s) + slow blink
+            nextBlink = millis() + 8000 + (esp_random() % 7000);
+            blinkType = 2;
+        }
+
         currentState = EyeStateEnum::BLINK;
     }
 }
 
 void EyeState::blink() {
     if (millis() >= blinkInterval) {
-        if (blinkStep < blinkAnimationLength - 1) {
-            blinkStep++;
-            currentBlinkFrameIndex++;
-            blinkInterval = millis() + 7;
-        } else if (blinkStep >= blinkAnimationLength - 1 && blinkStep < (blinkAnimationLength * 2) - 1) {
-            blinkStep++;
-            currentBlinkFrameIndex--;
-            blinkInterval = millis() + 4;
-        }
-        if (blinkStep == (blinkAnimationLength * 2) - 1) {
-            blinkStep = 0;
-            currentBlinkFrameIndex = 0;
-            changeDefaultFace();
-            currentState = EyeStateEnum::IDLE;
+        // Get base timing from lookup table
+        uint8_t baseDelay = blinkTimings[blinkType][blinkDirection ? 0 : 1];
+
+        // Add frame position variance (faster in middle of animation)
+        int frameVariance = blinkDirection ?
+            (currentBlinkFrameIndex < 7 ? -1 : 1) :
+            ((blinkAnimationLength - currentBlinkFrameIndex) < 7 ? 2 : -1);
+
+        // Apply variance and add randomness (±1ms)
+        int frameDelay = baseDelay + frameVariance + ((esp_random() % 3) - 1);
+        frameDelay = max(frameDelay, 2); // Minimum 2ms
+
+        blinkInterval = millis() + frameDelay;
+
+        // Update animation frame
+        if (blinkDirection) {
+            // Closing eye
+            if (++currentBlinkFrameIndex >= blinkAnimationLength) {
+                blinkDirection = false;
+                currentBlinkFrameIndex--;
+                blinkInterval = millis() + 20 + (esp_random() % 20); // Pause when closed
+            }
+        } else {
+            // Opening eye
+            if (--currentBlinkFrameIndex <= 0) {
+                // Reset for next blink
+                blinkDirection = true;
+                currentBlinkFrameIndex = 0;
+                changeDefaultFace();
+                currentState = EyeStateEnum::IDLE;
+            }
         }
     }
+
     display->drawEye(blinkAnimation[currentBlinkFrameIndex]);
 }
 

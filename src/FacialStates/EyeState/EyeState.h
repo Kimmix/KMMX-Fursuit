@@ -51,7 +51,16 @@ class EyeState {
         eyeBlink1, eyeBlink2, eyeBlink3, eyeBlink4, eyeBlink5, eyeBlink6, eyeBlink7, eyeBlink8, eyeBlink9, eyeBlink10,
         eyeBlink11, eyeBlink12, eyeBlink13, eyeBlink14, eyeBlink15};
     const short blinkAnimationLength = arrayLength(blinkAnimation);
-    short blinkStep = 0, currentBlinkFrameIndex = 0;
+    short currentBlinkFrameIndex = 0;
+    bool blinkDirection = true; // true = closing, false = opening
+    uint8_t blinkType = 0; // 0 = normal, 1 = quick, 2 = slow
+
+    // Optimized timing tables [blinkType][isClosing]
+    const uint8_t blinkTimings[3][2] = {
+        {5, 8},   // Normal: 5ms closing, 8ms opening
+        {3, 5},   // Quick: 3ms closing, 5ms opening
+        {12, 15}  // Slow: 12ms closing, 15ms opening
+    };
 
     const uint8_t* boopAnimation[2] = {eyeV1, eyeV2};
     short boopAnimationFrame = 0;
