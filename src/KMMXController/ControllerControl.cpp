@@ -42,36 +42,3 @@ void KMMXController::setViseme(int b) {
 int KMMXController::getViseme() {
     return mouthState.getState() == MouthStateEnum::TALKING;
 }
-
-// ESP-NOW! - Unused!!
-void KMMXController::recieveEspNow(int16_t data) {
-    switch (data) {
-        case 1:
-            eyeState.setState(EyeStateEnum::IDLE);
-            break;
-        case 2:
-            eyeState.setState(EyeStateEnum::SMILE);
-            break;
-        case 3:
-            eyeState.setState(EyeStateEnum::OEYE);
-            break;
-        default:
-            break;
-    }
-}
-
-void KMMXController::updatePixelPosition(int16_t y) {
-    Serial.println(y, BIN);
-    pixelPos = y;
-}
-
-void KMMXController::debugPixel(int16_t p) {
-    int bit_position = 0;
-    while (p > 0) {
-        if (p & 1) {
-            display.drawPixel(0, bit_position, display.color565(0, 200, 255));
-        }
-        p >>= 1;
-        bit_position++;
-    }
-}

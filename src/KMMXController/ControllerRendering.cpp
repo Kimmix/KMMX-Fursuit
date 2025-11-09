@@ -7,21 +7,13 @@ void KMMXController::update() {
     if (initBoop) {
         booping();
     }
-    if (vsync) {
-        if (millis() >= nextFrame) {
-            nextFrame = millis() + frametime;
-            renderFace();
-        }
-    } else {
-        renderFace();
-    }
+    renderFace();
 }
 
 void KMMXController::renderFace() {
-    display.render();
+    display.flipDMABuffer();
     delay(1000 / display.getRefreshRate());
     display.clearScreen();\
-    debugPixel(pixelPos);
     display.drawNose(noseNew);
     mouthState.update();
     eyeState.update();

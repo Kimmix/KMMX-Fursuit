@@ -16,7 +16,7 @@ int Hub75DMA::getRefreshRate() {
     return matrix->calculated_refresh_rate;
 }
 
-void Hub75DMA::render() {
+void Hub75DMA::flipDMABuffer() {
     matrix->flipDMABuffer();
 }
 

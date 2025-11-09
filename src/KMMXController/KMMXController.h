@@ -26,9 +26,6 @@ class KMMXController {
     int getViseme();
     int getDisplayBrightness();
     void setDisplayBrightness(int i);
-    void recieveEspNow(int16_t data);
-    void updatePixelPosition(int16_t y);
-    void debugPixel(int16_t p);
 
    private:
     // Setup devices

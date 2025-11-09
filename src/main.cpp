@@ -21,7 +21,6 @@ void setup() {
     randomSeed(analogRead(RANDOM_PIN));
     controller.setupSensors();
     bleManager.setup();
-    // setupEspNow();
 }
 
 void loop() {

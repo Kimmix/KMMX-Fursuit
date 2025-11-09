@@ -68,7 +68,7 @@ class Hub75DMA {
     /**
      * @brief Renders the buffer to the screen.
      */
-    void render();
+    void flipDMABuffer();
 
     /**
      * @brief Clears the screen.
