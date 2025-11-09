@@ -47,10 +47,10 @@ const int panelResY = 32;
 const int panelsNumber = 2;
 const int screenWidth = panelResX * panelsNumber;
 const int screenHeight = panelResY;
-const int panelInitBrightness = 50;
+const int panelInitBrightness = 200;
 const bool clockPhase = true;
 const int latchBlanking = 1;
-const int minRefreshRate = 143;
+const int minRefreshRate = 200;
 const bool doubleBuffer = true;
 
 // SideLED configuration
@@ -73,7 +73,7 @@ const int hornMaxBrightness = 200;   // Mamimum range for PWM (255 can cause hig
 const bool vsync = false;
 const short frametime = 7;                // Frame time in milliseconds (~144hz) when vsync enable
 const int sensorUpdateInterval = 100;     // Sensor update interval in milliseconds
-const short minimumPixelBrightness = 30;  // Minimum pixel brightness to draw on screen
+const short minimumPixelBrightness = 100;  // Minimum pixel brightness to draw on screen
 const short noseWidth = 8;
 const short noseHeight = 5;
 const short noseOffsetX = 56;

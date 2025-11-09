@@ -18,11 +18,12 @@ void KMMXController::update() {
 }
 
 void KMMXController::renderFace() {
+    display.render();
+    delay(1000 / display.getRefreshRate());
+    display.clearScreen();\
     debugPixel(pixelPos);
     display.drawNose(noseNew);
     mouthState.update();
     eyeState.update();
     fxState.update();
-    display.render();
-    display.clearScreen();
 }

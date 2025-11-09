@@ -63,6 +63,8 @@ class Hub75DMA {
      */
     Hub75DMA();
 
+    int getRefreshRate();
+
     /**
      * @brief Renders the buffer to the screen.
      */
