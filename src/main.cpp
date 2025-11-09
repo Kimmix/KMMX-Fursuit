@@ -2,6 +2,7 @@
 #include "config.h"
 #include "KMMXController/KMMXController.h"
 #include "Network/BLE.h"
+#include "Utils/Utils.h"
 
 KMMXController controller;
 BLEManager& bleManager = BLEManager::getInstance(controller);
@@ -26,5 +27,5 @@ void setup() {
 void loop() {
     bleManager.poll();
     controller.update();
-    // showFPS();
+    showFPS();
 }

@@ -33,3 +33,19 @@ int smoothAccelerometerMovement(float rawValue, float& smoothedValue,
 
     return -1; // No movement detected
 }
+
+void showFPS() {
+    static unsigned long frameCount = 0;
+    static unsigned long lastFPSTime = 0;
+
+    frameCount++;
+    unsigned long currentTime = millis();
+
+    // Update FPS every second
+    if (currentTime - lastFPSTime >= 1000) {
+        float currentFPS = frameCount * 1000.0 / (currentTime - lastFPSTime);
+        Serial.printf("FPS: %.2f\n", currentFPS);
+        frameCount = 0;
+        lastFPSTime = currentTime;
+    }
+}
