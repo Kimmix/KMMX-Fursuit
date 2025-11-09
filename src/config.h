@@ -48,8 +48,6 @@ const int panelsNumber = 2;
 const int screenWidth = panelResX * panelsNumber;
 const int screenHeight = panelResY;
 const int panelInitBrightness = 200;
-const bool clockPhase = true;
-const int latchBlanking = 1;
 const int minRefreshRate = 200;
 const bool doubleBuffer = true;
 
