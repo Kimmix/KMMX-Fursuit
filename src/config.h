@@ -47,7 +47,7 @@ const int panelResY = 32;
 const int panelsNumber = 2;
 const int screenWidth = panelResX * panelsNumber;
 const int screenHeight = panelResY;
-const int panelInitBrightness = 200;
+const int panelInitBrightness = 90;
 const int minRefreshRate = 200;
 const bool doubleBuffer = true;
 
@@ -65,11 +65,9 @@ const int hornPwmChannel = 0;
 const int hornFrequency = 20000;
 const int hornResolution = 8;
 const int hornMinBrightness = 2;    // Minimum range for PWM
-const int hornMaxBrightness = 200;   // Mamimum range for PWM (255 can cause high heat!!)
+const int hornMaxBrightness = 200;   // Maximum range for PWM (255 can cause high heat!!)
 
 // Controller etc. configuration
-const bool vsync = false;
-const short frametime = 7;                // Frame time in milliseconds (~144hz) when vsync enable
 const int sensorUpdateInterval = 100;     // Sensor update interval in milliseconds
 const short minimumPixelBrightness = 100;  // Minimum pixel brightness to draw on screen
 const short noseWidth = 8;
@@ -100,15 +98,15 @@ const double i2sSampleRate = 8000;
 const int i2sSamples = 256;
 
 // Viseme configuration
-const int AHFreqMin = 600;                // Start freq of AH viseme
-const int AHFreqMax = 1200;               // End freq of AH viseme
+const int AHFreqMin = 700;                // Start freq of AH viseme
+const int AHFreqMax = 1500;               // End freq of AH viseme
 const int EEFreqMin = 1000;               // Start freq of EE viseme
-const int EEFreqMax = 2000;               // End freq of EE viseme
-const int OHFreqMin = 1800;               // Start freq of OH viseme
-const int OHFreqMax = 2800;               // End freq of OH viseme
-const int OOFreqMin = 2600;               // Start freq of OO viseme
-const int OOFreqMax = 3600;               // End freq of OO viseme
-const int THFreqMin = 3400;               // Start freq of TH viseme
+const int EEFreqMax = 3000;               // End freq of EE viseme
+const int OHFreqMin = 400;               // Start freq of OH viseme
+const int OHFreqMax = 1100;               // End freq of OH viseme
+const int OOFreqMin = 250;               // Start freq of OO viseme
+const int OOFreqMax = 900;               // End freq of OO viseme
+const int THFreqMin = 2800;               // Start freq of TH viseme
 const int THFreqMax = 4000;               // End freq of TH viseme
 const double visemeNoiseThreshold = 400;  // Minimum noise threshold for viseme to activate
 const double visemeSmoothingAlpha = 0.2;  // Smoothing factor between 0 and 1
