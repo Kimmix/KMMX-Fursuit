@@ -28,22 +28,22 @@ class KMMXController {
     void setDisplayBrightness(int i);
 
    private:
-    // Setup devices
+    // Devices
     Hub75DMA display;
     RGBStatus statusLED = RGBStatus(RGB_STATUS_PIN);
     CheekPanel cheekPanel = CheekPanel(argbCount, ARGB_PIN);
     HornLED hornLED;
-    LIS3DH accSensor;
-    APDS9930Sensor proxSensor;
+    LIS3DH accelerometer;
+    APDS9930Sensor proximitySensor;
     sensors_event_t *sensorEvent;
-    TaskHandle_t sensorEventTaskHandle;
-    // setup renderer state
+    TaskHandle_t sensorTaskHandle;
+    // Renderer states
     EyeState eyeState = EyeState(&display);
     MouthState mouthState = MouthState(&display);
     FXState fxState = FXState(&display);
     Boop boop;
     int16_t pixelPos = 0;
-    uint16_t proxValue;
+    uint16_t proximityValue;
 
     void renderFace();
     void booping();
@@ -52,16 +52,15 @@ class KMMXController {
     void resetIdletime();
     void sleep(KMMXController *controller);
     void checkIdleAndSleep(KMMXController *controller, unsigned long currentTime);
-    static void readSensor(void *parameter);
+    static void readSensorTask(void *parameter);
 
-    float lastX, lastY, lastZ;
-    float prevX, prevY, prevZ;
+    float lastAccelX, lastAccelY, lastAccelZ;
+    float prevAccelX, prevAccelY, prevAccelZ;
     unsigned long stillTime = 0;  // Time when the accelerometer became still
     unsigned long nextFrame;
     unsigned long nextBoop = 0;
     bool isSleeping = false;
-    bool initBoop = false, inRange = false, isBoop = false, isContinuous = false, isAngry = false;
+    bool boopInitialized = false, inBoopRange = false, isBooping = false, isContinuousBoop = false, isAngry = false;
     unsigned short prevHornBright = hornInitBrightness;
-    float boopSpeed = 0.0;
-    unsigned long nextRead;
+    float boopSpeed = 0.0f;
 };

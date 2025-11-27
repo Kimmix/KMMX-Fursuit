@@ -1,61 +1,71 @@
 #include "KMMXController.h"
+#include <cmath>
 
 void KMMXController::setupSensors() {
     // Configure I2C pins with pullups
-    pinMode(S3_SDA, INPUT_PULLUP);
-    pinMode(S3_SCL, INPUT_PULLUP);
-    // Initialize I2C with the correct pins
+    // pinMode(S3_SDA, INPUT_PULLUP);
+    // pinMode(S3_SCL, INPUT_PULLUP);
     Wire.begin(S3_SDA, S3_SCL);
-    Wire.setClock(100000); // Lower I2C clock speed to 100kHz for reliability
-    // For ESP32-S3, try to set timeout
-    #if defined(ESP32)
-        Wire.setTimeOut(1000); // 1000ms timeout
-    #endif
-
     statusLED.init();
     cheekPanel.configure(0xFF446C, 0xF9826C, 500, 2000);
     cheekPanel.init();
-    accSensor.setUp();
-    initBoop = proxSensor.setup();
+    accelerometer.setUp();
+    boopInitialized = proximitySensor.setup();
 
-    // Create sensor reading task
-    xTaskCreatePinnedToCore(readSensor, "SensorEventTask", 4096, this, 1, &sensorEventTaskHandle, 0);
+    // Allocate sensor event struct
     sensorEvent = new sensors_event_t();
-    memset(sensorEvent, 0, sizeof(sensors_event_t));
+    if (sensorEvent) {
+        memset(sensorEvent, 0, sizeof(sensors_event_t));
+    }
 
     // Initial acceleration values
-    lastX = lastY = lastZ = 0;
-    prevX = prevY = prevZ = 0;
+    lastAccelX = lastAccelY = lastAccelZ = 0;
+    prevAccelX = prevAccelY = prevAccelZ = 0;
+
+    // Create sensor reading task with appropriate priority
+    xTaskCreatePinnedToCore(readSensorTask, "SensorTask", 4096, this, 2, &sensorTaskHandle, 0);
 
     Serial.println("Sensor initialization complete");
 }
 
 void KMMXController::updateSensorValues() {
-    // Get proxSensor value
-    proxSensor.read(&proxValue);
-    sensorEvent = accSensor.getSensorEvent();
-    // Store the current acceleration values
-    // Only update prevX/Y/Z if lastX/Y/Z changed
-    if (lastX != sensorEvent->acceleration.x) prevX = lastX;
-    if (lastY != sensorEvent->acceleration.y) prevY = lastY;
-    if (lastZ != sensorEvent->acceleration.z) prevZ = lastZ;
+    // Read proximity sensor
+    proximitySensor.read(&proximityValue);
+    sensorEvent = accelerometer.getSensorEvent();
+
+    if (!sensorEvent) return; // Safety check
+
+    // Use a small epsilon for float comparison
+    constexpr float epsilon = 0.001f;
+
+    // Store previous values only if significantly changed
+    if (fabsf(lastAccelX - sensorEvent->acceleration.x) > epsilon) prevAccelX = lastAccelX;
+    if (fabsf(lastAccelY - sensorEvent->acceleration.y) > epsilon) prevAccelY = lastAccelY;
+    if (fabsf(lastAccelZ - sensorEvent->acceleration.z) > epsilon) prevAccelZ = lastAccelZ;
 
     // Update the last acceleration values
-    lastX = sensorEvent->acceleration.x;
-    lastY = sensorEvent->acceleration.y;
-    lastZ = sensorEvent->acceleration.z;
+    lastAccelX = sensorEvent->acceleration.x;
+    lastAccelY = sensorEvent->acceleration.y;
+    lastAccelZ = sensorEvent->acceleration.z;
 }
 
-void KMMXController::readSensor(void *parameter) {
+void KMMXController::readSensorTask(void *parameter) {
     KMMXController *controller = static_cast<KMMXController *>(parameter);
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    const TickType_t xFrequency = pdMS_TO_TICKS(sensorUpdateInterval);
+
     while (1) {
+        // Use vTaskDelayUntil for consistent timing and CPU yielding
+        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+
         unsigned long currentTime = millis();
-        if (currentTime >= controller->nextRead) {
-            controller->nextRead = currentTime + sensorUpdateInterval;
-            controller->updateSensorValues();
-            controller->checkIdleAndSleep(controller, currentTime);
+        controller->updateSensorValues();
+        controller->checkIdleAndSleep(controller, currentTime);
+
+        // Process events if sensorEvent is valid
+        if (controller->sensorEvent) {
+            controller->mouthState.getListEvent(*(controller->sensorEvent));
+            controller->eyeState.getListEvent(*(controller->sensorEvent));
         }
-        controller->mouthState.getListEvent(*(controller->sensorEvent));
-        controller->eyeState.getListEvent(*(controller->sensorEvent));
     }
 }

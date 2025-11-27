@@ -5,7 +5,7 @@ void KMMXController::resetIdletime(KMMXController *controller) {
     controller->stillTime = 0;
     controller->isSleeping = false;
     controller->hornLED.setBrightness(controller->prevHornBright, 5);
-    controller->accSensor.setDataRate(LIS3DH_DATARATE_25_HZ);
+    controller->accelerometer.setDataRate(LIS3DH_DATARATE_25_HZ);
 }
 
 void KMMXController::resetIdletime() {
@@ -15,7 +15,7 @@ void KMMXController::resetIdletime() {
     stillTime = 0;
     isSleeping = false;
     hornLED.setBrightness(prevHornBright, 5);
-    accSensor.setDataRate(LIS3DH_DATARATE_25_HZ);
+    accelerometer.setDataRate(LIS3DH_DATARATE_25_HZ);
 }
 
 void KMMXController::sleep(KMMXController *controller) {
@@ -23,7 +23,7 @@ void KMMXController::sleep(KMMXController *controller) {
     controller->hornLED.setBrightness(5);
     controller->eyeState.setState(EyeStateEnum::SLEEP);
     controller->isSleeping = true;
-    controller->accSensor.setDataRate(LIS3DH_DATARATE_1_HZ);
+    controller->accelerometer.setDataRate(LIS3DH_DATARATE_1_HZ);
 }
 
 void KMMXController::checkIdleAndSleep(KMMXController *controller, unsigned long currentTime) {
@@ -31,9 +31,9 @@ void KMMXController::checkIdleAndSleep(KMMXController *controller, unsigned long
     if (controller->eyeState.getState() != EyeStateEnum::IDLE && controller->eyeState.getState() != EyeStateEnum::SLEEP) {
         return;
     }
-    if (abs(lastX - prevX) < currentThreshold &&
-        abs(lastY - prevY) < currentThreshold &&
-        abs(lastZ - prevZ) < currentThreshold) {
+    if (abs(lastAccelX - prevAccelX) < currentThreshold &&
+        abs(lastAccelY - prevAccelY) < currentThreshold &&
+        abs(lastAccelZ - prevAccelZ) < currentThreshold) {
         if (controller->stillTime == 0) {
             controller->stillTime = currentTime;
         } else if (currentTime - stillTime >= idleTimeout && !isSleeping) {

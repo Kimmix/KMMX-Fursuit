@@ -4,21 +4,21 @@ void KMMXController::booping() {
     static bool lastIsAngry = false;
     if (millis() >= nextBoop) {
         nextBoop = millis() + 50;
-        boop.getBoop(proxValue, inRange, isBoop, boopSpeed, isContinuous, isAngry);
-        if (isBoop) {
+        boop.getBoop(proximityValue, inBoopRange, isBooping, boopSpeed, isContinuousBoop, isAngry);
+        if (isBooping) {
             fxState.setFlyingSpeed(boopSpeed);
             fxState.setState(FXStateEnum::Heart);
             eyeState.setState(EyeStateEnum::BOOP);
             mouthState.setState(MouthStateEnum::BOOP);
             resetIdletime();
             statusLED.setColor(Color::CYAN);
-        } else if (inRange) {
+        } else if (inBoopRange) {
             mouthState.setState(MouthStateEnum::BOOP);
             if (isSleeping) {
                 resetIdletime();
             }
             statusLED.setColor(Color::LIGHT_PINK);
-        } else if (isContinuous) {
+        } else if (isContinuousBoop) {
             eyeState.setState(EyeStateEnum::BOOP);
             statusLED.setColor(Color::PINK);
         } else if (isAngry && !lastIsAngry) {
