@@ -68,7 +68,7 @@ const int hornMinBrightness = 2;    // Minimum range for PWM
 const int hornMaxBrightness = 200;   // Maximum range for PWM (255 can cause high heat!!)
 
 // Controller etc. configuration
-const int sensorUpdateInterval = 100;     // Sensor update interval in milliseconds
+const int sensorUpdateInterval = 40;      // Sensor update interval in ms (match LIS3DH 25Hz rate)
 const short minimumPixelBrightness = 100;  // Minimum pixel brightness to draw on screen
 const short noseWidth = 8;
 const short noseHeight = 5;
