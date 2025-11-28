@@ -16,6 +16,7 @@
 #include "Devices/Proximity/APDS9930Sensor.h"
 #include "Devices/Ws2812/RGBStatus.h"
 #include "Devices/Ws2812/CheekPanel.h"
+#include "Types/SensorData.h"
 
 class KMMXController {
    public:
@@ -35,7 +36,9 @@ class KMMXController {
     HornLED hornLED;
     LIS3DH accelerometer;
     APDS9930Sensor proximitySensor;
-    sensors_event_t *sensorEvent;
+    // Double-buffer for thread-safe sensor access
+    SensorData sensorBuffer[2];
+    volatile uint8_t activeBuffer = 0;
     TaskHandle_t sensorTaskHandle;
     // Renderer states
     EyeState eyeState = EyeState(&display);
@@ -43,19 +46,18 @@ class KMMXController {
     FXState fxState = FXState(&display);
     Boop boop;
     int16_t pixelPos = 0;
-    uint16_t proximityValue;
 
     void renderFace();
     void booping();
-    void updateSensorValues();
     void resetIdletime(KMMXController *controller);
     void resetIdletime();
     void sleep(KMMXController *controller);
     void checkIdleAndSleep(KMMXController *controller, unsigned long currentTime);
     static void readSensorTask(void *parameter);
+    const SensorData& getSensorData() const;
 
-    float lastAccelX, lastAccelY, lastAccelZ;
-    float prevAccelX, prevAccelY, prevAccelZ;
+    // Previous sensor values for idle detection
+    SensorData prevSensorData;
     unsigned long stillTime = 0;  // Time when the accelerometer became still
     unsigned long nextFrame;
     unsigned long nextBoop = 0;

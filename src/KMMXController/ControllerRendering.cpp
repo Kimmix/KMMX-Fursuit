@@ -13,7 +13,7 @@ void KMMXController::update() {
 void KMMXController::renderFace() {
     display.flipDMABuffer();
     delay(1000 / display.getRefreshRate());
-    display.clearScreen();\
+    display.clearScreen();
     display.drawNose(noseNew);
     mouthState.update();
     eyeState.update();

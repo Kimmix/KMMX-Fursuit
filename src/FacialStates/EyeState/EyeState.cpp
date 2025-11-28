@@ -78,8 +78,8 @@ EyeStateEnum EyeState::getState() const {
     return currentState;
 }
 
-void EyeState::getListEvent(const sensors_event_t& eventData) {
-    event = eventData;
+void EyeState::setSensorData(const SensorData& data) {
+    sensorData = data;
 }
 
 void EyeState::changeDefaultFace() {
@@ -92,7 +92,7 @@ void EyeState::changeDefaultFace() {
 }
 
 void EyeState::movingEye() {
-    float zAcc = event.acceleration.z;
+    float zAcc = sensorData.accelZ;
     const float leftThreshold = 3.00, rightThreshold = -3.00,
                 leftMaxThreshold = 6.00, rightMaxThreshold = -6.00;
     static float smoothedLeftAcc = 0.0f;
@@ -251,6 +251,6 @@ void EyeState::detransition() {
 
 void EyeState::renderGooglyEye() {
     display->drawEye(eyeGoogly);
-    googlyEye.renderEye(event.acceleration.z, event.acceleration.x);
+    googlyEye.renderEye(sensorData.accelZ, sensorData.accelX);
     display->drawEyePupil(eyePupil, googlyEye.x, googlyEye.y);
 }

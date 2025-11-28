@@ -4,6 +4,7 @@
 #include "Bitmaps/Bitmaps.h"
 #include "Utils/Utils.h"
 #include "Renderer/Viseme.h"
+#include "Types/SensorData.h"
 
 enum class MouthStateEnum { IDLE,
                             BOOP,
@@ -19,11 +20,11 @@ class MouthState {
     void setState(MouthStateEnum newState);
     void savePrevState(MouthStateEnum newState);
     MouthStateEnum getState() const;
-    void getListEvent(const sensors_event_t& eventData);
+    void setSensorData(const SensorData& data);
 
    private:
     Hub75DMA* display;
-    sensors_event_t event;
+    SensorData sensorData;
     MouthStateEnum prevState, currentState = MouthStateEnum::IDLE;
     unsigned long mouthInterval, resetBoop, nextAngry;
     bool isTransitioning = false;

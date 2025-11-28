@@ -62,8 +62,8 @@ MouthStateEnum MouthState::getState() const {
     return currentState;
 }
 
-void MouthState::getListEvent(const sensors_event_t& eventData) {
-    event = eventData;
+void MouthState::setSensorData(const SensorData& data) {
+    sensorData = data;
 }
 
 void MouthState::drawDefault() {
@@ -71,7 +71,7 @@ void MouthState::drawDefault() {
 }
 
 void MouthState::movingMouth() {
-    float yAcc = event.acceleration.x;
+    float yAcc = sensorData.accelX;
     const float upThreshold = -2.00, downThreshold = 3.00,
                 upMaxThreshold = -7.00, downMaxThreshold = 8.00;
     static float smoothedUpAcc = 0.0f;

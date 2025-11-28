@@ -5,6 +5,7 @@
 #include "Bitmaps/Bitmaps.h"
 #include "Utils/Utils.h"
 #include "Renderer/GooglyEye.h"
+#include "Types/SensorData.h"
 
 enum class EyeStateEnum { IDLE,
                           BLINK,
@@ -25,11 +26,11 @@ class EyeState {
     void savePrevState(EyeStateEnum newState);
     void playPrevState();
     EyeStateEnum getState() const;
-    void getListEvent(const sensors_event_t& eventData);
+    void setSensorData(const SensorData& data);
 
    private:
     Hub75DMA* display;
-    sensors_event_t event;
+    SensorData sensorData;
     GooglyEye googlyEye;
     EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
     const uint8_t* eyeFrame = eyeDefault;

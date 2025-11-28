@@ -4,7 +4,7 @@ void KMMXController::booping() {
     static bool lastIsAngry = false;
     if (millis() >= nextBoop) {
         nextBoop = millis() + 50;
-        boop.getBoop(proximityValue, inBoopRange, isBooping, boopSpeed, isContinuousBoop, isAngry);
+        boop.getBoop(sensorBuffer[activeBuffer].proximity, inBoopRange, isBooping, boopSpeed, isContinuousBoop, isAngry);
         if (isBooping) {
             fxState.setFlyingSpeed(boopSpeed);
             fxState.setState(FXStateEnum::Heart);
