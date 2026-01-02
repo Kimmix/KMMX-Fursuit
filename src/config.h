@@ -47,7 +47,7 @@ const int panelResY = 32;
 const int panelsNumber = 2;
 const int screenWidth = panelResX * panelsNumber;
 const int screenHeight = panelResY;
-const int panelInitBrightness = 90;
+const int panelInitBrightness = 255;
 const int minRefreshRate = 200;
 const bool doubleBuffer = true;
 
@@ -60,7 +60,7 @@ const short sideColor1Hue = 239, sideColor1Saturation = 255, sideColor1Value = 2
 const short sideColor2Hue = 22, sideColor2Saturation = 255, sideColor2Value = 255;   // #F9826C (Coral)
 
 // HornLED PWM configuration
-const int hornInitBrightness = 70;
+const int hornInitBrightness = 20;
 const int hornPwmChannel = 0;
 const int hornFrequency = 20000;
 const int hornResolution = 8;
