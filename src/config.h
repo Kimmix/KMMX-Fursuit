@@ -48,7 +48,7 @@ const int panelsNumber = 2;
 const int screenWidth = panelResX * panelsNumber;
 const int screenHeight = panelResY;
 const int panelInitBrightness = 255;
-const int minRefreshRate = 200;
+const int minRefreshRate = 240;
 const bool doubleBuffer = true;
 
 // SideLED configuration
