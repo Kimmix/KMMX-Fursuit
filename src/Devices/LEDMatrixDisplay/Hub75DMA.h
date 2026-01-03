@@ -2,7 +2,7 @@
 
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 #include "config.h"
-#include "Bitmaps\Bitmaps.h"
+#include "Bitmaps/Bitmaps.h"
 
 class Hub75DMA {
    private:
