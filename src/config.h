@@ -89,7 +89,7 @@ const int IrMaxThreshold = 900;         // Maximum range of proximity
 const long BoopTimeMaxDuration = 2000;  // Total duration for calculate speed of boop
 
 // Idle configuration
-const unsigned long idleTimeout = 30000;    // Time till sleep in ms
+const unsigned long idleTimeout = 60000;    // Time till sleep in ms
 const float idleAccThreshold = 0.6;        // Minimum acceleration to go to sleep (less sensitive)
 const float sleepingAccThreshold = 0.2;    // Minimum acceleration to wake up while sleeping (more sensitive)
 
