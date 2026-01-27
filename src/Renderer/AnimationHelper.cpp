@@ -57,12 +57,44 @@ const AnimationTiming AnimationHelper::TIMING_ELASTIC = {
     .useEasing = true
 };
 
+const AnimationTiming AnimationHelper::TIMING_BREATHING = {
+    .startDelay = 60,
+    .midDelay = 60,
+    .endDelay = 60,
+    .startThreshold = 40,
+    .endThreshold = 80,
+    .peakPauseMin = 300,
+    .peakPauseMax = 550,
+    .restPauseMin = 700,
+    .restPauseMax = 1100,
+    .randomVariance = 15,
+    .useEasing = true
+};
+
+const AnimationTiming AnimationHelper::TIMING_BREATHING_SLOW = {
+    .startDelay = 250,
+    .midDelay = 250,
+    .endDelay = 250,
+    .startThreshold = 40,
+    .endThreshold = 80,
+    .peakPauseMin = 800,
+    .peakPauseMax = 1200,
+    .restPauseMin = 1500,
+    .restPauseMax = 2500,
+    .randomVariance = 25,
+    .useEasing = true
+};
+
 void AnimationHelper::initAnimation(AnimationState& anim, const uint8_t** frames, short length, const AnimationTiming& timing) {
     anim.frames = frames;
     anim.length = length;
     anim.index = 0;
     anim.increasing = true;
     anim.interval = 0;
+    anim.timing = timing;
+}
+
+void AnimationHelper::setTiming(AnimationState& anim, const AnimationTiming& timing) {
     anim.timing = timing;
 }
 

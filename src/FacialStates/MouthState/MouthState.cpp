@@ -5,6 +5,8 @@
 MouthState::MouthState(Hub75DMA* display) : display(display) {
     // Initialize wah animation with bouncy timing
     AnimationHelper::initAnimation(wahAnim, mouthWahAnimation, wahLength, AnimationHelper::TIMING_BOUNCY);
+    // Initialize idle breathing animation
+    AnimationHelper::initAnimation(idleAnim, defaultAnimation, defaultAnimationLength, AnimationHelper::TIMING_BREATHING);
 }
 
 void MouthState::startMic() {
@@ -13,7 +15,6 @@ void MouthState::startMic() {
 }
 
 void MouthState::update() {
-    updateAnimation();
     switch (currentState) {
         case MouthStateEnum::IDLE:
             movingMouth();
@@ -77,11 +78,16 @@ void MouthState::drawDefault() {
 }
 
 void MouthState::resetMovingMouth() {
-    defaultAnimationIndex = 0;
+    idleAnim.index = 0;
+    idleAnim.increasing = true;
 }
 
 void MouthState::setSlowAnimation(bool slow) {
-    isSlow = slow;
+    if (slow) {
+        AnimationHelper::setTiming(idleAnim, AnimationHelper::TIMING_BREATHING_SLOW);
+    } else {
+        AnimationHelper::setTiming(idleAnim, AnimationHelper::TIMING_BREATHING);
+    }
 }
 
 void MouthState::movingMouth() {
@@ -102,69 +108,8 @@ void MouthState::movingMouth() {
         mouthFrame = mouthDown[downLevel];
         return;
     }
-    // Default animation when no significant movement
-    mouthFrame = defaultAnimation[defaultAnimationIndex];
-}
-
-void MouthState::updateAnimation() {
-    if (millis() >= mouthInterval) {
-        updateIndex();
-        int baseDelay = isSlow ? 250 : 60;
-        int phaseVariance = getAnimationPhaseVariance();
-        int randomVariance = isSlow ? ((esp_random() % 51) - 25) : ((esp_random() % 31) - 15);
-        mouthInterval = millis() + baseDelay + phaseVariance + randomVariance;
-    }
-}
-
-void MouthState::updateIndex() {
-    static bool shouldPause = false;
-    static unsigned long pauseEnd = 0;
-    if (shouldPause) {
-        if (millis() < pauseEnd) return;
-        shouldPause = false;
-    }
-    // Variable step size for more organic movement
-    int step = (esp_random() % 100 < 20) ? 2 : 1; // 20% chance of double step
-    if (increasingIndex) {
-        defaultAnimationIndex += step;
-        if (defaultAnimationIndex >= defaultAnimationLength - 1) {
-            defaultAnimationIndex = defaultAnimationLength - 1;
-            increasingIndex = false;
-            // Random pause at peak (40% chance)
-            if (esp_random() % 100 < 40) {
-                shouldPause = true;
-                pauseEnd = millis() + (esp_random() % 250 + 300);
-            }
-        }
-    } else {
-        defaultAnimationIndex -= step;
-        if (defaultAnimationIndex <= 0) {
-            defaultAnimationIndex = 0;
-            increasingIndex = true;
-            // Random pause at rest (60% chance, longer)
-            if (esp_random() % 100 < 60) {
-                shouldPause = true;
-                pauseEnd = millis() + (esp_random() % 400 + 700);
-            }
-        }
-    }
-}
-
-int MouthState::getAnimationPhaseVariance() {
-    float progress = defaultAnimationIndex / (float)(defaultAnimationLength - 1);
-    if (increasingIndex) {
-        // Inhale: slower at start and end, faster in middle
-        if (progress < 0.4f) {
-            return 15; // Slower start
-        } else if (progress < 0.8f) {
-            return -8; // Faster middle
-        } else {
-            return 12; // Slower end
-        }
-    } else {
-        // Exhale: more consistent, slightly faster overall
-        return -5 + (int)(progress * 8); // -5 to 3ms variance
-    }
+    // Default animation using AnimationHelper
+    mouthFrame = AnimationHelper::updateAnimation(idleAnim);
 }
 
 void MouthState::angryBoop() {

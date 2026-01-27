@@ -29,7 +29,7 @@ class MouthState {
    private:
     Hub75DMA* display;
     SensorData sensorData;
-    MouthStateEnum prevState, currentState = MouthStateEnum::WAH;
+    MouthStateEnum prevState, currentState = MouthStateEnum::IDLE;
     unsigned long mouthInterval, resetBoop, nextAngry;
     bool isTransitioning = false;
     const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;
@@ -49,18 +49,13 @@ class MouthState {
 
     // Animation states
     AnimationState wahAnim;
+    AnimationState idleAnim;
 
     void drawDefault();
     void movingMouth();
-    void updateAnimation();
-    void updateIndex();
     void angryBoop();
-    int getAnimationPhaseVariance();
 
-    short defaultAnimationIndex = 0;
-    bool increasingIndex = true;
     short angryIndex = 0;
-    bool isSlow = false;
 
     TaskHandle_t visemeTaskHandle = NULL;
     void startVisemeTask();
