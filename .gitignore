@@ -4,7 +4,7 @@
 .vscode/launch.json
 .vscode/ipch
 node_modules/
-bitmap/bitmapConverter/input/*
-bitmap/bitmapConverter/output/*
-!bitmap/bitmapConverter/input/.gitkeep 
-!bitmap/bitmapConverter/output/.gitkeep 
+bitmapTool/bitmapConverter/input/*
+bitmapTool/bitmapConverter/output/*
+!bitmapTool/bitmapConverter/input/.gitkeep
+!bitmapTool/bitmapConverter/output/.gitkeep
