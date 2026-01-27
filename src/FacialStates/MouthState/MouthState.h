@@ -4,12 +4,14 @@
 #include "Bitmaps/Bitmaps.h"
 #include "Utils/Utils.h"
 #include "Renderer/Viseme.h"
+#include "Renderer/AnimationHelper.h"
 #include "Types/SensorData.h"
 
 enum class MouthStateEnum { IDLE,
                             BOOP,
                             ANGRYBOOP,
-                            TALKING };
+                            TALKING,
+                            WAH };
 
 class MouthState {
    public:
@@ -27,7 +29,7 @@ class MouthState {
    private:
     Hub75DMA* display;
     SensorData sensorData;
-    MouthStateEnum prevState, currentState = MouthStateEnum::IDLE;
+    MouthStateEnum prevState, currentState = MouthStateEnum::WAH;
     unsigned long mouthInterval, resetBoop, nextAngry;
     bool isTransitioning = false;
     const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;
@@ -41,6 +43,12 @@ class MouthState {
 
     const uint8_t* mouthAngryAnimation[20] = {mouthAH1, mouthAH2, mouthAH3, mouthAH4, mouthAH5, mouthAH6, mouthAH7, mouthAH8, mouthAH9, mouthAH10, mouthAH11, mouthAH12, mouthAH13, mouthAH14, mouthAH15, mouthAH16, mouthAH17, mouthAH18, mouthAH19, mouthAH20};
     short angryLength = arrayLength(mouthAngryAnimation);
+
+    const uint8_t* mouthWahAnimation[60] = {mouthWah1_rle, mouthWah2_rle, mouthWah3_rle, mouthWah4_rle, mouthWah5_rle, mouthWah6_rle, mouthWah7_rle, mouthWah8_rle, mouthWah9_rle, mouthWah10_rle, mouthWah11_rle, mouthWah12_rle, mouthWah13_rle, mouthWah14_rle, mouthWah15_rle, mouthWah16_rle, mouthWah17_rle, mouthWah18_rle, mouthWah19_rle, mouthWah20_rle, mouthWah21_rle, mouthWah22_rle, mouthWah23_rle, mouthWah24_rle, mouthWah25_rle, mouthWah26_rle, mouthWah27_rle, mouthWah28_rle, mouthWah29_rle, mouthWah30_rle, mouthWah31_rle, mouthWah32_rle, mouthWah33_rle, mouthWah34_rle, mouthWah35_rle, mouthWah36_rle, mouthWah37_rle, mouthWah38_rle, mouthWah39_rle, mouthWah40_rle, mouthWah41_rle, mouthWah42_rle, mouthWah43_rle, mouthWah44_rle, mouthWah45_rle, mouthWah46_rle, mouthWah47_rle, mouthWah48_rle, mouthWah49_rle, mouthWah50_rle, mouthWah51_rle, mouthWah52_rle, mouthWah53_rle, mouthWah54_rle, mouthWah55_rle, mouthWah56_rle, mouthWah57_rle, mouthWah58_rle, mouthWah59_rle, mouthWah60_rle};
+    short wahLength = arrayLength(mouthWahAnimation);
+
+    // Animation states
+    AnimationState wahAnim;
 
     void drawDefault();
     void movingMouth();

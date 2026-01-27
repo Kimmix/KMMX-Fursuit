@@ -2,7 +2,10 @@
 #include "Utils/Utils.h"
 #include <Arduino.h>
 
-MouthState::MouthState(Hub75DMA* display) : display(display) {}
+MouthState::MouthState(Hub75DMA* display) : display(display) {
+    // Initialize wah animation with bouncy timing
+    AnimationHelper::initAnimation(wahAnim, mouthWahAnimation, wahLength, AnimationHelper::TIMING_BOUNCY);
+}
 
 void MouthState::startMic() {
     viseme.initMic();
@@ -34,6 +37,9 @@ void MouthState::update() {
             } else {
                 display->drawMouth(visemeFrame);
             }
+            break;
+        case MouthStateEnum::WAH:
+            display->drawMouth(AnimationHelper::updateAnimation(wahAnim));
             break;
         default:
             break;
