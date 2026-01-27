@@ -95,12 +95,9 @@ void MouthState::movingMouth() {
 void MouthState::updateAnimation() {
     if (millis() >= mouthInterval) {
         updateIndex();
-        int baseDelay = 80;
+        int baseDelay = 70;
         int phaseVariance = getAnimationPhaseVariance();
         int randomVariance = (esp_random() % 31) - 15; // ±15ms randomness
-        if (defaultAnimationIndex == 0 || defaultAnimationIndex == 19) {
-            baseDelay += 100 + (esp_random() % 200); // Pause at extremes
-        }
         mouthInterval = millis() + baseDelay + phaseVariance + randomVariance;
     }
 }
@@ -116,13 +113,13 @@ void MouthState::updateIndex() {
     int step = (esp_random() % 100 < 20) ? 2 : 1; // 20% chance of double step
     if (increasingIndex) {
         defaultAnimationIndex += step;
-        if (defaultAnimationIndex >= 19) {
-            defaultAnimationIndex = 19;
+        if (defaultAnimationIndex >= defaultAnimationLength - 1) {
+            defaultAnimationIndex = defaultAnimationLength - 1;
             increasingIndex = false;
             // Random pause at peak (40% chance)
             if (esp_random() % 100 < 40) {
                 shouldPause = true;
-                pauseEnd = millis() + (esp_random() % 250 + 150);
+                pauseEnd = millis() + (esp_random() % 250 + 300);
             }
         }
     } else {
@@ -133,14 +130,14 @@ void MouthState::updateIndex() {
             // Random pause at rest (60% chance, longer)
             if (esp_random() % 100 < 60) {
                 shouldPause = true;
-                pauseEnd = millis() + (esp_random() % 400 + 200);
+                pauseEnd = millis() + (esp_random() % 400 + 700);
             }
         }
     }
 }
 
 int MouthState::getAnimationPhaseVariance() {
-    float progress = defaultAnimationIndex / 19.0f;
+    float progress = defaultAnimationIndex / (float)(defaultAnimationLength - 1);
     if (increasingIndex) {
         // Inhale: slower at start and end, faster in middle
         if (progress < 0.4f) {

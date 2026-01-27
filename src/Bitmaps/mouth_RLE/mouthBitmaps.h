@@ -3,5 +3,5 @@
 #include "mouthBitmap.h"
 #include "mouthUp.h"
 #include "mouthDown.h"
-#include "mouthAnimated.h"
+#include "mouthDefault.h"
 #include "mouthViseme.h"
