@@ -21,6 +21,8 @@ class MouthState {
     void savePrevState(MouthStateEnum newState);
     MouthStateEnum getState() const;
     void setSensorData(const SensorData& data);
+    void resetMovingMouth();
+    void setSlowAnimation(bool slow);
 
    private:
     Hub75DMA* display;
@@ -50,6 +52,7 @@ class MouthState {
     short defaultAnimationIndex = 0;
     bool increasingIndex = true;
     short angryIndex = 0;
+    bool isSlow = false;
 
     TaskHandle_t visemeTaskHandle = NULL;
     void startVisemeTask();

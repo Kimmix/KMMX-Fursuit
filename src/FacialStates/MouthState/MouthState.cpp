@@ -70,6 +70,14 @@ void MouthState::drawDefault() {
     display->drawMouth(mouthFrame);
 }
 
+void MouthState::resetMovingMouth() {
+    defaultAnimationIndex = 0;
+}
+
+void MouthState::setSlowAnimation(bool slow) {
+    isSlow = slow;
+}
+
 void MouthState::movingMouth() {
     float yAcc = sensorData.accelX;
     const float upThreshold = -2.00, downThreshold = 3.00,
@@ -95,9 +103,9 @@ void MouthState::movingMouth() {
 void MouthState::updateAnimation() {
     if (millis() >= mouthInterval) {
         updateIndex();
-        int baseDelay = 70;
+        int baseDelay = isSlow ? 250 : 60;
         int phaseVariance = getAnimationPhaseVariance();
-        int randomVariance = (esp_random() % 31) - 15; // ±15ms randomness
+        int randomVariance = isSlow ? ((esp_random() % 51) - 25) : ((esp_random() % 31) - 15);
         mouthInterval = millis() + baseDelay + phaseVariance + randomVariance;
     }
 }

@@ -3,6 +3,8 @@
 
 void KMMXController::resetIdletime(KMMXController *controller) {
     controller->eyeState.playPrevState();
+    controller->mouthState.resetMovingMouth();
+    controller->mouthState.setSlowAnimation(false);
     controller->stillTime = 0;
     controller->isSleeping = false;
     controller->hornLED.setBrightness(controller->prevHornBright, 5);
@@ -12,6 +14,8 @@ void KMMXController::resetIdletime(KMMXController *controller) {
 void KMMXController::resetIdletime() {
     if (isSleeping) {
         eyeState.playPrevState();
+        mouthState.resetMovingMouth();
+        mouthState.setSlowAnimation(false);
     }
     stillTime = 0;
     isSleeping = false;
@@ -23,6 +27,7 @@ void KMMXController::sleep(KMMXController *controller) {
     controller->prevHornBright = controller->hornLED.getBrightness();
     controller->hornLED.setBrightness(5);
     controller->eyeState.setState(EyeStateEnum::SLEEP);
+    controller->mouthState.setSlowAnimation(true);
     controller->isSleeping = true;
     controller->accelerometer.setDataRate(LIS3DH_DATARATE_1_HZ);
 }
