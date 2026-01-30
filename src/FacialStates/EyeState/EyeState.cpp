@@ -130,20 +130,19 @@ void EyeState::idleFace() {
             nextBlink = millis() + 8000 + (esp_random() % 7000);
             blinkType = 2;
         }
+
+        // 25% chance for double blink
+        shouldDoubleBlink = (esp_random() % 100) < 25;
+        blinkCount = 0;
+
         currentState = EyeStateEnum::BLINK;
     }
 }
 
 void EyeState::blink() {
     if (millis() >= blinkInterval) {
-        // Get base timing from lookup table
-        uint8_t baseDelay = blinkTimings[blinkType][blinkDirection ? 0 : 1];
-        int frameVariance = blinkDirection ?
-            (currentBlinkFrameIndex < 7 ? -1 : 1) :
-            ((blinkAnimationLength - currentBlinkFrameIndex) < 7 ? 2 : -1);
-        // Apply variance and add randomness (±1ms)
-        int frameDelay = baseDelay + frameVariance + ((esp_random() % 3) - 1);
-        frameDelay = max(frameDelay, 2); // Minimum 2ms
+        // Get timing from lookup table
+        uint8_t frameDelay = blinkTimings[blinkType][blinkDirection ? 0 : 1];
         blinkInterval = millis() + frameDelay;
         if (blinkDirection) {
             // Closing eye
@@ -155,11 +154,23 @@ void EyeState::blink() {
         } else {
             // Opening eye
             if (--currentBlinkFrameIndex <= 0) {
-                // Reset for next blink
-                blinkDirection = true;
-                currentBlinkFrameIndex = 0;
-                changeDefaultFace();
-                currentState = EyeStateEnum::IDLE;
+                blinkCount++;
+
+                // Check if we should do a second blink
+                if (shouldDoubleBlink && blinkCount == 1) {
+                    // Start second blink after short pause (100-200ms)
+                    blinkDirection = true;
+                    currentBlinkFrameIndex = 0;
+                    blinkInterval = millis() + 100 + (esp_random() % 100);
+                } else {
+                    // Reset for next blink
+                    blinkDirection = true;
+                    currentBlinkFrameIndex = 0;
+                    blinkCount = 0;
+                    shouldDoubleBlink = false;
+                    changeDefaultFace();
+                    currentState = EyeStateEnum::IDLE;
+                }
             }
         }
     }

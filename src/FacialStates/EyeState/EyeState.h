@@ -48,19 +48,20 @@ class EyeState {
         eyeUp1, eyeUp2, eyeUp3, eyeUp4, eyeUp5, eyeUp6, eyeUp7, eyeUp8, eyeUp9, eyeUp10,
         eyeUp11, eyeUp12, eyeUp13, eyeUp14, eyeUp15, eyeUp16, eyeUp17, eyeUp18, eyeUp19, eyeUp20};
 
-    const uint8_t* blinkAnimation[15] = {
-        eyeBlink1, eyeBlink2, eyeBlink3, eyeBlink4, eyeBlink5, eyeBlink6, eyeBlink7, eyeBlink8, eyeBlink9, eyeBlink10,
-        eyeBlink11, eyeBlink12, eyeBlink13, eyeBlink14, eyeBlink15};
+    const uint8_t* blinkAnimation[24] = {eyeBlink1, eyeBlink2, eyeBlink3, eyeBlink4, eyeBlink5, eyeBlink6, eyeBlink7, eyeBlink8, eyeBlink9, eyeBlink10, eyeBlink11, eyeBlink12, eyeBlink13, eyeBlink14, eyeBlink15, eyeBlink16, eyeBlink17, eyeBlink18, eyeBlink19, eyeBlink20, eyeBlink21, eyeBlink22, eyeBlink23, eyeBlink24};
     const short blinkAnimationLength = arrayLength(blinkAnimation);
+
     short currentBlinkFrameIndex = 0;
-    bool blinkDirection = true; // true = closing, false = opening
-    uint8_t blinkType = 0; // 0 = normal, 1 = quick, 2 = slow
+    bool blinkDirection = true;  // true = closing, false = opening
+    uint8_t blinkType = 0;       // 0 = normal, 1 = quick, 2 = slow
+    uint8_t blinkCount = 0;      // Track blinks for double blink
+    bool shouldDoubleBlink = false;
 
     // Optimized timing tables [blinkType][isClosing]
     const uint8_t blinkTimings[3][2] = {
-        {5, 8},   // Normal: 5ms closing, 8ms opening
-        {3, 5},   // Quick: 3ms closing, 5ms opening
-        {12, 15}  // Slow: 12ms closing, 15ms opening
+        {3, 5},  // Normal: ~36ms closing + ~60ms opening = ~96ms
+        {2, 3},  // Quick: ~24ms closing + ~36ms opening = ~60ms
+        {5, 8}   // Slow: ~60ms closing + ~96ms opening = ~156ms
     };
 
     const uint8_t* boopAnimation[2] = {eyeV1, eyeV2};
