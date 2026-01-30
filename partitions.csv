@@ -1,0 +1,7 @@
+# ESP32-S3 N16 (16MB Flash) Custom Partition Table
+# Optimized for KMMX-Fursuit with MAXIMUM bitmap storage
+# No OTA - All space for app and data!
+# Name,   Type, SubType, Offset,  Size,     Flags
+nvs,      data, nvs,     0x9000,  0x5000,
+app0,     app,  factory, 0x10000, 0xFF0000,
+
