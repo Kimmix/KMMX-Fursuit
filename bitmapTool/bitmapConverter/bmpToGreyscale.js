@@ -106,7 +106,7 @@ function rleEncode(data) {
 function generateRLEOutputFileContent(greyscaleArrays) {
     const lines = ['// Generated RLE output'];
     for (const { data, index } of greyscaleArrays) {
-        const sectionName = `${bitmapName}${index}_rle`;
+        const sectionName = `${bitmapName}${index}`;
         const rleData = rleEncode(data);
         const sectionLines = [
             `static const uint8_t PROGMEM ${sectionName}[${rleData.length}] = {`
