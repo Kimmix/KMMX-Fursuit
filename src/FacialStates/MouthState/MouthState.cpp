@@ -97,13 +97,13 @@ void MouthState::movingMouth() {
     static float smoothedUpAcc = 0.0f;
     static float smoothedDownAcc = 0.0f;
     // Check for upward movement (negative direction)
-    int upLevel = smoothAccelerometerMovement(yAcc, smoothedUpAcc, upThreshold, upMaxThreshold, 0.3f, 0.5f, 19, true);
+    int upLevel = smoothAccelerometerMovement(yAcc, smoothedUpAcc, upThreshold, upMaxThreshold, 0.3f, 0.5f, 59, true);
     if (upLevel >= 0) {
         mouthFrame = mouthUp[upLevel];
         return;
     }
     // Check for downward movement (positive direction)
-    int downLevel = smoothAccelerometerMovement(yAcc, smoothedDownAcc, downThreshold, downMaxThreshold, 0.3f, 0.5f, 19, false);
+    int downLevel = smoothAccelerometerMovement(yAcc, smoothedDownAcc, downThreshold, downMaxThreshold, 0.3f, 0.5f, 59, false);
     if (downLevel >= 0) {
         mouthFrame = mouthDown[downLevel];
         return;
