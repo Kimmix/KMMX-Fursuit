@@ -89,9 +89,14 @@ const int IrMaxThreshold = 900;         // Maximum range of proximity
 const long BoopTimeMaxDuration = 2000;  // Total duration for calculate speed of boop
 
 // Idle configuration
-const unsigned long idleTimeout = 60000;    // Time till sleep in ms
-const float idleAccThreshold = 0.6;        // Minimum acceleration to go to sleep (less sensitive)
-const float sleepingAccThreshold = 0.2;    // Minimum acceleration to wake up while sleeping (more sensitive)
+const unsigned long idleTimeout = 60000;           // Time till sleep in ms (60 seconds)
+const unsigned long baselineUpdateDelay = 2000;    // Time to wait before updating baseline when still (2 seconds)
+const float idleAccThreshold = 1.5;                // Magnitude change threshold to detect motion (m/s²)
+const float sleepingAccThreshold = 0.7;            // Magnitude change threshold to wake up
+const int motionHysteresisCount = 3;               // Number of motion detections needed to wake up
+const int motionCounterDecayRate = 10;         // Samples between counter decay (10 = ~200ms at 50Hz)
+const float gravityMagnitude = 9.81;               // Earth's gravity for reference (m/s²)
+const bool enableIdleDebug = true;                 // Enable debug logging for idle detection
 
 // Sample Rate and Samples
 const double i2sSampleRate = 8000;

@@ -1,4 +1,6 @@
 #include "KMMXController.h"
+#include <cmath>
+#include "esp_dsp.h"
 
 void KMMXController::setupSensors() {
     Wire.begin(S3_SDA, S3_SCL);
@@ -34,6 +36,21 @@ void KMMXController::readSensorTask(void *parameter) {
         ctrl->sensorBuffer[writeBuffer].accelX = event->acceleration.x;
         ctrl->sensorBuffer[writeBuffer].accelY = event->acceleration.y;
         ctrl->sensorBuffer[writeBuffer].accelZ = event->acceleration.z;
+
+        // Calculate acceleration magnitude using ESP-DSP optimized functions
+        // Create vector for dot product calculation
+        float accelVec[3] = {
+            ctrl->sensorBuffer[writeBuffer].accelX,
+            ctrl->sensorBuffer[writeBuffer].accelY,
+            ctrl->sensorBuffer[writeBuffer].accelZ
+        };
+
+        // Use ESP-DSP dot product (hardware-accelerated on ESP32-S3)
+        // magnitude = sqrt(x*x + y*y + z*z) = sqrt(dotprod(vec, vec))
+        float dotProduct;
+        dsps_dotprod_f32(accelVec, accelVec, &dotProduct, 3);
+        ctrl->sensorBuffer[writeBuffer].accelMagnitude = sqrtf(dotProduct);
+
         ctrl->proximitySensor.read(&ctrl->sensorBuffer[writeBuffer].proximity);
 
         // Atomic swap - readers now use the new buffer

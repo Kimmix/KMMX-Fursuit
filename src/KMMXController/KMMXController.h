@@ -60,7 +60,10 @@ class KMMXController {
 
     // Previous sensor values for idle detection
     SensorData prevSensorData;
+    SensorData baselineAccel;  // Baseline acceleration when motion was last detected
     unsigned long stillTime = 0;  // Time when the accelerometer became still
+    uint8_t motionCounter = 0;  // Counter for hysteresis (sustained motion detection)
+    bool baselineInitialized = false;  // Whether baseline has been set
     unsigned long nextFrame;
     unsigned long nextBoop = 0;
     bool isSleeping = false;
