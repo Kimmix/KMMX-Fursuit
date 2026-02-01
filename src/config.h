@@ -56,8 +56,10 @@ const bool doubleBuffer = true;
 const int argbCount = 24;                                                            // Number of LEDs
 const short sideLEDBrightness = 255;                                                 // LED brightness
 const long sideLEDAnimateInterval = 400;                                             // Animation interval in milliseconds
-const short sideColor1Hue = 239, sideColor1Saturation = 255, sideColor1Value = 255;  // #FF446C (Reddish Pink)
-const short sideColor2Hue = 22, sideColor2Saturation = 255, sideColor2Value = 255;   // #F9826C (Coral)
+const int sideColor1RGB = 0xFF446C;                                             // #FF446C Reddish Pink (RGB hex)
+const int sideColor2RGB = 0xF9826C;                                             // #F9826C Coral (RGB hex)
+const int sideLEDFadeInterval = 500;                                            // Fade interval in milliseconds
+const int sideLEDPositionChangeDelay = 2000;                                    // Position change delay in milliseconds
 
 // HornLED PWM configuration
 const int hornInitBrightness = 15;
@@ -96,7 +98,7 @@ const float sleepingAccThreshold = 0.7;            // Magnitude change threshold
 const int motionHysteresisCount = 3;               // Number of motion detections needed to wake up
 const int motionCounterDecayRate = 10;         // Samples between counter decay (10 = ~200ms at 50Hz)
 const float gravityMagnitude = 9.81;               // Earth's gravity for reference (m/s²)
-const bool enableIdleDebug = true;                 // Enable debug logging for idle detection
+const bool enableIdleDebug = false;                 // Enable debug logging for idle detection
 
 // Sample Rate and Samples
 const double i2sSampleRate = 8000;

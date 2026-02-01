@@ -5,7 +5,7 @@
 void KMMXController::setupSensors() {
     Wire.begin(S3_SDA, S3_SCL);
     statusLED.init();
-    cheekPanel.configure(0xFF446C, 0xF9826C, 500, 2000);
+    cheekPanel.configure(sideColor1RGB, sideColor2RGB, sideLEDFadeInterval, sideLEDPositionChangeDelay);
     cheekPanel.init();
     accelerometer.setUp();
     boopInitialized = proximitySensor.setup();
