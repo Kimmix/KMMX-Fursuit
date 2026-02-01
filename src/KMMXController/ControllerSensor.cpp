@@ -8,10 +8,14 @@ void KMMXController::setupSensors() {
     accelerometer.setUp();
     boopInitialized = proximitySensor.setup();
 
-    // Create sensor reading task on Core 0 (Core 1 is for Arduino loop/rendering)
+    // Create sensor reading task on Core 0
     xTaskCreatePinnedToCore(readSensorTask, "SensorTask", 4096, this, 2, &sensorTaskHandle, 0);
 
-    Serial.println("Sensor initialization complete");
+    // Create rendering task on Core 0 (keeps all heavy processing on one core)
+    // Priority 1 is lower than SensorTask (priority 2), so sensors get priority
+    xTaskCreatePinnedToCore(renderTask, "RenderTask", 4096, this, 1, &renderTaskHandle, 0);
+
+    Serial.println("Sensor and render task initialization complete");
 }
 
 void KMMXController::readSensorTask(void *parameter) {

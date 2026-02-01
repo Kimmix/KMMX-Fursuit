@@ -40,6 +40,7 @@ class KMMXController {
     SensorData sensorBuffer[2];
     volatile uint8_t activeBuffer = 0;
     TaskHandle_t sensorTaskHandle;
+    TaskHandle_t renderTaskHandle;
     // Renderer states
     EyeState eyeState = EyeState(&display);
     MouthState mouthState = MouthState(&display);
@@ -54,6 +55,7 @@ class KMMXController {
     void sleep(KMMXController *controller);
     void checkIdleAndSleep(KMMXController *controller, unsigned long currentTime);
     static void readSensorTask(void *parameter);
+    static void renderTask(void *parameter);
     const SensorData& getSensorData() const;
 
     // Previous sensor values for idle detection
