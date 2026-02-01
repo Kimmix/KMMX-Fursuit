@@ -8,7 +8,7 @@ void KMMXController::resetIdletime(KMMXController *controller) {
     controller->stillTime = 0;
     controller->isSleeping = false;
     controller->hornLED.setBrightness(controller->prevHornBright, 5);
-    controller->accelerometer.setDataRate(LIS3DH_DATARATE_25_HZ);
+    controller->accelerometer.setDataRate(LIS3DH_DATARATE_50_HZ);  // Wake up to 50Hz
 }
 
 void KMMXController::resetIdletime() {
@@ -20,7 +20,7 @@ void KMMXController::resetIdletime() {
     stillTime = 0;
     isSleeping = false;
     hornLED.setBrightness(prevHornBright, 5);
-    accelerometer.setDataRate(LIS3DH_DATARATE_25_HZ);
+    accelerometer.setDataRate(LIS3DH_DATARATE_50_HZ);  // Wake up to 50Hz
 }
 
 void KMMXController::sleep(KMMXController *controller) {

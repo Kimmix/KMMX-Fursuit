@@ -6,7 +6,7 @@ void LIS3DH::setUp() {
     if (!lis.begin(0x18)) {
         Serial.println("Could not initialize LIS3DH");
     }
-    lis.setDataRate(LIS3DH_DATARATE_25_HZ);
+    lis.setDataRate(LIS3DH_DATARATE_50_HZ);  // 50Hz matches sensor polling rate
     lis.setRange(LIS3DH_RANGE_2_G);
 }
 
