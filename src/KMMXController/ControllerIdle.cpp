@@ -135,16 +135,16 @@ void KMMXController::checkIdleAndSleep(KMMXController *controller, unsigned long
         }
 
         // Update baseline after being still for configured delay (prevents drift during motion)
-        if (controller->stillTime > 0 &&
-            (currentTime - controller->stillTime >= baselineUpdateDelay) &&
-            (currentTime - controller->stillTime < baselineUpdateDelay + 100)) {  // Only update once in this window
-            controller->baselineAccel = current;
-            if (enableIdleDebug) {
-                Serial.printf("[IDLE] 📍 Baseline updated to %.2f m/s² (still for %.1fs)\n",
-                              current.accelMagnitude,
-                              baselineUpdateDelay / 1000.0);
-            }
-        }
+        // if (controller->stillTime > 0 &&
+        //     (currentTime - controller->stillTime >= baselineUpdateDelay) &&
+        //     (currentTime - controller->stillTime < baselineUpdateDelay + 100)) {  // Only update once in this window
+        //     controller->baselineAccel = current;
+        //     if (enableIdleDebug) {
+        //         Serial.printf("[IDLE] Baseline updated to %.2f m/s² (still for %.1fs)\n",
+        //                       current.accelMagnitude,
+        //                       baselineUpdateDelay / 1000.0);
+        //     }
+        // }
 
         // Check if should enter sleep
         if (controller->stillTime == 0) {
