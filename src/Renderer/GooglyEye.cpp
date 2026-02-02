@@ -6,14 +6,14 @@ void GooglyEye::update(float inputX, float inputY) {
     float elapsed = (float)(t - lastTime) / 1000.0;
     lastTime = t;
 
-    float scale = G_SCALE * elapsed;
+    float scale = googlyAccelScale * elapsed;
     float ax = inputY * scale, ay = inputX * scale;
 
-    float vxNew = (vx + ax) * DRAG, vyNew = (vy + ay) * DRAG;
+    float vxNew = (vx + ax) * googlyDrag, vyNew = (vy + ay) * googlyDrag;
 
     float v = vxNew * vxNew + vyNew * vyNew;
-    if (v > (PUPIL_SIZE * PUPIL_SIZE)) {
-        v = PUPIL_SIZE / sqrt(v);
+    if (v > (googlyPupilSize * googlyPupilSize)) {
+        v = googlyPupilSize / sqrt(v);
         vxNew *= v;
         vyNew *= v;
     }
@@ -21,7 +21,7 @@ void GooglyEye::update(float inputX, float inputY) {
     float xNew = x + vxNew, yNew = y + vyNew;
 
     float d = xNew * xNew + yNew * yNew;
-    float r2 = INNER_RADIUS * INNER_RADIUS;
+    float r2 = googlyInnerRadius * googlyInnerRadius;
     if (d >= r2) {
         float dx = xNew - x, dy = yNew - y;
 
@@ -38,9 +38,9 @@ void GooglyEye::update(float inputX, float inputY) {
         float ix = x + dx * n1, iy = y + dy * n1;
 
         float mag1 = sqrt(dx * dx + dy * dy), dx1 = (ix - x), dy1 = (iy - y), mag2 = sqrt(dx1 * dx1 + dy1 * dy1);
-        float mag3 = (mag1 - mag2) * ELASTICITY;
+        float mag3 = (mag1 - mag2) * googlyElasticity;
 
-        float ax = -ix / INNER_RADIUS, ay = -iy / INNER_RADIUS, rx, ry;
+        float ax = -ix / googlyInnerRadius, ay = -iy / googlyInnerRadius, rx, ry;
         if (mag1 > 0.0) {
             rx = -dx / mag1;
             ry = -dy / mag1;
@@ -53,7 +53,7 @@ void GooglyEye::update(float inputX, float inputY) {
 
         xNew = ix + rx * mag3;
         yNew = iy + ry * mag3;
-        mag1 *= ELASTICITY;
+        mag1 *= googlyElasticity;
         vxNew = rx * mag1;
         vyNew = ry * mag1;
     }

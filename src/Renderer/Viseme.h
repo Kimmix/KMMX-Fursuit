@@ -11,8 +11,8 @@ class Viseme {
    public:
     void initMic();
     const uint8_t* renderViseme();
-    double getNoiseThreshold();
-    void setNoiseThreshold(double value);
+    float getNoiseThreshold();
+    void setNoiseThreshold(float value);
 
    private:
     enum VisemeType {
@@ -24,14 +24,14 @@ class Viseme {
     };
     I2SMicrophone mic;
     ArduinoFFT<double> FFT = ArduinoFFT<double>(real, imaginary, i2sSamples, i2sSampleRate);
-    double real[i2sSamples], imaginary[i2sSamples];
-    double noiseThreshold = visemeNoiseThreshold;
+    double real[i2sSamples], imaginary[i2sSamples];  // ArduinoFFT requires double
+    float noiseThreshold = visemeNoiseThreshold;
     const float alpha = visemeSmoothingAlpha;
-    const double decayRate = visemeDecayRate;  // Adjusted decay rate (units per millisecond)
-    unsigned int currentLoudness = 0;
+    const float decayRate = visemeDecayRate;
+    uint16_t currentLoudness = 0;
     unsigned long decayStartTime = 0;
-    const unsigned long decayElapsedThreshold = 1000;
-    static const short visemeFramelength = 20;
+    const uint16_t decayElapsedThreshold = 1000;
+    static const uint8_t visemeFramelength = 20;
     VisemeType previousViseme;
 
     const uint8_t* ahViseme[visemeFramelength] = {

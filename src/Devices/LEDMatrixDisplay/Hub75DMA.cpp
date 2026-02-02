@@ -110,22 +110,22 @@ void Hub75DMA::colorSpiral(const uint8_t brightness, const int startX, const int
 }
 
 void Hub75DMA::getBlackWhiteWave(const uint8_t brightness, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {
-    double wave = (row + col) * 0.1 + millis() * 0.008;
-    double gray = sin(wave) * 127 + 128;
+    float wave = (row + col) * 0.1f + millis() * 0.008f;
+    float gray = sinf(wave) * 127.0f + 128.0f;
     r = g = b = static_cast<uint8_t>(gray);
 
-    double scale = brightness / 255.0;
+    float scale = brightness / 255.0f;
     gray = gray * scale;
 
     r = g = b = constrain(static_cast<uint8_t>(gray), 0, 255);
 }
 
 void Hub75DMA::getColorWave(const uint8_t brightness, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {
-    double wave = (row + col) * 0.4 + millis() * 0.01;
-    double color1 = sin(wave) * 127 + 128;
-    double color2 = sin(wave + PI) * 127 + 128;
+    float wave = (row + col) * 0.4f + millis() * 0.01f;
+    float color1 = sinf(wave) * 127.0f + 128.0f;
+    float color2 = sinf(wave + PI) * 127.0f + 128.0f;
 
-    double scale = brightness / 255.0;
+    float scale = brightness / 255.0f;
     color1 *= scale;
     color2 *= scale;
 

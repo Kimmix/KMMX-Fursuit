@@ -39,8 +39,8 @@ class FlyingHeart {
         float velocityx, velocityy;
         HeartSize size;
     };
-    short setIndex = 0;
-    static const short numSets = 3, numHeart = 23, sumHeart = numSets * numHeart;
+    uint8_t setIndex = 0;
+    static const uint8_t numSets = 3, numHeart = 23, sumHeart = numSets * numHeart;
     Heart Hearts[sumHeart];
     volatile unsigned long heartSpeed = 0;
     float speedModifier = 0.5;

@@ -1,7 +1,7 @@
 #include "KMMXController.h"
 #include <cmath>
 
-void KMMXController::resetIdletime(KMMXController *controller) {
+void KMMXController::resetIdleTime(KMMXController *controller) {
     controller->eyeState.playPrevState();
     controller->mouthState.resetMovingMouth();
     controller->mouthState.setSlowAnimation(false);
@@ -15,7 +15,7 @@ void KMMXController::resetIdletime(KMMXController *controller) {
     }
 }
 
-void KMMXController::resetIdletime() {
+void KMMXController::resetIdleTime() {
     if (isSleeping) {
         eyeState.playPrevState();
         mouthState.resetMovingMouth();
@@ -31,7 +31,7 @@ void KMMXController::resetIdletime() {
     }
 }
 
-void KMMXController::sleep(KMMXController *controller) {
+void KMMXController::enterSleep(KMMXController *controller) {
     controller->prevHornBright = controller->hornLED.getBrightness();
     controller->hornLED.setBrightness(5);
     controller->eyeState.setState(EyeStateEnum::SLEEP);
@@ -104,7 +104,7 @@ void KMMXController::checkIdleAndSleep(KMMXController *controller, unsigned long
         // If sleeping, require sustained motion to wake up (hysteresis)
         if (controller->isSleeping) {
             if (controller->motionCounter >= motionHysteresisCount) {
-                resetIdletime(controller);
+                resetIdleTime(controller);
                 // Don't update baseline here - let it update when still in new position
             }
             // Don't reset counter while sleeping - let it accumulate
@@ -152,7 +152,7 @@ void KMMXController::checkIdleAndSleep(KMMXController *controller, unsigned long
         } else if (!controller->isSleeping &&
                    (currentTime - controller->stillTime >= idleTimeout)) {
             // Been still long enough - go to sleep
-            sleep(controller);
+            enterSleep(controller);
         }
     }
 }

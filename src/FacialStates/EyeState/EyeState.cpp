@@ -211,7 +211,7 @@ void EyeState::smileFace() {
 
 void EyeState::angryFace() {
     if (isTransitioning) {
-        display->drawEye(eyeangryAnimation[angryIndex]);
+        display->drawEye(eyeAngryAnimation[angryIndex]);
         if (millis() >= nextAngry) {
             nextAngry = millis() + 5;
             angryIndex++;
@@ -221,7 +221,7 @@ void EyeState::angryFace() {
             }
         }
     } else {
-        display->drawEye(eyeangryAnimation[angryLength - 9]);
+        display->drawEye(eyeAngryAnimation[angryLength - 9]);
     }
 }
 
@@ -249,7 +249,7 @@ void EyeState::sleepFace() {
             nextSleep = currentMillis + 300;
         }
     }
-    display->drawEye(eyesleepAnimation[sleepIndex]);
+    display->drawEye(eyeSleepAnimation[sleepIndex]);
 }
 
 void EyeState::resetSleepFace() {

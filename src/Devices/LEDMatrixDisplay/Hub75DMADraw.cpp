@@ -6,7 +6,7 @@ void Hub75DMA::drawFullscreen(const uint8_t* bitmap) {
 }
 
 void Hub75DMA::drawEyePupil(const uint8_t* bitmap, int x, int y) {
-    drawBitmap(bitmap, eyePupilWidth, eyePupilHeight, eyePupilOffsetX + x, eyePupilOffsetY + y);
+    drawBitmap(bitmap, googlyPupilWidth, googlyPupilHeight, googlyPupilOffsetX + x, googlyPupilOffsetY + y);
 }
 
 void Hub75DMA::drawNose(const uint8_t* bitmap) {

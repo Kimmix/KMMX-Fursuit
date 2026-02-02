@@ -7,8 +7,8 @@
 class Hub75DMA {
    private:
     MatrixPanel_I2S_DMA* matrix;  // Pointer to the matrix panel object
-    const int panelWidth = panelResX, // Panel width from config
-              panelHeight = panelResY; // Panel height from config
+    const uint8_t panelWidth = panelResX;   // Panel width from config
+    const uint8_t panelHeight = panelResY;  // Panel height from config
     uint8_t panelBrightness = panelInitBrightness; // Default brightness
 
     // Helper functions to generate colors and patterns

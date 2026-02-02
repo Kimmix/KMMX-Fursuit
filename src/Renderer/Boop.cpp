@@ -2,7 +2,7 @@
 
 float Boop::calculateBoopSpeed() {
     unsigned long elapsedTime = millis() - boopStartTime;
-    float speed = map(elapsedTime, 100, BoopTimeMaxDuration, 0, 100);
+    float speed = map(elapsedTime, 100, boopMaxDuration, 0, 100);
     return speed / 100;
 }
 
@@ -14,7 +14,7 @@ void Boop::getBoop(uint16_t& sensorValue, bool& isInRange, bool& isBoop, float& 
 
     switch (currentBoopState) {
         case IDLE:
-            if (sensorValue > IrMinThreshold && sensorValue < IrMaxThreshold) {
+            if (sensorValue > boopMinThreshold && sensorValue < boopMaxThreshold) {
                 currentBoopState = BOOP_IN_PROGRESS;
                 boopStartTime = millis();
                 isInRange = true;
@@ -26,7 +26,7 @@ void Boop::getBoop(uint16_t& sensorValue, bool& isInRange, bool& isBoop, float& 
 
         case BOOP_IN_PROGRESS:
             isInRange = true;
-            if (sensorValue >= IrMaxThreshold) {
+            if (sensorValue >= boopMaxThreshold) {
                 boopSpeed = calculateBoopSpeed();
                 if (boopSpeed > 0.0) {
                     isBoop = true;
@@ -35,21 +35,21 @@ void Boop::getBoop(uint16_t& sensorValue, bool& isInRange, bool& isBoop, float& 
                 } else {
                     currentBoopState = IDLE;
                 }
-            } else if (sensorValue < IrMinThreshold) {
+            } else if (sensorValue < boopMinThreshold) {
                 currentBoopState = IDLE;
             }
             break;
 
         case BOOP_CONTINUOUS:
             isContinuous = true;
-            if (sensorValue < IrMaxThreshold) {
+            if (sensorValue < boopMaxThreshold) {
                 currentBoopState = IDLE;
             }
             break;
 
         case ANGRY:
             isAngry = true;
-            if (sensorValue < IrMaxThreshold) {
+            if (sensorValue < boopMaxThreshold) {
                 currentBoopState = IDLE;
             }
             break;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 // ESP32S3 Custom board PINS
 // I2C
 #define S3_SDA 9
@@ -42,92 +44,92 @@
 #define BLE_VISEME_CHARACTERISTIC_UUID "493d06f3-0fa0-4a90-88f1-ebaed0da9b80"
 
 // HUB75 Config
-const int panelResX = 64;
-const int panelResY = 32;
-const int panelsNumber = 2;
-const int screenWidth = panelResX * panelsNumber;
-const int screenHeight = panelResY;
-const int panelInitBrightness = 255;
-const int minRefreshRate = 240;
+const uint8_t panelResX = 64;
+const uint8_t panelResY = 32;
+const uint8_t panelsNumber = 2;
+const uint8_t screenWidth = panelResX * panelsNumber;
+const uint8_t screenHeight = panelResY;
+const uint8_t panelInitBrightness = 255;
+const uint16_t minRefreshRate = 240;
 const bool doubleBuffer = true;
 
 // SideLED configuration
 #define ARGB_PIN 14     // Side ARGB Strip
-const int argbCount = 24;                                                            // Number of LEDs
-const short sideLEDBrightness = 255;                                                 // LED brightness
-const long sideLEDAnimateInterval = 400;                                             // Animation interval in milliseconds
-const int sideColor1RGB = 0xFF446C;                                             // #FF446C Reddish Pink (RGB hex)
-const int sideColor2RGB = 0xF9826C;                                             // #F9826C Coral (RGB hex)
-const int sideLEDFadeInterval = 500;                                            // Fade interval in milliseconds
-const int sideLEDPositionChangeDelay = 2000;                                    // Position change delay in milliseconds
+const uint8_t argbCount = 24;                                                   // Number of LEDs
+const uint8_t sideLEDBrightness = 255;                                          // LED brightness
+const uint16_t sideLEDAnimateInterval = 400;                                    // Animation interval in milliseconds
+const uint32_t sideColor1RGB = 0xFF446C;                                        // #FF446C Reddish Pink (RGB hex)
+const uint32_t sideColor2RGB = 0xF9826C;                                        // #F9826C Coral (RGB hex)
+const uint16_t sideLEDFadeInterval = 500;                                       // Fade interval in milliseconds
+const uint16_t sideLEDPositionChangeDelay = 2000;                               // Position change delay in milliseconds
 
 // HornLED PWM configuration
-const int hornInitBrightness = 15;
-const int hornPwmChannel = 0;
-const int hornFrequency = 20000;
-const int hornResolution = 8;
-const int hornMinBrightness = 2;    // Minimum range for PWM
-const int hornMaxBrightness = 200;   // Maximum range for PWM (255 can cause high heat!!)
+const uint8_t hornInitBrightness = 15;
+const uint8_t hornPwmChannel = 0;
+const uint16_t hornFrequency = 20000;
+const uint8_t hornResolution = 8;
+const uint8_t hornMinBrightness = 2;    // Minimum range for PWM
+const uint8_t hornMaxBrightness = 200;   // Maximum range for PWM (255 can cause high heat!!)
 
 // Controller etc. configuration
-const int sensorUpdateInterval = 20;      // Sensor update interval in ms (50Hz for better responsiveness)
-const short minimumPixelBrightness = 40;  // Minimum pixel brightness to draw on screen
-const short noseWidth = 8;
-const short noseHeight = 5;
-const short noseOffsetX = 56;
-const short noseOffsetY = 7;
-const short eyeWidth = 32;
-const short eyeHeight = 18;
-const short eyeOffsetX = 7;
-const short eyeOffsetY = 0;
-const short mouthWidth = 50;
-const short mouthHeight = 14;
-const short mouthOffsetX = 14;
-const short mouthOffsetY = 18;
+const uint8_t sensorUpdateInterval = 20;       // Sensor update interval in ms (50Hz for better responsiveness)
+const uint8_t minimumPixelBrightness = 40;     // Minimum pixel brightness to draw on screen
+const uint8_t noseWidth = 8;
+const uint8_t noseHeight = 5;
+const uint8_t noseOffsetX = 56;
+const uint8_t noseOffsetY = 7;
+const uint8_t eyeWidth = 32;
+const uint8_t eyeHeight = 18;
+const uint8_t eyeOffsetX = 7;
+const uint8_t eyeOffsetY = 0;
+const uint8_t mouthWidth = 50;
+const uint8_t mouthHeight = 14;
+const uint8_t mouthOffsetX = 14;
+const uint8_t mouthOffsetY = 18;
 
 // Boop configuration
-const int IrMinThreshold = 100;         // Minimum proximity distance to activate
-const int IrMaxThreshold = 900;         // Maximum range of proximity
-const long BoopTimeMaxDuration = 2000;  // Total duration for calculate speed of boop
+const uint16_t boopMinThreshold = 100;         // Minimum proximity distance to activate
+const uint16_t boopMaxThreshold = 900;         // Maximum range of proximity
+const uint16_t boopMaxDuration = 2000;         // Total duration for calculate speed of boop
 
 // Idle configuration
-const unsigned long idleTimeout = 60000;           // Time till sleep in ms (60 seconds)
-const unsigned long baselineUpdateDelay = 2000;    // Time to wait before updating baseline when still (2 seconds)
-const float idleAccThreshold = 1.5;                // Magnitude change threshold to detect motion (m/s²)
-const float sleepingAccThreshold = 0.7;            // Magnitude change threshold to wake up
-const int motionHysteresisCount = 3;               // Number of motion detections needed to wake up
-const int motionCounterDecayRate = 10;         // Samples between counter decay (10 = ~200ms at 50Hz)
-const float gravityMagnitude = 9.81;               // Earth's gravity for reference (m/s²)
-const bool enableIdleDebug = false;                 // Enable debug logging for idle detection
+const uint32_t idleTimeout = 60000;            // Time till sleep in ms (60 seconds)
+const uint16_t baselineUpdateDelay = 2000;     // Time to wait before updating baseline when still (2 seconds)
+const float idleAccThreshold = 1.5f;           // Magnitude change threshold to detect motion (m/s²)
+const float sleepingAccThreshold = 0.7f;       // Magnitude change threshold to wake up
+const uint8_t motionHysteresisCount = 3;       // Number of motion detections needed to wake up
+const uint8_t motionCounterDecayRate = 10;     // Samples between counter decay (10 = ~200ms at 50Hz)
+const float gravityMagnitude = 9.81f;          // Earth's gravity for reference (m/s²)
+const bool enableIdleDebug = false;            // Enable debug logging for idle detection
 
 // Sample Rate and Samples
-const double i2sSampleRate = 8000;
-const int i2sSamples = 256;
+const float i2sSampleRate = 8000.0f;
+const uint16_t i2sSamples = 256;
 
 // Viseme configuration
-const int AHFreqMin = 700;                // Start freq of AH viseme
-const int AHFreqMax = 1500;               // End freq of AH viseme
-const int EEFreqMin = 1000;               // Start freq of EE viseme
-const int EEFreqMax = 3000;               // End freq of EE viseme
-const int OHFreqMin = 400;               // Start freq of OH viseme
-const int OHFreqMax = 1100;               // End freq of OH viseme
-const int OOFreqMin = 250;               // Start freq of OO viseme
-const int OOFreqMax = 900;               // End freq of OO viseme
-const int THFreqMin = 2800;               // Start freq of TH viseme
-const int THFreqMax = 4000;               // End freq of TH viseme
-const double visemeNoiseThreshold = 400;  // Minimum noise threshold for viseme to activate
-const double visemeSmoothingAlpha = 0.2;  // Smoothing factor between 0 and 1
-const double visemeDecayRate = 0.0003;    // Adjusted decay rate (units per millisecond)
+const uint16_t visemeAhFreqMin = 700;          // Start freq of AH viseme
+const uint16_t visemeAhFreqMax = 1500;         // End freq of AH viseme
+const uint16_t visemeEeFreqMin = 1000;         // Start freq of EE viseme
+const uint16_t visemeEeFreqMax = 3000;         // End freq of EE viseme
+const uint16_t visemeOhFreqMin = 400;          // Start freq of OH viseme
+const uint16_t visemeOhFreqMax = 1100;         // End freq of OH viseme
+const uint16_t visemeOoFreqMin = 250;          // Start freq of OO viseme
+const uint16_t visemeOoFreqMax = 900;          // End freq of OO viseme
+const uint16_t visemeThFreqMin = 2800;         // Start freq of TH viseme
+const uint16_t visemeThFreqMax = 4000;         // End freq of TH viseme
+const float visemeNoiseThreshold = 400.0f;     // Minimum noise threshold for viseme to activate
+const float visemeSmoothingAlpha = 0.2f;       // Smoothing factor between 0 and 1
+const float visemeDecayRate = 0.0003f;         // Adjusted decay rate (units per millisecond)
 
-// GooglyEye constants
-const float G_SCALE = 1.0;      // Accel scale; no science, just looks good
-const float ELASTICITY = 0.95;  // Edge-bounce coefficient (MUST be <1.0!)
-const float DRAG = 0.997;       // Dampens motion slightly
-const float EYE_RADIUS = 3.0;   // Radius of eye, floating-point pixel units
-const float PUPIL_SIZE = 16.0;
-const float PUPIL_RADIUS = PUPIL_SIZE / 2.0;           // Radius of pupil, same units
-const float INNER_RADIUS = EYE_RADIUS - PUPIL_RADIUS;  // Radius of pupil motion
-const short eyePupilWidth = 6;
-const short eyePupilHeight = 6;
-const short eyePupilOffsetX = 15;
-const short eyePupilOffsetY = 5;
+// GooglyEye configuration
+const float googlyAccelScale = 1.0f;           // Accel scale; no science, just looks good
+const float googlyElasticity = 0.95f;          // Edge-bounce coefficient (MUST be <1.0!)
+const float googlyDrag = 0.997f;               // Dampens motion slightly
+const float googlyEyeRadius = 3.0f;            // Radius of eye, floating-point pixel units
+const float googlyPupilSize = 16.0f;
+const float googlyPupilRadius = googlyPupilSize / 2.0f;             // Radius of pupil, same units
+const float googlyInnerRadius = googlyEyeRadius - googlyPupilRadius;  // Radius of pupil motion
+const uint8_t googlyPupilWidth = 6;
+const uint8_t googlyPupilHeight = 6;
+const uint8_t googlyPupilOffsetX = 15;
+const uint8_t googlyPupilOffsetY = 5;

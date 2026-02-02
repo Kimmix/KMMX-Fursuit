@@ -5,11 +5,11 @@ void Viseme::initMic() {
     mic.init(i2sSampleRate, i2sSamples);
 }
 
-double Viseme::getNoiseThreshold() {
+float Viseme::getNoiseThreshold() {
     return noiseThreshold;
 }
 
-void Viseme::setNoiseThreshold(double value) {
+void Viseme::setNoiseThreshold(float value) {
     noiseThreshold = value;
 }
 
@@ -200,19 +200,19 @@ const uint8_t* Viseme::renderViseme() {
     for (int i = 4; i < i2sSamples / 2; i++) {
         double freq = i * ((i2sSampleRate / 2.0) / (i2sSamples / 2.0));
         double amplitude = abs(imaginary[i]);
-        if (freq >= AHFreqMin && freq <= AHFreqMax) {
+        if (freq >= visemeAhFreqMin && freq <= visemeAhFreqMax) {
             ah_amplitude += amplitude;
         }
-        if (freq >= EEFreqMin && freq <= EEFreqMax) {
+        if (freq >= visemeEeFreqMin && freq <= visemeEeFreqMax) {
             ee_amplitude += amplitude;
         }
-        if (freq >= OHFreqMin && freq <= OHFreqMax) {
+        if (freq >= visemeOhFreqMin && freq <= visemeOhFreqMax) {
             oh_amplitude += amplitude;
         }
-        if (freq >= OOFreqMin && freq <= OOFreqMax) {
+        if (freq >= visemeOoFreqMin && freq <= visemeOoFreqMax) {
             oo_amplitude += amplitude;
         }
-        if (freq >= THFreqMin && freq <= THFreqMax) {
+        if (freq >= visemeThFreqMin && freq <= visemeThFreqMax) {
             th_amplitude += amplitude;
         }
     }

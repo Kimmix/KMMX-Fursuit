@@ -5,7 +5,7 @@ void KMMXController::update() {
     cheekPanel.update();
     hornLED.update();
     if (boopInitialized) {
-        booping();
+        handleBoop();
     }
     // Rendering now happens in separate task
 }

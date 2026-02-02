@@ -49,10 +49,10 @@ class KMMXController {
     int16_t pixelPos = 0;
 
     void renderFace();
-    void booping();
-    void resetIdletime(KMMXController *controller);
-    void resetIdletime();
-    void sleep(KMMXController *controller);
+    void handleBoop();
+    void resetIdleTime(KMMXController *controller);
+    void resetIdleTime();
+    void enterSleep(KMMXController *controller);
     void checkIdleAndSleep(KMMXController *controller, unsigned long currentTime);
     static void readSensorTask(void *parameter);
     static void renderTask(void *parameter);

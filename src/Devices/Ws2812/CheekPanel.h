@@ -19,10 +19,10 @@ class CheekPanel {
     uint16_t positionChangeDelay;
     unsigned long previousMillis;
     unsigned long positionChangeMillis;
-    int fadeStep = 0;
-    int fadeDirection = 1;
-    int randomPosition = 0;
-    const int fadeSteps = 50;
+    uint8_t fadeStep = 0;
+    int8_t fadeDirection = 1;
+    uint8_t randomPosition = 0;
+    const uint8_t fadeSteps = 50;
 
     void setBackgroundColor(uint32_t color);
     uint32_t applyGammaCorrection(uint32_t color);

@@ -1,6 +1,6 @@
 #include "KMMXController.h"
 
-void KMMXController::booping() {
+void KMMXController::handleBoop() {
     static bool lastIsAngry = false;
     if (millis() >= nextBoop) {
         nextBoop = millis() + 50;
@@ -10,12 +10,12 @@ void KMMXController::booping() {
             fxState.setState(FXStateEnum::Heart);
             eyeState.setState(EyeStateEnum::BOOP);
             mouthState.setState(MouthStateEnum::BOOP);
-            resetIdletime();
+            resetIdleTime();
             statusLED.setColor(Color::CYAN);
         } else if (inBoopRange) {
             mouthState.setState(MouthStateEnum::BOOP);
             if (isSleeping) {
-                resetIdletime();
+                resetIdleTime();
             }
             statusLED.setColor(Color::LIGHT_PINK);
         } else if (isContinuousBoop) {
@@ -25,7 +25,7 @@ void KMMXController::booping() {
             nextBoop = millis() + 1500;
             eyeState.setState(EyeStateEnum::ANGRY);
             mouthState.setState(MouthStateEnum::ANGRYBOOP);
-            resetIdletime();
+            resetIdleTime();
             statusLED.setColor(Color::RED);
         }
         lastIsAngry = isAngry;
