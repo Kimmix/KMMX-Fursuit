@@ -7,7 +7,6 @@ void KMMXController::update() {
     if (boopInitialized) {
         handleBoop();
     }
-    // Rendering now happens in separate task
 }
 
 void KMMXController::renderFace() {

@@ -49,14 +49,17 @@ void Hub75DMA::drawColorTest() {
 
 void Hub75DMA::drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY) {
     for (int i = 0; i < imageHeight; i++) {
-        int offsetYPlusI = offsetY + i;
-        for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
-            uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j);
+        const int offsetYPlusI = offsetY + i;
+        const uint8_t* rowPtr = bitmap + i * imageWidth;  // Hoist row offset calculation
+        const int mirrorBaseX = -offsetX + panelWidth;
+
+        for (int j = 0; j < imageWidth; j++) {
+            const uint8_t pixel = pgm_read_byte(rowPtr + j);
             if (pixel > minimumPixelBrightness) {
                 uint8_t r, g, b;
-                getColorMap(pixel, i + offsetY, r, g, b);
+                getColorMap(pixel, offsetYPlusI, r, g, b);
                 matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
-                matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
+                matrix->drawPixelRGB888(mirrorBaseX + (panelWidth - 1 - j), offsetYPlusI, r, g, b);
             }
         }
     }
@@ -64,19 +67,24 @@ void Hub75DMA::drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight
 
 void Hub75DMA::drawBitmap(const uint8_t* bitmapL, const uint8_t* bitmapR, int imageWidth, int imageHeight, int offsetX, int offsetY) {
     for (int i = 0; i < imageHeight; i++) {
-        int offsetYPlusI = offsetY + i;
-        for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
-            uint8_t pixelL = pgm_read_byte(bitmapL + i * imageWidth + j);
-            uint8_t pixelR = pgm_read_byte(bitmapR + i * imageWidth + j);
+        const int offsetYPlusI = offsetY + i;
+        const uint8_t* rowPtrL = bitmapL + i * imageWidth;  // Hoist row offset calculation
+        const uint8_t* rowPtrR = bitmapR + i * imageWidth;
+        const int mirrorBaseX = -offsetX + panelWidth;
+
+        for (int j = 0; j < imageWidth; j++) {
+            const uint8_t pixelL = pgm_read_byte(rowPtrL + j);
+            const uint8_t pixelR = pgm_read_byte(rowPtrR + j);
+
             if (pixelL > minimumPixelBrightness) {
                 uint8_t r, g, b;
-                getColorMap(pixelL, i + offsetY, r, g, b);
+                getColorMap(pixelL, offsetYPlusI, r, g, b);
                 matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
             }
             if (pixelR > minimumPixelBrightness) {
                 uint8_t r, g, b;
-                getColorMap(pixelR, i + offsetY, r, g, b);
-                matrix->drawPixelRGB888(-offsetX + panelWidth + j2, offsetYPlusI, r, g, b);
+                getColorMap(pixelR, offsetYPlusI, r, g, b);
+                matrix->drawPixelRGB888(mirrorBaseX + (panelWidth - 1 - j), offsetYPlusI, r, g, b);
             }
         }
     }
@@ -84,9 +92,11 @@ void Hub75DMA::drawBitmap(const uint8_t* bitmapL, const uint8_t* bitmapR, int im
 
 void Hub75DMA::drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY, uint8_t r, uint8_t g, uint8_t b) {
     for (int i = 0; i < imageHeight; i++) {
-        int offsetYPlusI = offsetY + i;
-        for (int j = 0, j2 = panelWidth - 1; j < imageWidth; j++, j2--) {
-            uint8_t pixel = pgm_read_byte(bitmap + i * imageWidth + j);
+        const int offsetYPlusI = offsetY + i;
+        const uint8_t* rowPtr = bitmap + i * imageWidth;  // Hoist row offset calculation
+
+        for (int j = 0; j < imageWidth; j++) {
+            const uint8_t pixel = pgm_read_byte(rowPtr + j);
             if (pixel > minimumPixelBrightness) {
                 matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
             }
@@ -96,24 +106,37 @@ void Hub75DMA::drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight
 
 void Hub75DMA::drawBitmapRLE(const uint8_t* rleBitmap, int imageWidth, int imageHeight, int offsetX, int offsetY) {
     int i = 0, x = 0, y = 0;
+    const int mirrorBaseX = -offsetX + panelWidth;  // Consistent with drawBitmap
+
     while (y < imageHeight) {
-        uint8_t count = pgm_read_byte(rleBitmap + i++);
-        uint8_t value = pgm_read_byte(rleBitmap + i++);
-        for (uint8_t c = 0; c < count; c++) {
-            if (value > minimumPixelBrightness) {
-                uint8_t r, g, b;
-                getColorMap(value, y + offsetY, r, g, b);
+        const uint8_t count = pgm_read_byte(rleBitmap + i++);
+        const uint8_t value = pgm_read_byte(rleBitmap + i++);
+
+        if (value > minimumPixelBrightness) {
+            uint8_t r, g, b;
+            getColorMap(value, y + offsetY, r, g, b);
+
+            for (uint8_t c = 0; c < count; c++) {
                 // Draw left panel
                 matrix->drawPixelRGB888(offsetX + x, offsetY + y, r, g, b);
-                // Draw right panel (mirrored, same width offset as normal drawBitmap)
-                matrix->drawPixelRGB888(-offsetX + panelWidth * 2 - 1 - x, offsetY + y, r, g, b);
+                // Draw right panel (mirrored, consistent with drawBitmap)
+                matrix->drawPixelRGB888(mirrorBaseX + (panelWidth - 1 - x), offsetY + y, r, g, b);
+
+                x++;
+                if (x >= imageWidth) {
+                    x = 0;
+                    y++;
+                    if (y >= imageHeight) return;
+                }
             }
-            x++;
-            if (x >= imageWidth) {
-                x = 0;
+        } else {
+            // Skip transparent pixels
+            x += count;
+            while (x >= imageWidth) {
+                x -= imageWidth;
                 y++;
+                if (y >= imageHeight) return;
             }
-            if (y >= imageHeight) break;
         }
     }
 }
@@ -121,62 +144,87 @@ void Hub75DMA::drawBitmapRLE(const uint8_t* rleBitmap, int imageWidth, int image
 void Hub75DMA::drawBitmapRLE(const uint8_t* rleBitmap, int imageWidth, int imageHeight, int offsetX, int offsetY, uint8_t r, uint8_t g, uint8_t b) {
     int i = 0;
     for (int row = 0; row < imageHeight; row++) {
-        int offsetYPlusRow = offsetY + row;
+        const int offsetYPlusRow = offsetY + row;
         int col = 0;
+
         while (col < imageWidth) {
-            uint8_t count = pgm_read_byte(rleBitmap + i++);
-            uint8_t value = pgm_read_byte(rleBitmap + i++);
-            for (uint8_t c = 0; c < count && col < imageWidth; c++, col++) {
-                if (value > minimumPixelBrightness) {
-                    matrix->drawPixelRGB888(offsetX + col, offsetYPlusRow, r, g, b);
+            const uint8_t count = pgm_read_byte(rleBitmap + i++);
+            const uint8_t value = pgm_read_byte(rleBitmap + i++);
+
+            if (value > minimumPixelBrightness) {
+                const int endCol = col + count;
+                const int drawEnd = (endCol < imageWidth) ? endCol : imageWidth;
+                for (int c = col; c < drawEnd; c++) {
+                    matrix->drawPixelRGB888(offsetX + c, offsetYPlusRow, r, g, b);
                 }
             }
+            col += count;
         }
     }
 }
 
 void Hub75DMA::drawBitmapRLE(const uint8_t* rleBitmapL, const uint8_t* rleBitmapR, int imageWidth, int imageHeight, int offsetX, int offsetY) {
-    // Process left and right bitmaps separately
+    const int mirrorBaseX = -offsetX + panelWidth;  // Consistent with drawBitmap
 
     // Draw left bitmap
-    int iL = 0;
-    int xL = 0, yL = 0;
+    int iL = 0, xL = 0, yL = 0;
     while (yL < imageHeight) {
-        uint8_t countL = pgm_read_byte(rleBitmapL + iL++);
-        uint8_t valueL = pgm_read_byte(rleBitmapL + iL++);
-        for (uint8_t c = 0; c < countL; c++) {
-            if (valueL > minimumPixelBrightness) {
-                uint8_t r, g, b;
-                getColorMap(valueL, yL + offsetY, r, g, b);
+        const uint8_t countL = pgm_read_byte(rleBitmapL + iL++);
+        const uint8_t valueL = pgm_read_byte(rleBitmapL + iL++);
+
+        if (valueL > minimumPixelBrightness) {
+            uint8_t r, g, b;
+            getColorMap(valueL, yL + offsetY, r, g, b);
+
+            for (uint8_t c = 0; c < countL; c++) {
                 matrix->drawPixelRGB888(offsetX + xL, offsetY + yL, r, g, b);
+
+                xL++;
+                if (xL >= imageWidth) {
+                    xL = 0;
+                    yL++;
+                    if (yL >= imageHeight) break;
+                }
             }
-            xL++;
-            if (xL >= imageWidth) {
-                xL = 0;
+        } else {
+            // Skip transparent pixels
+            xL += countL;
+            while (xL >= imageWidth) {
+                xL -= imageWidth;
                 yL++;
+                if (yL >= imageHeight) break;
             }
-            if (yL >= imageHeight) break;
         }
     }
 
     // Draw right bitmap
-    int iR = 0;
-    int xR = 0, yR = 0;
+    int iR = 0, xR = 0, yR = 0;
     while (yR < imageHeight) {
-        uint8_t countR = pgm_read_byte(rleBitmapR + iR++);
-        uint8_t valueR = pgm_read_byte(rleBitmapR + iR++);
-        for (uint8_t c = 0; c < countR; c++) {
-            if (valueR > minimumPixelBrightness) {
-                uint8_t r, g, b;
-                getColorMap(valueR, yR + offsetY, r, g, b);
-                matrix->drawPixelRGB888(-offsetX + panelWidth * 2 - 1 - xR, offsetY + yR, r, g, b);
+        const uint8_t countR = pgm_read_byte(rleBitmapR + iR++);
+        const uint8_t valueR = pgm_read_byte(rleBitmapR + iR++);
+
+        if (valueR > minimumPixelBrightness) {
+            uint8_t r, g, b;
+            getColorMap(valueR, yR + offsetY, r, g, b);
+
+            for (uint8_t c = 0; c < countR; c++) {
+                matrix->drawPixelRGB888(mirrorBaseX + (panelWidth - 1 - xR), offsetY + yR, r, g, b);
+
+                xR++;
+                if (xR >= imageWidth) {
+                    xR = 0;
+                    yR++;
+                    if (yR >= imageHeight) break;
+                }
             }
-            xR++;
-            if (xR >= imageWidth) {
-                xR = 0;
+        } else {
+            // Skip transparent pixels
+            xR += countR;
+            while (xR >= imageWidth) {
+                xR -= imageWidth;
                 yR++;
+                if (yR >= imageHeight) break;
             }
-            if (yR >= imageHeight) break;
         }
     }
 }
