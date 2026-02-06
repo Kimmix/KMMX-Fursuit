@@ -28,18 +28,20 @@
 // =============================================================================
 // I2S CONFIGURATION (matches KMMX-Fursuit config.h)
 // =============================================================================
-#define I2S_WS       10              // Word Select (LRCLK)
-#define I2S_SD       12              // Serial Data
-#define I2S_SCK      11              // Serial Clock (BCLK)
-#define I2S_PORT     I2S_NUM_0
+#define I2S_WS 10   // Word Select (LRCLK)
+#define I2S_SD 12   // Serial Data
+#define I2S_SCK 11  // Serial Clock (BCLK)
+#define I2S_PORT I2S_NUM_0
 
 // =============================================================================
 // FFT CONFIGURATION
 // =============================================================================
-const float SAMPLE_RATE     = 8000.0f;   // 8kHz sample rate (sufficient for speech)
-const int   FFT_SIZE        = 256;       // FFT size (must be power of 2)
+const float SAMPLE_RATE = 8000.0f;                     // 8kHz sample rate (sufficient for speech)
+const int FFT_SIZE = 256;                              // FFT size (must be power of 2)
 const float FREQ_RESOLUTION = SAMPLE_RATE / FFT_SIZE;  // ~31.25 Hz per bin
-
+const float NOISE_THRESHOLD = 1000.0f;                  // Minimum amplitude to detect speech (lowered for sensitivity)
+const float SMOOTHING_ALPHA = 0.10f;                   // Input smoothing factor (0-1)
+const int MAX_DISPLAY_VALUE = 9000;                    // Clamp for Serial Plotter readability
 // =============================================================================
 // VISEME FREQUENCY RANGES (tuned for vocal formants)
 // Based on typical formant frequencies for vowel sounds:
@@ -53,46 +55,39 @@ const int AH_FREQ_MAX = 2000;
 
 // EE (as in "see") - closed jaw, front tongue: F1~270Hz, F2~2300Hz
 // High F2 is distinctive for EE
-const int EE_FREQ_MIN = 100;
+const int EE_FREQ_MIN = 60;
 const int EE_FREQ_MAX = 600;
 
 // OH (as in "go") - mid jaw, back tongue: F1~500Hz, F2~900Hz
 // Focus on lower range to separate from AH
 const int OH_FREQ_MIN = 1000;
-const int OH_FREQ_MAX = 1500;
+const int OH_FREQ_MAX = 2000;
 
 // OO (as in "boot") - closed jaw, back tongue: F1~300Hz, F2~870Hz
 // Very narrow range - lowest formant
-const int OO_FREQ_MIN = 80;
+const int OO_FREQ_MIN = 500;
 const int OO_FREQ_MAX = 1000;
 
 // TH/consonants - high frequency fricatives
 const int TH_FREQ_MIN = 2000;
 const int TH_FREQ_MAX = 6000;
 
-// =============================================================================
-// SIGNAL PROCESSING PARAMETERS
-// =============================================================================
-const float NOISE_THRESHOLD   = 100.0f;   // Minimum amplitude to detect speech (lowered for sensitivity)
-const float SMOOTHING_ALPHA   = 0.50f;   // Input smoothing factor (0-1)
-const int   MAX_DISPLAY_VALUE = 6000;    // Clamp for Serial Plotter readability
-
 // Normalization multipliers - tuned to balance viseme sensitivity
 // Lower values = less sensitive, Higher values = more sensitive
-const float AH_SCALE = 1.0f;   // Boosted for better detection
-const float EE_SCALE = 0.8f;   // High boost (high freq has less energy)
-const float OH_SCALE = 0.8f;   // Reduced (tends to overlap with AH)
-const float OO_SCALE = 1.0f;   // Keep low to prevent dominance
-const float TH_SCALE = 5.0f;   // High boost (fricatives are very quiet)
+const float AH_SCALE = 0.4f;
+const float EE_SCALE = 0.3f;
+const float OH_SCALE = 2.5f;
+const float OO_SCALE = 1.4f;
+const float TH_SCALE = 6.0f;
 
 // =============================================================================
 // BUFFERS (allocated statically for performance)
 // =============================================================================
-int16_t  i2sBuffer[FFT_SIZE];           // Raw I2S samples
-float    tempSamples[FFT_SIZE];         // Smoothed + windowed samples
-float    fftBuffer[2 * FFT_SIZE];       // Interleaved complex: [re0,im0,re1,im1,...]
-float    hannWindow[FFT_SIZE];          // Pre-computed Hann window
-float    magnitudes[FFT_SIZE / 2];      // Magnitude spectrum
+int16_t i2sBuffer[FFT_SIZE];     // Raw I2S samples
+float tempSamples[FFT_SIZE];     // Smoothed + windowed samples
+float fftBuffer[2 * FFT_SIZE];   // Interleaved complex: [re0,im0,re1,im1,...]
+float hannWindow[FFT_SIZE];      // Pre-computed Hann window
+float magnitudes[FFT_SIZE / 2];  // Magnitude spectrum
 
 // Viseme amplitudes (persistent for potential smoothing)
 float ahAmplitude = 0, eeAmplitude = 0, ohAmplitude = 0;
@@ -131,14 +126,13 @@ bool initI2S() {
         .dma_buf_len = FFT_SIZE,
         .use_apll = false,
         .tx_desc_auto_clear = false,
-        .fixed_mclk = 0
-    };
+        .fixed_mclk = 0};
 
     i2s_pin_config_t pin_config = {
-        .bck_io_num = I2S_SCK,     // BCLK
-        .ws_io_num = I2S_WS,       // LRCLK
+        .bck_io_num = I2S_SCK,  // BCLK
+        .ws_io_num = I2S_WS,    // LRCLK
         .data_out_num = I2S_PIN_NO_CHANGE,
-        .data_in_num = I2S_SD      // Data
+        .data_in_num = I2S_SD  // Data
     };
 
     esp_err_t err = i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
@@ -188,7 +182,7 @@ void readAndPrepareSamples() {
 
     // Read raw 16-bit samples from I2S
     esp_err_t err = i2s_read(I2S_PORT, i2sBuffer, FFT_SIZE * sizeof(int16_t),
-                              &bytesRead, portMAX_DELAY);
+                             &bytesRead, portMAX_DELAY);
     if (err != ESP_OK) {
         Serial.printf("ERROR: I2S read failed: %s\n", esp_err_to_name(err));
         return;
@@ -216,8 +210,8 @@ void readAndPrepareSamples() {
 
     // Copy windowed samples to interleaved FFT buffer
     for (int i = 0; i < FFT_SIZE; i++) {
-        fftBuffer[2 * i]     = tempSamples[i];  // Real part
-        fftBuffer[2 * i + 1] = 0.0f;            // Imaginary part = 0
+        fftBuffer[2 * i] = tempSamples[i];  // Real part
+        fftBuffer[2 * i + 1] = 0.0f;        // Imaginary part = 0
     }
 }
 
@@ -264,9 +258,7 @@ void analyzeVisemes() {
     ahAmplitude = eeAmplitude = ohAmplitude = ooAmplitude = thAmplitude = 0;
     int ahCount = 0, eeCount = 0, ohCount = 0, ooCount = 0, thCount = 0;
 
-    // Skip first 4 bins (DC and very low frequencies, ~0-125 Hz)
-    // This also helps filter out the fundamental frequency which would bias OO
-    for (int i = 4; i < FFT_SIZE / 2; i++) {
+    for (int i = 0; i < FFT_SIZE / 2; i++) {
         float freq = binToFrequency(i);
         float mag = magnitudes[i];
 
@@ -295,11 +287,11 @@ void analyzeVisemes() {
     }
 
     // Convert to average energy per bin (prevents wider bands from dominating)
-    if (ahCount > 0) ahAmplitude /= ahCount;
-    if (eeCount > 0) eeAmplitude /= eeCount;
-    if (ohCount > 0) ohAmplitude /= ohCount;
-    if (ooCount > 0) ooAmplitude /= ooCount;
-    if (thCount > 0) thAmplitude /= thCount;
+    // if (ahCount > 0) ahAmplitude /= ahCount;
+    // if (eeCount > 0) eeAmplitude /= eeCount;
+    // if (ohCount > 0) ohAmplitude /= ohCount;
+    // if (ooCount > 0) ooAmplitude /= ooCount;
+    // if (thCount > 0) thAmplitude /= thCount;
 
     // Apply normalization to balance sensitivity across visemes
     ahAmplitude *= AH_SCALE;
@@ -337,7 +329,7 @@ const char* getDominantViseme(float& maxAmp) {
     }
 
     // Require at least 15% separation for clear detection
-    const float MIN_SEPARATION = 1.10f;
+    const float MIN_SEPARATION = 1.05f;
     if (maxAmp < NOISE_THRESHOLD || maxAmp < secondMax * MIN_SEPARATION) {
         return "---";  // No clear dominant viseme
     }
@@ -552,4 +544,3 @@ void loop() {
     // Small delay between readings (~20 Hz update rate)
     delay(50);
 }
-
