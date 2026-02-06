@@ -62,10 +62,11 @@ void initI2S() {
         .fixed_mclk = 0};
 
     i2s_pin_config_t pin_config = {
-        .bck_io_num = I2S_SCK,
-        .ws_io_num = I2S_WS,
+        .bck_io_num = 11,  // BCLK
+        .ws_io_num = 10,   // LRCLK
         .data_out_num = I2S_PIN_NO_CHANGE,
-        .data_in_num = I2S_SD};
+        .data_in_num = 12  // SD
+    };
 
     i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
     i2s_set_pin(I2S_PORT, &pin_config);
