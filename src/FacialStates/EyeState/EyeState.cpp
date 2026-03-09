@@ -4,8 +4,12 @@
 #include "Bitmaps/Bitmaps.h"
 
 EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis()) {
-    // Initialize smile animation with bouncy timing
-    AnimationHelper::initAnimation(smileAnim, smileAnimation, smileLength, AnimationHelper::TIMING_BOUNCY);
+    // Initialize smile transition animation (full animation, plays once)
+    TimeBasedAnimation::init(smileAnim, smileAnimation, smileLength, TimeBasedAnimation::CONFIG_TRANSITION);
+
+    // Initialize smile loop animation (last 5 frames only, ping-pong loop)
+    // Uses pointer arithmetic to reference the last 5 frames without duplicating data
+    TimeBasedAnimation::init(smileLoopAnim, &smileAnimation[smileLength - smileLoopFrames], smileLoopFrames, TimeBasedAnimation::CONFIG_SMILE_LOOP);
 }
 
 void EyeState::update() {
@@ -59,11 +63,16 @@ void EyeState::setState(EyeStateEnum newState) {
         resetSleepFace();
     }
     if (newState == EyeStateEnum::SMILE) {
-        // Reset smile animation to start from beginning
-        smileAnim.index = 0;
-        smileAnim.increasing = true;
-        smileAnim.interval = 0;
-        AnimationHelper::setTiming(smileAnim, AnimationHelper::TIMING_BOUNCY);
+        // Reset smile animation to start from beginning with transition timing
+        TimeBasedAnimConfig transitionConfig = {
+            .durationMs = 500,                          // 500ms for transition
+            .playMode = AnimationPlayMode::ONCE,        // Play once to end
+            .pauseAtEndMs = 0,
+            .pauseAtStartMs = 0,
+            .useEasing = true
+        };
+        TimeBasedAnimation::setConfig(smileAnim, transitionConfig);
+        TimeBasedAnimation::reset(smileAnim);
     }
     if (currentState != newState) {
         isTransitioning = true;
@@ -204,19 +213,24 @@ void EyeState::oFace() {
 }
 
 void EyeState::smileFace() {
-    const uint8_t* currentFrame = AnimationHelper::updateAnimation(smileAnim);
+    const uint8_t* currentFrame;
+
+    if (isTransitioning) {
+        // During transition: use full animation (frames 0-19)
+        currentFrame = TimeBasedAnimation::update(smileAnim);
+
+        // Check if transition animation is complete
+        if (TimeBasedAnimation::isComplete(smileAnim)) {
+            isTransitioning = false;
+            // Reset the loop animation to start fresh
+            TimeBasedAnimation::reset(smileLoopAnim);
+        }
+    } else {
+        // After transition: loop only the last 5 frames (frames 15-19)
+        currentFrame = TimeBasedAnimation::update(smileLoopAnim);
+    }
+
     display->drawEye(currentFrame);
-
-    if (isTransitioning && smileAnim.index >= smileLength - 1) {
-        isTransitioning = false;
-        AnimationHelper::setTiming(smileAnim, AnimationHelper::TIMING_GENTLE_LOOP);
-    }
-
-    // Constrain loop to last n frames
-    if (!isTransitioning) {
-        if (smileAnim.index >= smileLength - 1) smileAnim.increasing = false;
-        else if (smileAnim.index < smileLength - smileLoopFrames) smileAnim.increasing = true;
-    }
 }
 
 void EyeState::angryFace() {
