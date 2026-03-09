@@ -127,29 +127,37 @@ void EyeState::setSensorData(const SensorData& data) {
 }
 
 void EyeState::movingEye() {
+    // DISABLED: Accelerometer-based eye movement
+    // Uncomment the code below to enable tilt-based eye animations
+
+    /*
     float zAcc = sensorData.accelZ;
     const float leftThreshold = 3.00, rightThreshold = -3.00,
                 leftMaxThreshold = 6.00, rightMaxThreshold = -6.00;
     static float smoothedLeftAcc = 0.0f;
     static float smoothedRightAcc = 0.0f;
+
     // Check for left movement (positive direction)
     int leftLevel = smoothAccelerometerMovement(zAcc, smoothedLeftAcc, leftThreshold, leftMaxThreshold, 0.3f, 0.5f, 19, false);
     if (leftLevel >= 0) {
         display->drawEye(eyeUpAnimation[leftLevel], eyeDownAnimation[leftLevel]);
         return;
     }
+
     // Check for right movement (negative direction)
     int rightLevel = smoothAccelerometerMovement(zAcc, smoothedRightAcc, rightThreshold, rightMaxThreshold, 0.3f, 0.5f, 19, true);
     if (rightLevel >= 0) {
         display->drawEye(eyeDownAnimation[rightLevel], eyeUpAnimation[rightLevel]);
         return;
     }
-    // Use current idle frame (with micro-movements)
+    */
+
+    // Always render current idle frame (with micro-movements)
     display->drawEye(idleLookFrames[currentIdleFrame]);
 }
 
 void EyeState::idleFace() {
-    movingEye();
+    movingEye();  // Renders the current idle frame
     updateIdleMicroMovements();
     checkAndTriggerBlink();
 }
