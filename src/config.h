@@ -93,7 +93,7 @@ const uint16_t boopMaxThreshold = 900;         // Maximum range of proximity
 const uint16_t boopMaxDuration = 2000;         // Total duration for calculate speed of boop
 
 // Idle configuration
-const uint32_t idleTimeout = 60000;            // Time till sleep in ms (60 seconds)
+const uint32_t idleTimeout = 300000;            // Time till sleep in ms (300 seconds)
 const uint16_t baselineUpdateDelay = 2000;     // Time to wait before updating baseline when still (2 seconds)
 const float idleAccThreshold = 1.5f;           // Magnitude change threshold to detect motion (m/s²)
 const float sleepingAccThreshold = 0.7f;       // Magnitude change threshold to wake up
