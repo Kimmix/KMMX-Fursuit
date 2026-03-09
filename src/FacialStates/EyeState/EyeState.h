@@ -5,6 +5,7 @@
 #include "Bitmaps/Bitmaps.h"
 #include "Utils/Utils.h"
 #include "Renderer/GooglyEye.h"
+#include "Renderer/AnimationHelper.h"
 #include "Types/SensorData.h"
 
 enum class EyeStateEnum { IDLE,
@@ -74,7 +75,8 @@ class EyeState {
         eyeSmile1, eyeSmile2, eyeSmile3, eyeSmile4, eyeSmile5, eyeSmile6, eyeSmile7, eyeSmile8, eyeSmile9, eyeSmile10,
         eyeSmile11, eyeSmile12, eyeSmile13, eyeSmile14, eyeSmile15, eyeSmile16, eyeSmile17, eyeSmile18, eyeSmile19, eyeSmile20};
     const uint8_t smileLength = arrayLength(smileAnimation);
-    uint8_t smileIndex = 0;
+    AnimationState smileAnim;
+    uint8_t smileLoopFrames = 5;  // Number of frames to loop at the end
 
     const uint8_t* eyeAngryAnimation[20] = {
         eyeAngry1, eyeAngry2, eyeAngry3, eyeAngry4, eyeAngry5, eyeAngry6, eyeAngry7, eyeAngry8, eyeAngry9, eyeAngry10,

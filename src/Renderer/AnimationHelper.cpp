@@ -85,6 +85,20 @@ const AnimationTiming AnimationHelper::TIMING_BREATHING_SLOW = {
     .useEasing = true
 };
 
+const AnimationTiming AnimationHelper::TIMING_GENTLE_LOOP = {
+    .startDelay = 80,
+    .midDelay = 80,
+    .endDelay = 80,
+    .startThreshold = 30,
+    .endThreshold = 70,
+    .peakPauseMin = 300,
+    .peakPauseMax = 500,
+    .restPauseMin = 300,
+    .restPauseMax = 500,
+    .randomVariance = 20,
+    .useEasing = true
+};
+
 void AnimationHelper::initAnimation(AnimationState& anim, const uint8_t** frames, short length, const AnimationTiming& timing) {
     anim.frames = frames;
     anim.length = length;

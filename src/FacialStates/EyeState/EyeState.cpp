@@ -3,7 +3,10 @@
 #include <Arduino.h>
 #include "Bitmaps/Bitmaps.h"
 
-EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis()) {}
+EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis()) {
+    // Initialize smile animation with bouncy timing
+    AnimationHelper::initAnimation(smileAnim, smileAnimation, smileLength, AnimationHelper::TIMING_BOUNCY);
+}
 
 void EyeState::update() {
     switch (currentState) {
@@ -54,6 +57,13 @@ void EyeState::setState(EyeStateEnum newState) {
     }
     if (newState == EyeStateEnum::SLEEP) {
         resetSleepFace();
+    }
+    if (newState == EyeStateEnum::SMILE) {
+        // Reset smile animation to start from beginning
+        smileAnim.index = 0;
+        smileAnim.increasing = true;
+        smileAnim.interval = 0;
+        AnimationHelper::setTiming(smileAnim, AnimationHelper::TIMING_BOUNCY);
     }
     if (currentState != newState) {
         isTransitioning = true;
@@ -194,18 +204,18 @@ void EyeState::oFace() {
 }
 
 void EyeState::smileFace() {
-    if (isTransitioning) {
-        display->drawEye(smileAnimation[smileIndex]);
-        if (millis() >= nextSmile) {
-            nextSmile = millis() + 14;
-            smileIndex++;
-            if (smileIndex == smileLength) {
-                smileIndex = 0;
-                isTransitioning = false;
-            }
-        }
-    } else {
-        display->drawEye(smileAnimation[smileLength - 1]);
+    const uint8_t* currentFrame = AnimationHelper::updateAnimation(smileAnim);
+    display->drawEye(currentFrame);
+
+    if (isTransitioning && smileAnim.index >= smileLength - 1) {
+        isTransitioning = false;
+        AnimationHelper::setTiming(smileAnim, AnimationHelper::TIMING_GENTLE_LOOP);
+    }
+
+    // Constrain loop to last n frames
+    if (!isTransitioning) {
+        if (smileAnim.index >= smileLength - 1) smileAnim.increasing = false;
+        else if (smileAnim.index < smileLength - smileLoopFrames) smileAnim.increasing = true;
     }
 }
 

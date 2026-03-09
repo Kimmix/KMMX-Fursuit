@@ -35,6 +35,7 @@ class AnimationHelper {
     static const AnimationTiming TIMING_ELASTIC;   // Elastic bounce effect
     static const AnimationTiming TIMING_BREATHING; // Natural breathing rhythm
     static const AnimationTiming TIMING_BREATHING_SLOW; // Slow, relaxed breathing
+    static const AnimationTiming TIMING_GENTLE_LOOP;    // Gentle looping for subtle animations
 
     // Initialize an animation with frames and timing
     static void initAnimation(AnimationState& anim, const uint8_t** frames, short length, const AnimationTiming& timing);
