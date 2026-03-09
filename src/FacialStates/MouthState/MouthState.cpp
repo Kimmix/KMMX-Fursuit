@@ -3,10 +3,21 @@
 #include <Arduino.h>
 
 MouthState::MouthState(Hub75DMA* display) : display(display) {
-    // Initialize wah animation with bouncy timing
-    AnimationHelper::initAnimation(wahAnim, mouthWahAnimation, wahLength, AnimationHelper::TIMING_BOUNCY);
-    // Initialize idle breathing animation
-    AnimationHelper::initAnimation(idleAnim, defaultAnimation, defaultAnimationLength, AnimationHelper::TIMING_BREATHING);
+    // Initialize wah animation (60 frames, bouncy/elastic feel)
+    TimeBasedAnimConfig wahConfig = {
+        .durationMs = 800,                      // 800ms for full animation
+        .playMode = AnimationPlayMode::PING_PONG,
+        .pauseAtEndMs = 200,
+        .pauseAtStartMs = 200,
+        .useEasing = true
+    };
+    TimeBasedAnimation::init(wahAnim, mouthWahAnimation, wahLength, wahConfig);
+
+    // Initialize idle breathing animation (60 frames, slow breathing)
+    TimeBasedAnimation::init(idleAnim, defaultAnimation, defaultAnimationLength, TimeBasedAnimation::CONFIG_BREATHING);
+
+    // Initialize angry animation (20 frames, quick transition)
+    TimeBasedAnimation::init(angryAnim, mouthAngryAnimation, angryLength, TimeBasedAnimation::CONFIG_TRANSITION);
 }
 
 void MouthState::startMic() {
@@ -40,7 +51,7 @@ void MouthState::update() {
             }
             break;
         case MouthStateEnum::WAH:
-            display->drawMouth(AnimationHelper::updateAnimation(wahAnim));
+            display->drawMouth(TimeBasedAnimation::update(wahAnim));
             break;
         default:
             break;
@@ -51,6 +62,10 @@ void MouthState::setState(MouthStateEnum newState) {
     savePrevState(currentState);
     if (newState == MouthStateEnum::BOOP || newState == MouthStateEnum::ANGRYBOOP) {
         resetBoop = millis();
+    }
+    if (newState == MouthStateEnum::ANGRYBOOP) {
+        // Reset angry animation to start from beginning
+        TimeBasedAnimation::reset(angryAnim);
     }
     if (currentState != newState) {
         isTransitioning = true;
@@ -78,15 +93,23 @@ void MouthState::drawDefault() {
 }
 
 void MouthState::resetMovingMouth() {
-    idleAnim.index = 0;
-    idleAnim.increasing = true;
+    TimeBasedAnimation::reset(idleAnim);
 }
 
 void MouthState::setSlowAnimation(bool slow) {
     if (slow) {
-        AnimationHelper::setTiming(idleAnim, AnimationHelper::TIMING_BREATHING_SLOW);
+        // Slow breathing: 3000ms duration
+        TimeBasedAnimConfig slowConfig = {
+            .durationMs = 3000,
+            .playMode = AnimationPlayMode::PING_PONG,
+            .pauseAtEndMs = 800,
+            .pauseAtStartMs = 1000,
+            .useEasing = true
+        };
+        TimeBasedAnimation::setConfig(idleAnim, slowConfig);
     } else {
-        AnimationHelper::setTiming(idleAnim, AnimationHelper::TIMING_BREATHING);
+        // Normal breathing: use preset
+        TimeBasedAnimation::setConfig(idleAnim, TimeBasedAnimation::CONFIG_BREATHING);
     }
 }
 
@@ -108,22 +131,22 @@ void MouthState::movingMouth() {
         mouthFrame = mouthDown[downLevel];
         return;
     }
-    // Default animation using AnimationHelper
-    mouthFrame = AnimationHelper::updateAnimation(idleAnim);
+    // Default animation using TimeBasedAnimation
+    mouthFrame = TimeBasedAnimation::update(idleAnim);
 }
 
 void MouthState::angryBoop() {
+    const uint8_t* currentFrame = TimeBasedAnimation::update(angryAnim);
+
     if (isTransitioning) {
-        display->drawMouth(mouthAngryAnimation[angryIndex]);
-        if (millis() >= nextAngry) {
-            nextAngry = millis() + 7;
-            angryIndex++;
-            if (angryIndex == angryLength) {
-                angryIndex = 0;
-                isTransitioning = false;
-            }
+        display->drawMouth(currentFrame);
+
+        // Check if transition animation is complete
+        if (TimeBasedAnimation::isComplete(angryAnim)) {
+            isTransitioning = false;
         }
     } else {
+        // Hold at frame near the end (angryLength - 8)
         display->drawMouth(mouthAngryAnimation[angryLength - 8]);
     }
 }

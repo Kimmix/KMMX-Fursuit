@@ -4,7 +4,7 @@
 #include "Bitmaps/Bitmaps.h"
 #include "Utils/Utils.h"
 #include "Renderer/Viseme.h"
-#include "Renderer/AnimationHelper.h"
+#include "Renderer/TimeBasedAnimation.h"
 #include "Types/SensorData.h"
 
 enum class MouthStateEnum { IDLE,
@@ -47,15 +47,14 @@ class MouthState {
     const uint8_t* mouthWahAnimation[60] = {mouthWah1, mouthWah2, mouthWah3, mouthWah4, mouthWah5, mouthWah6, mouthWah7, mouthWah8, mouthWah9, mouthWah10, mouthWah11, mouthWah12, mouthWah13, mouthWah14, mouthWah15, mouthWah16, mouthWah17, mouthWah18, mouthWah19, mouthWah20, mouthWah21, mouthWah22, mouthWah23, mouthWah24, mouthWah25, mouthWah26, mouthWah27, mouthWah28, mouthWah29, mouthWah30, mouthWah31, mouthWah32, mouthWah33, mouthWah34, mouthWah35, mouthWah36, mouthWah37, mouthWah38, mouthWah39, mouthWah40, mouthWah41, mouthWah42, mouthWah43, mouthWah44, mouthWah45, mouthWah46, mouthWah47, mouthWah48, mouthWah49, mouthWah50, mouthWah51, mouthWah52, mouthWah53, mouthWah54, mouthWah55, mouthWah56, mouthWah57, mouthWah58, mouthWah59, mouthWah60};
     uint8_t wahLength = arrayLength(mouthWahAnimation);
 
-    // Animation states
-    AnimationState wahAnim;
-    AnimationState idleAnim;
+    // Animation states - TimeBasedAnimation
+    TimeBasedAnimState wahAnim;
+    TimeBasedAnimState idleAnim;
+    TimeBasedAnimState angryAnim;
 
     void drawDefault();
     void movingMouth();
     void angryBoop();
-
-    uint8_t angryIndex = 0;
 
     TaskHandle_t visemeTaskHandle = NULL;
     void startVisemeTask();

@@ -36,7 +36,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BREATHING = {
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK = {
     .durationMs = 150,
-    .playMode = AnimationPlayMode::PING_PONG,
+    .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 50,
     .pauseAtStartMs = 0,
     .useEasing = false
