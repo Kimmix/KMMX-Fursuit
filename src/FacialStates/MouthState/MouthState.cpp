@@ -4,14 +4,7 @@
 
 MouthState::MouthState(Hub75DMA* display) : display(display) {
     // Initialize wah animation (60 frames, bouncy/elastic feel)
-    TimeBasedAnimConfig wahConfig = {
-        .durationMs = 800,                      // 800ms for full animation
-        .playMode = AnimationPlayMode::PING_PONG,
-        .pauseAtEndMs = 200,
-        .pauseAtStartMs = 200,
-        .useEasing = true
-    };
-    TimeBasedAnimation::init(wahAnim, mouthWahAnimation, wahLength, wahConfig);
+    TimeBasedAnimation::init(wahAnim, mouthWahAnimation, wahLength, TimeBasedAnimation::CONFIG_WAH);
 
     // Initialize idle breathing animation (60 frames, slow breathing)
     TimeBasedAnimation::init(idleAnim, defaultAnimation, defaultAnimationLength, TimeBasedAnimation::CONFIG_BREATHING);
@@ -98,15 +91,8 @@ void MouthState::resetMovingMouth() {
 
 void MouthState::setSlowAnimation(bool slow) {
     if (slow) {
-        // Slow breathing: 3000ms duration
-        TimeBasedAnimConfig slowConfig = {
-            .durationMs = 3000,
-            .playMode = AnimationPlayMode::PING_PONG,
-            .pauseAtEndMs = 800,
-            .pauseAtStartMs = 1000,
-            .useEasing = true
-        };
-        TimeBasedAnimation::setConfig(idleAnim, slowConfig);
+        // Slow breathing: use preset
+        TimeBasedAnimation::setConfig(idleAnim, TimeBasedAnimation::CONFIG_BREATHING_SLOW);
     } else {
         // Normal breathing: use preset
         TimeBasedAnimation::setConfig(idleAnim, TimeBasedAnimation::CONFIG_BREATHING);

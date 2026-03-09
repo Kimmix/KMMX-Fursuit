@@ -58,6 +58,113 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SMILE_LOOP = {
     .useEasing = true
 };
 
+// Blink speed variants (for dynamic blink variance)
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_VERY_FAST = {
+    .durationMs = 100,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 30,
+    .pauseAtStartMs = 0,
+    .useEasing = false
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_VERY_FAST_DBL = {
+    .durationMs = 100,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,  // No pause for double blink
+    .pauseAtStartMs = 0,
+    .useEasing = false
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_FAST = {
+    .durationMs = 120,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 40,
+    .pauseAtStartMs = 0,
+    .useEasing = false
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_FAST_DBL = {
+    .durationMs = 120,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,  // No pause for double blink
+    .pauseAtStartMs = 0,
+    .useEasing = false
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_NORMAL = {
+    .durationMs = 150,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 50,
+    .pauseAtStartMs = 0,
+    .useEasing = false
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_NORMAL_DBL = {
+    .durationMs = 150,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,  // No pause for double blink
+    .pauseAtStartMs = 0,
+    .useEasing = false
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_SLOW = {
+    .durationMs = 200,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 60,
+    .pauseAtStartMs = 0,
+    .useEasing = false
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_SLOW_DBL = {
+    .durationMs = 200,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,  // No pause for double blink
+    .pauseAtStartMs = 0,
+    .useEasing = false
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_VERY_SLOW = {
+    .durationMs = 250,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 80,
+    .pauseAtStartMs = 0,
+    .useEasing = false
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_VERY_SLOW_DBL = {
+    .durationMs = 250,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,  // No pause for double blink
+    .pauseAtStartMs = 0,
+    .useEasing = false
+};
+
+// Mouth animation presets
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_WAH = {
+    .durationMs = 800,
+    .playMode = AnimationPlayMode::PING_PONG,
+    .pauseAtEndMs = 200,
+    .pauseAtStartMs = 200,
+    .useEasing = true
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BREATHING_SLOW = {
+    .durationMs = 3000,
+    .playMode = AnimationPlayMode::PING_PONG,
+    .pauseAtEndMs = 800,
+    .pauseAtStartMs = 1000,
+    .useEasing = true
+};
+
+// Smile transition preset
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SMILE_TRANSITION = {
+    .durationMs = 500,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,
+    .pauseAtStartMs = 0,
+    .useEasing = true
+};
+
 void TimeBasedAnimation::init(TimeBasedAnimState& anim, const uint8_t** frames, short frameCount, const TimeBasedAnimConfig& config) {
     anim.frames = frames;
     anim.frameCount = frameCount;

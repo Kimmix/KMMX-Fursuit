@@ -80,14 +80,7 @@ void EyeState::setState(EyeStateEnum newState) {
     }
     if (newState == EyeStateEnum::SMILE) {
         // Reset smile animation to start from beginning with transition timing
-        TimeBasedAnimConfig transitionConfig = {
-            .durationMs = 500,                          // 500ms for transition
-            .playMode = AnimationPlayMode::ONCE,        // Play once to end
-            .pauseAtEndMs = 0,
-            .pauseAtStartMs = 0,
-            .useEasing = true
-        };
-        TimeBasedAnimation::setConfig(smileAnim, transitionConfig);
+        TimeBasedAnimation::setConfig(smileAnim, TimeBasedAnimation::CONFIG_SMILE_TRANSITION);
         TimeBasedAnimation::reset(smileAnim);
     }
     if (newState == EyeStateEnum::BLINK) {
@@ -133,19 +126,6 @@ void EyeState::setSensorData(const SensorData& data) {
     sensorData = data;
 }
 
-void EyeState::changeDefaultFace() {
-    // 40% chance to look in a different direction
-    if ((esp_random() % 10) <= 3) {
-        defaultAnimationIndex = (esp_random() % 2) + 1;  // eyeUp20 or eyeLookSharp5
-    } else {
-        defaultAnimationIndex = 0;  // eyeDefault (center)
-    }
-    eyeFrame = defaultAnimation[defaultAnimationIndex];
-
-    // Also update the current idle frame to match
-    currentIdleFrame = 0;  // Reset to default
-}
-
 void EyeState::movingEye() {
     float zAcc = sensorData.accelZ;
     const float leftThreshold = 3.00, rightThreshold = -3.00,
@@ -170,73 +150,78 @@ void EyeState::movingEye() {
 
 void EyeState::idleFace() {
     movingEye();
+    updateIdleMicroMovements();
+    checkAndTriggerBlink();
+}
 
-    // Micro-movements and eye darts (every 800ms - 2s)
-    if (millis() >= nextIdleAction) {
-        uint32_t randomAction = esp_random() % 100;
+void EyeState::updateIdleMicroMovements() {
+    if (millis() < nextIdleAction) return;
 
-        if (randomAction < 30) {
-            // 30% - Quick eye dart (subtle look around)
-            currentIdleFrame = (esp_random() % 5) + 1;  // Pick from eyeUp5, eyeUp10, eyeLookSharp5, eyeLookSharp10, eyeGiggle8
-        } else if (randomAction < 50) {
-            // 20% - Return to base position
-            currentIdleFrame = 0;  // eyeDefault
-        } else {
-            // 50% - Stay in current position (no change)
-        }
+    uint32_t randomAction = esp_random() % 100;
 
-        // Set next idle action (800ms - 2000ms)
-        nextIdleAction = millis() + 800 + (esp_random() % 1200);
+    if (randomAction < 30) {
+        // 30% - Quick eye dart (subtle look around)
+        currentIdleFrame = (esp_random() % 5) + 1;
+    } else if (randomAction < 50) {
+        // 20% - Return to center
+        currentIdleFrame = 0;
     }
+    // 50% - Stay in current position (no change needed)
 
-    // Blink timing with more variance
-    if (millis() >= nextBlink) {
-        // Varied blink intervals based on randomness
-        uint32_t blinkVariance = esp_random() % 100;
-        unsigned long blinkDelay;
+    // Schedule next micro-movement (800ms - 2000ms)
+    nextIdleAction = millis() + 800 + (esp_random() % 1200);
+}
 
-        if (blinkVariance < 10) {
-            // 10% - Quick blink (1-2s) - more alert/active
-            blinkDelay = 1000 + (esp_random() % 1000);
-        } else if (blinkVariance < 80) {
-            // 70% - Normal blink (2.5-5s)
-            blinkDelay = 2500 + (esp_random() % 2500);
-        } else {
-            // 20% - Long pause (5-8s) - relaxed/zoned out
-            blinkDelay = 5000 + (esp_random() % 3000);
-        }
+void EyeState::checkAndTriggerBlink() {
+    if (millis() < nextBlink) return;
 
-        nextBlink = millis() + blinkDelay;
+    // Schedule next blink with varied interval
+    nextBlink = millis() + selectBlinkInterval();
 
-        // 30% chance for double blink (decide first to adjust pause timing)
-        shouldDoubleBlink = (esp_random() % 100) < 30;
-        blinkCount = 0;
+    // Decide if double blink (10% chance)
+    shouldDoubleBlink = (esp_random() % 100) < 10;
+    blinkCount = 0;
 
-        // Randomize blink SPEED for this blink (vary animation duration)
-        uint32_t speedVariance = esp_random() % 100;
-        TimeBasedAnimConfig customBlinkConfig;
+    // Select blink speed and initialize animation
+    const TimeBasedAnimConfig* blinkConfig = selectBlinkSpeed(shouldDoubleBlink);
+    TimeBasedAnimation::init(blinkAnim, blinkAnimation, blinkAnimationLength, *blinkConfig);
 
-        if (speedVariance < 15) {
-            // 15% - Very fast blink (100ms) - surprised/alert
-            customBlinkConfig = {.durationMs = 100, .playMode = AnimationPlayMode::ONCE, .pauseAtEndMs = (unsigned long)(shouldDoubleBlink ? 0 : 30), .pauseAtStartMs = 0, .useEasing = false};
-        } else if (speedVariance < 40) {
-            // 25% - Fast blink (120ms) - active
-            customBlinkConfig = {.durationMs = 120, .playMode = AnimationPlayMode::ONCE, .pauseAtEndMs = (unsigned long)(shouldDoubleBlink ? 0 : 40), .pauseAtStartMs = 0, .useEasing = false};
-        } else if (speedVariance < 75) {
-            // 35% - Normal blink (150ms) - standard
-            customBlinkConfig = {.durationMs = 150, .playMode = AnimationPlayMode::ONCE, .pauseAtEndMs = (unsigned long)(shouldDoubleBlink ? 0 : 50), .pauseAtStartMs = 0, .useEasing = false};
-        } else if (speedVariance < 90) {
-            // 15% - Slow blink (200ms) - relaxed
-            customBlinkConfig = {.durationMs = 200, .playMode = AnimationPlayMode::ONCE, .pauseAtEndMs = (unsigned long)(shouldDoubleBlink ? 0 : 60), .pauseAtStartMs = 0, .useEasing = false};
-        } else {
-            // 10% - Very slow blink (250ms) - tired/sleepy
-            customBlinkConfig = {.durationMs = 250, .playMode = AnimationPlayMode::ONCE, .pauseAtEndMs = (unsigned long)(shouldDoubleBlink ? 0 : 80), .pauseAtStartMs = 0, .useEasing = false};
-        }
+    currentState = EyeStateEnum::BLINK;
+}
 
-        // Re-initialize blink animation with new speed
-        TimeBasedAnimation::init(blinkAnim, blinkAnimation, blinkAnimationLength, customBlinkConfig);
+unsigned long EyeState::selectBlinkInterval() {
+    uint32_t variance = esp_random() % 100;
 
-        currentState = EyeStateEnum::BLINK;
+    if (variance < 10) {
+        // 10% - Quick interval (1-2s) - alert/active
+        return 1000 + (esp_random() % 1000);
+    } else if (variance < 80) {
+        // 70% - Normal interval (2.5-5s)
+        return 2500 + (esp_random() % 2500);
+    } else {
+        // 20% - Long interval (5-8s) - relaxed/zoned out
+        return 5000 + (esp_random() % 3000);
+    }
+}
+
+const TimeBasedAnimConfig* EyeState::selectBlinkSpeed(bool isDoubleBlink) {
+    uint32_t variance = esp_random() % 100;
+
+    if (variance < 15) {
+        // 15% - Very fast (100ms) - surprised/alert
+        return isDoubleBlink ? &TimeBasedAnimation::CONFIG_BLINK_VERY_FAST_DBL : &TimeBasedAnimation::CONFIG_BLINK_VERY_FAST;
+    } else if (variance < 40) {
+        // 25% - Fast (120ms) - active
+        return isDoubleBlink ? &TimeBasedAnimation::CONFIG_BLINK_FAST_DBL : &TimeBasedAnimation::CONFIG_BLINK_FAST;
+    } else if (variance < 75) {
+        // 35% - Normal (150ms) - standard
+        return isDoubleBlink ? &TimeBasedAnimation::CONFIG_BLINK_NORMAL_DBL : &TimeBasedAnimation::CONFIG_BLINK_NORMAL;
+    } else if (variance < 90) {
+        // 15% - Slow (200ms) - relaxed
+        return isDoubleBlink ? &TimeBasedAnimation::CONFIG_BLINK_SLOW_DBL : &TimeBasedAnimation::CONFIG_BLINK_SLOW;
+    } else {
+        // 10% - Very slow (250ms) - tired/sleepy
+        return isDoubleBlink ? &TimeBasedAnimation::CONFIG_BLINK_VERY_SLOW_DBL : &TimeBasedAnimation::CONFIG_BLINK_VERY_SLOW;
     }
 }
 
@@ -271,7 +256,6 @@ void EyeState::blink() {
             // Reset for next blink
             blinkCount = 0;
             shouldDoubleBlink = false;
-            changeDefaultFace();
             currentState = EyeStateEnum::IDLE;
         }
     }

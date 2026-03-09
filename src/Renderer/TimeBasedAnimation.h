@@ -50,6 +50,25 @@ public:
     static const TimeBasedAnimConfig CONFIG_TRANSITION;      // 300ms one-shot transition
     static const TimeBasedAnimConfig CONFIG_SMILE_LOOP;      // 500ms smile loop with pauses
 
+    // Blink speed variants (for dynamic blink variance)
+    static const TimeBasedAnimConfig CONFIG_BLINK_VERY_FAST;      // 100ms very fast blink
+    static const TimeBasedAnimConfig CONFIG_BLINK_VERY_FAST_DBL;  // 100ms very fast (no pause for double blink)
+    static const TimeBasedAnimConfig CONFIG_BLINK_FAST;           // 120ms fast blink
+    static const TimeBasedAnimConfig CONFIG_BLINK_FAST_DBL;       // 120ms fast (no pause for double blink)
+    static const TimeBasedAnimConfig CONFIG_BLINK_NORMAL;         // 150ms normal blink
+    static const TimeBasedAnimConfig CONFIG_BLINK_NORMAL_DBL;     // 150ms normal (no pause for double blink)
+    static const TimeBasedAnimConfig CONFIG_BLINK_SLOW;           // 200ms slow blink
+    static const TimeBasedAnimConfig CONFIG_BLINK_SLOW_DBL;       // 200ms slow (no pause for double blink)
+    static const TimeBasedAnimConfig CONFIG_BLINK_VERY_SLOW;      // 250ms very slow blink
+    static const TimeBasedAnimConfig CONFIG_BLINK_VERY_SLOW_DBL;  // 250ms very slow (no pause for double blink)
+
+    // Mouth animation presets
+    static const TimeBasedAnimConfig CONFIG_WAH;                  // 800ms wah animation
+    static const TimeBasedAnimConfig CONFIG_BREATHING_SLOW;       // 3000ms slow breathing
+
+    // Smile transition preset
+    static const TimeBasedAnimConfig CONFIG_SMILE_TRANSITION;     // 500ms smile transition
+
     /**
      * Initialize a time-based animation
      * @param anim Animation state to initialize

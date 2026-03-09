@@ -34,14 +34,10 @@ class EyeState {
     SensorData sensorData;
     GooglyEye googlyEye;
     EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
-    const uint8_t* eyeFrame = eyeDefault;
     bool isTransitioning = false;
 
     unsigned long resetBoop, blinkInterval, nextBlink, nextBoop, nextSmile, nextDown, nextAngry, nextSleep;
     unsigned long nextIdleAction;  // Timer for micro-movements and eye darts
-
-    uint8_t defaultAnimationIndex = 0;
-    const uint8_t* defaultAnimation[3] = {eyeDefault, eyeUp20, eyeLookSharp5};
 
     // Idle micro-movement frames for variety
     const uint8_t* idleLookFrames[6] = {eyeDefault, eyeUp5, eyeUp10, eyeLookSharp5, eyeLookSharp10, eyeGiggle8};
@@ -90,9 +86,12 @@ class EyeState {
     unsigned long startSleepTime;
     int calculateSleepIndex(int currentIndex);
 
-    void changeDefaultFace();
     void movingEye();
     void idleFace();
+    void updateIdleMicroMovements();
+    void checkAndTriggerBlink();
+    unsigned long selectBlinkInterval();
+    const TimeBasedAnimConfig* selectBlinkSpeed(bool isDoubleBlink);
     void blink();
     void arrowFace();
     void oFace();
