@@ -7,7 +7,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_QUICK_LOOP = {
     .playMode = AnimationPlayMode::LOOP,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,
-    .useEasing = false
+    .easingType = EasingType::NONE
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SMOOTH_LOOP = {
@@ -15,7 +15,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SMOOTH_LOOP = {
     .playMode = AnimationPlayMode::LOOP,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,
-    .useEasing = true
+    .easingType = EasingType::EASE_IN_OUT
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SLOW_LOOP = {
@@ -23,7 +23,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SLOW_LOOP = {
     .playMode = AnimationPlayMode::LOOP,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,
-    .useEasing = true
+    .easingType = EasingType::EASE_IN_OUT
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BREATHING = {
@@ -31,7 +31,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BREATHING = {
     .playMode = AnimationPlayMode::PING_PONG,
     .pauseAtEndMs = 500,
     .pauseAtStartMs = 800,
-    .useEasing = true
+    .easingType = EasingType::BREATHING_NATURAL
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK = {
@@ -39,7 +39,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 50,
     .pauseAtStartMs = 0,
-    .useEasing = false
+    .easingType = EasingType::NONE
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_TRANSITION = {
@@ -47,15 +47,15 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_TRANSITION = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,
-    .useEasing = true
+    .easingType = EasingType::EASE_IN_OUT
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SMILE_LOOP = {
-    .durationMs = 500,
+    .durationMs = 900,
     .playMode = AnimationPlayMode::PING_PONG,
-    .pauseAtEndMs = 150,
-    .pauseAtStartMs = 150,
-    .useEasing = true
+    .pauseAtEndMs = 300,
+    .pauseAtStartMs = 12,
+    .easingType = EasingType::EASE_IN_OUT
 };
 
 // Blink speed variants (for dynamic blink variance)
@@ -64,7 +64,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_VERY_FAST = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 30,
     .pauseAtStartMs = 0,
-    .useEasing = false
+    .easingType = EasingType::NONE
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_VERY_FAST_DBL = {
@@ -72,7 +72,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_VERY_FAST_DBL = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 0,  // No pause for double blink
     .pauseAtStartMs = 0,
-    .useEasing = false
+    .easingType = EasingType::NONE
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_FAST = {
@@ -80,7 +80,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_FAST = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 40,
     .pauseAtStartMs = 0,
-    .useEasing = false
+    .easingType = EasingType::NONE
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_FAST_DBL = {
@@ -88,7 +88,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_FAST_DBL = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 0,  // No pause for double blink
     .pauseAtStartMs = 0,
-    .useEasing = false
+    .easingType = EasingType::NONE
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_NORMAL = {
@@ -96,7 +96,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_NORMAL = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 50,
     .pauseAtStartMs = 0,
-    .useEasing = false
+    .easingType = EasingType::NONE
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_NORMAL_DBL = {
@@ -104,7 +104,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_NORMAL_DBL = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 0,  // No pause for double blink
     .pauseAtStartMs = 0,
-    .useEasing = false
+    .easingType = EasingType::NONE
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_SLOW = {
@@ -112,7 +112,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_SLOW = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 60,
     .pauseAtStartMs = 0,
-    .useEasing = false
+    .easingType = EasingType::NONE
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_SLOW_DBL = {
@@ -120,7 +120,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_SLOW_DBL = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 0,  // No pause for double blink
     .pauseAtStartMs = 0,
-    .useEasing = false
+    .easingType = EasingType::NONE
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_VERY_SLOW = {
@@ -128,7 +128,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_VERY_SLOW = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 80,
     .pauseAtStartMs = 0,
-    .useEasing = false
+    .easingType = EasingType::NONE
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_VERY_SLOW_DBL = {
@@ -136,7 +136,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK_VERY_SLOW_DBL = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 0,  // No pause for double blink
     .pauseAtStartMs = 0,
-    .useEasing = false
+    .easingType = EasingType::NONE
 };
 
 // Mouth animation presets
@@ -145,7 +145,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_WAH = {
     .playMode = AnimationPlayMode::PING_PONG,
     .pauseAtEndMs = 200,
     .pauseAtStartMs = 200,
-    .useEasing = true
+    .easingType = EasingType::EASE_IN_OUT
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BREATHING_SLOW = {
@@ -153,7 +153,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BREATHING_SLOW = {
     .playMode = AnimationPlayMode::PING_PONG,
     .pauseAtEndMs = 1800,
     .pauseAtStartMs = 2400,
-    .useEasing = true
+    .easingType = EasingType::BREATHING_NATURAL
 };
 
 // Smile transition preset
@@ -162,7 +162,64 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SMILE_TRANSITION = {
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,
-    .useEasing = true
+    .easingType = EasingType::EASE_IN_OUT
+};
+
+// New expressive animation presets
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT = {
+    .durationMs = 600,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,
+    .pauseAtStartMs = 0,
+    .easingType = EasingType::BOUNCE_OVERSHOOT
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT_FAST = {
+    .durationMs = 350,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,
+    .pauseAtStartMs = 0,
+    .easingType = EasingType::BOUNCE_OVERSHOOT
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_ANTICIPATION = {
+    .durationMs = 500,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,
+    .pauseAtStartMs = 0,
+    .easingType = EasingType::ANTICIPATION
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_ELASTIC_SNAP = {
+    .durationMs = 700,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,
+    .pauseAtStartMs = 0,
+    .easingType = EasingType::ELASTIC_SNAP
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_EXCITED_PULSE = {
+    .durationMs = 1200,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,
+    .pauseAtStartMs = 0,
+    .easingType = EasingType::EXCITED_PULSE
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_CURIOUS_PEEK = {
+    .durationMs = 800,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,
+    .pauseAtStartMs = 0,
+    .easingType = EasingType::CURIOUS_PEEK
+};
+
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_STARTLED_JUMP = {
+    .durationMs = 400,
+    .playMode = AnimationPlayMode::ONCE,
+    .pauseAtEndMs = 0,
+    .pauseAtStartMs = 0,
+    .easingType = EasingType::STARTLED_JUMP
 };
 
 void TimeBasedAnimation::init(TimeBasedAnimState& anim, const uint8_t** frames, short frameCount, const TimeBasedAnimConfig& config) {
@@ -271,12 +328,13 @@ short TimeBasedAnimation::calculateFrameIndex(const TimeBasedAnimState& anim, un
     if (progress > 1.0f) progress = 1.0f;
     if (progress < 0.0f) progress = 0.0f;
 
-    // Apply easing if enabled (uses fixed strength of 0.5)
-    if (anim.config.useEasing) {
-        progress = applyEasing(progress);
+    // Apply easing based on type
+    if (anim.config.easingType != EasingType::NONE) {
+        progress = applyEasing(progress, anim.config.easingType);
     }
 
     // Convert progress to frame index
+    // Note: Progress can exceed 1.0 for overshoot effects, which is intentional
     short frameIndex;
     if (anim.isReversing) {
         frameIndex = (short)((1.0f - progress) * (anim.frameCount - 1));
@@ -291,19 +349,120 @@ short TimeBasedAnimation::calculateFrameIndex(const TimeBasedAnimState& anim, un
     return frameIndex;
 }
 
-float TimeBasedAnimation::applyEasing(float t) {
-    // Ease in-out cubic with fixed strength of 0.5
-    // Provides a balanced smooth animation curve
+float TimeBasedAnimation::applyEasing(float t, EasingType easingType) {
+    switch (easingType) {
+        case EasingType::NONE:
+            return t;
 
-    float eased;
-    if (t < 0.5f) {
-        eased = 4.0f * t * t * t;
-    } else {
-        float f = (2.0f * t - 2.0f);
-        eased = 0.5f * f * f * f + 1.0f;
+        case EasingType::EASE_IN_OUT: {
+            // Ease in-out cubic with fixed strength of 0.5
+            // Provides a balanced smooth animation curve
+            float eased;
+            if (t < 0.5f) {
+                eased = 4.0f * t * t * t;
+            } else {
+                float f = (2.0f * t - 2.0f);
+                eased = 0.5f * f * f * f + 1.0f;
+            }
+            // Blend between linear and eased (50/50 blend)
+            return t * 0.5f + eased * 0.5f;
+        }
+
+        case EasingType::BOUNCE_OVERSHOOT: {
+            // Overshoots to ~150% at 50% progress, then settles to 100%
+            // Creates that alive, reactive, bouncy feel!
+            if (t < 0.5f) {
+                // First half: accelerate to overshoot (goes beyond 1.0)
+                float t2 = t * 2.0f;  // 0 to 1
+                return t2 * t2 * 1.5f;  // Quadratic ease to 150%
+            } else {
+                // Second half: bounce back and settle
+                float t2 = (t - 0.5f) * 2.0f;  // 0 to 1
+                float overshoot = 1.5f;
+                float settle = 1.0f;
+                // Exponential decay from overshoot to settle
+                return overshoot - (overshoot - settle) * t2 * t2;
+            }
+        }
+
+        case EasingType::ANTICIPATION: {
+            // Pulls back to ~-20% before launching forward
+            // Great for reactions - adds personality!
+            if (t < 0.2f) {
+                // First 20%: pull back
+                float t2 = t / 0.2f;  // 0 to 1
+                return -0.2f * t2;  // Linear pull back to -20%
+            } else {
+                // Remaining 80%: launch forward with overshoot
+                float t2 = (t - 0.2f) / 0.8f;  // 0 to 1
+                // Cubic ease out from -20% to 100%
+                return -0.2f + 1.2f * (1.0f - pow(1.0f - t2, 3.0f));
+            }
+        }
+
+        case EasingType::ELASTIC_SNAP: {
+            // Quick snap with multiple small bounces - fun and bouncy!
+            // Uses damped sine wave for elastic effect
+            float p = 0.3f;  // Period
+            float s = p / 4.0f;  // Shift
+            if (t == 0.0f) return 0.0f;
+            if (t == 1.0f) return 1.0f;
+            // Elastic overshoot with decay
+            return pow(2.0f, -10.0f * t) * sin((t - s) * (2.0f * 3.14159f) / p) * 0.5f + 1.0f;
+        }
+
+        case EasingType::EXCITED_PULSE: {
+            // Rapid pulsing that gradually slows down - excitement calming!
+            // Multiple bounces with exponential decay
+            float frequency = 8.0f;  // Number of pulses
+            float decay = 3.0f;  // How fast it calms down
+            float pulse = sin(t * frequency * 3.14159f) * exp(-decay * t);
+            return t + pulse * 0.3f * (1.0f - t);  // Blend with linear, fade out
+        }
+
+        case EasingType::CURIOUS_PEEK: {
+            // Slow start, quick middle, slow end - peeking motion
+            // Ease in-out with stronger curve
+            if (t < 0.5f) {
+                // Ease in (slow start)
+                return 2.0f * t * t;
+            } else {
+                // Ease out (slow end)
+                float t2 = t - 1.0f;
+                return 1.0f - 2.0f * t2 * t2;
+            }
+        }
+
+        case EasingType::STARTLED_JUMP: {
+            // Instant jump to 100%, then slow settle back
+            // Perfect for startled reactions!
+            if (t < 0.1f) {
+                // First 10%: instant jump
+                return 1.0f;
+            } else {
+                // Remaining 90%: slow settle with slight overshoot
+                float t2 = (t - 0.1f) / 0.9f;  // 0 to 1
+                // Ease out from 110% to 100%
+                return 1.1f - 0.1f * (1.0f - pow(1.0f - t2, 3.0f));
+            }
+        }
+
+        case EasingType::BREATHING_NATURAL: {
+            // Asymmetric timing - inhale faster, exhale slower
+            // More natural breathing pattern
+            if (t < 0.4f) {
+                // Inhale (40% of time): faster, ease in
+                float t2 = t / 0.4f;  // 0 to 1
+                return t2 * t2;  // Quadratic ease in
+            } else {
+                // Exhale (60% of time): slower, ease out
+                float t2 = (t - 0.4f) / 0.6f;  // 0 to 1
+                return 1.0f - (1.0f - t2) * (1.0f - t2);  // Quadratic ease out
+            }
+        }
+
+        default:
+            return t;
     }
-
-    // Blend between linear and eased (50/50 blend)
-    return t * 0.5f + eased * 0.5f;
 }
 
