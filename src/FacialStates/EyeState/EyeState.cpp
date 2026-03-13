@@ -14,14 +14,26 @@ EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis(
     // Initialize blink animation (24 frames, quick ping-pong)
     TimeBasedAnimation::init(blinkAnim, blinkAnimation, blinkAnimationLength, TimeBasedAnimation::CONFIG_BLINK);
 
-    // Initialize boop animation (2 frames, quick loop)
-    TimeBasedAnimation::init(boopAnim, boopAnimation, 2, TimeBasedAnimation::CONFIG_QUICK_LOOP);
+    // Initialize boop transition animation (full animation, plays once)
+    TimeBasedAnimation::init(boopAnim, boopAnimation, boopLength, TimeBasedAnimation::CONFIG_TRANSITION);
 
-    // Initialize O-face animation (3 frames, quick loop)
-    TimeBasedAnimation::init(oFaceAnim, oFaceAnimation, 3, TimeBasedAnimation::CONFIG_QUICK_LOOP);
+    // Initialize boop loop animation (last 10 frames only, ping-pong loop)
+    // Uses pointer arithmetic to reference the last 10 frames without duplicating data
+    TimeBasedAnimation::init(boopLoopAnim, &boopAnimation[boopLength - boopLoopFrames], boopLoopFrames, TimeBasedAnimation::CONFIG_QUICK_LOOP);
 
-    // Initialize angry animation (20 frames, quick transition)
+    // Initialize O-face transition animation (full animation, plays once)
+    TimeBasedAnimation::init(oFaceAnim, oFaceAnimation, oFaceLength, TimeBasedAnimation::CONFIG_TRANSITION);
+
+    // Initialize O-face loop animation (last 10 frames only, ping-pong loop)
+    // Uses pointer arithmetic to reference the last 10 frames without duplicating data
+    TimeBasedAnimation::init(oFaceLoopAnim, &oFaceAnimation[oFaceLength - oFaceLoopFrames], oFaceLoopFrames, TimeBasedAnimation::CONFIG_QUICK_LOOP);
+
+    // Initialize angry transition animation (full animation, plays once)
     TimeBasedAnimation::init(angryAnim, eyeAngryAnimation, angryLength, TimeBasedAnimation::CONFIG_TRANSITION);
+
+    // Initialize angry loop animation (last 10 frames only, ping-pong loop)
+    // Uses pointer arithmetic to reference the last 10 frames without duplicating data
+    TimeBasedAnimation::init(angryLoopAnim, &eyeAngryAnimation[angryLength - angryLoopFrames], angryLoopFrames, TimeBasedAnimation::CONFIG_SMILE_LOOP);
 
     // Initialize idle timers
     nextIdleAction = millis() + 1000;  // First idle action after 1s
@@ -270,11 +282,45 @@ void EyeState::blink() {
 }
 
 void EyeState::arrowFace() {
-    display->drawEye(TimeBasedAnimation::update(boopAnim));
+    const uint8_t* currentFrame;
+
+    if (isTransitioning) {
+        // During transition: use full animation (frames 0-47)
+        currentFrame = TimeBasedAnimation::update(boopAnim);
+
+        // Check if transition animation is complete
+        if (TimeBasedAnimation::isComplete(boopAnim)) {
+            isTransitioning = false;
+            // Reset the loop animation to start fresh
+            TimeBasedAnimation::reset(boopLoopAnim);
+        }
+    } else {
+        // After transition: loop only the last 10 frames (frames 38-47)
+        currentFrame = TimeBasedAnimation::update(boopLoopAnim);
+    }
+
+    display->drawEye(currentFrame);
 }
 
 void EyeState::oFace() {
-    display->drawEye(TimeBasedAnimation::update(oFaceAnim));
+    const uint8_t* currentFrame;
+
+    if (isTransitioning) {
+        // During transition: use full animation (frames 0-47)
+        currentFrame = TimeBasedAnimation::update(oFaceAnim);
+
+        // Check if transition animation is complete
+        if (TimeBasedAnimation::isComplete(oFaceAnim)) {
+            isTransitioning = false;
+            // Reset the loop animation to start fresh
+            TimeBasedAnimation::reset(oFaceLoopAnim);
+        }
+    } else {
+        // After transition: loop only the last 10 frames (frames 38-47)
+        currentFrame = TimeBasedAnimation::update(oFaceLoopAnim);
+    }
+
+    display->drawEye(currentFrame);
 }
 
 void EyeState::smileFace() {
@@ -299,19 +345,24 @@ void EyeState::smileFace() {
 }
 
 void EyeState::angryFace() {
-    const uint8_t* currentFrame = TimeBasedAnimation::update(angryAnim);
+    const uint8_t* currentFrame;
 
     if (isTransitioning) {
-        display->drawEye(currentFrame);
+        // During transition: use full animation (frames 0-47)
+        currentFrame = TimeBasedAnimation::update(angryAnim);
 
         // Check if transition animation is complete
         if (TimeBasedAnimation::isComplete(angryAnim)) {
             isTransitioning = false;
+            // Reset the loop animation to start fresh
+            TimeBasedAnimation::reset(angryLoopAnim);
         }
     } else {
-        // Hold at frame near the end (angryLength - 9)
-        display->drawEye(eyeAngryAnimation[angryLength - 9]);
+        // After transition: loop only the last 10 frames (frames 38-47)
+        currentFrame = TimeBasedAnimation::update(angryLoopAnim);
     }
+
+    display->drawEye(currentFrame);
 }
 
 int EyeState::calculateSleepIndex(int currentIndex) {
