@@ -4,43 +4,60 @@
 #include "Bitmaps/Bitmaps.h"
 
 EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis()) {
-    // Initialize smile transition animation (full animation, plays once)
-    TimeBasedAnimation::init(smileAnim, smileAnimation, smileLength, TimeBasedAnimation::CONFIG_TRANSITION);
-
-    // Initialize smile loop animation (last 5 frames only, ping-pong loop)
-    // Uses pointer arithmetic to reference the last 5 frames without duplicating data
-    TimeBasedAnimation::init(smileLoopAnim, &smileAnimation[smileLength - smileLoopFrames], smileLoopFrames, TimeBasedAnimation::CONFIG_SMILE_LOOP);
-
-    // Initialize blink animation (24 frames, quick ping-pong)
+    // Initialize blink animation (special case - no loop)
     TimeBasedAnimation::init(blinkAnim, blinkAnimation, blinkAnimationLength, TimeBasedAnimation::CONFIG_BLINK);
 
-    // Initialize boop transition animation (full animation, plays once)
-    TimeBasedAnimation::init(boopAnim, boopAnimation, boopLength, TimeBasedAnimation::CONFIG_TRANSITION);
-
-    // Initialize boop loop animation (last 10 frames only, ping-pong loop)
-    // Uses pointer arithmetic to reference the last 10 frames without duplicating data
-    TimeBasedAnimation::init(boopLoopAnim, &boopAnimation[boopLength - boopLoopFrames], boopLoopFrames, TimeBasedAnimation::CONFIG_QUICK_LOOP);
-
-    // Initialize O-face transition animation (full animation, plays once)
-    TimeBasedAnimation::init(oFaceAnim, oFaceAnimation, oFaceLength, TimeBasedAnimation::CONFIG_TRANSITION);
-
-    // Initialize O-face loop animation (last 10 frames only, ping-pong loop)
-    // Uses pointer arithmetic to reference the last 10 frames without duplicating data
-    TimeBasedAnimation::init(oFaceLoopAnim, &oFaceAnimation[oFaceLength - oFaceLoopFrames], oFaceLoopFrames, TimeBasedAnimation::CONFIG_QUICK_LOOP);
-
-    // Initialize angry transition animation (full animation, plays once)
-    TimeBasedAnimation::init(angryAnim, eyeAngryAnimation, angryLength, TimeBasedAnimation::CONFIG_TRANSITION);
-
-    // Initialize angry loop animation (last 10 frames only, ping-pong loop)
-    // Uses pointer arithmetic to reference the last 10 frames without duplicating data
-    TimeBasedAnimation::init(angryLoopAnim, &eyeAngryAnimation[angryLength - angryLoopFrames], angryLoopFrames, TimeBasedAnimation::CONFIG_SMILE_LOOP);
+    // Initialize all animations with transition + loop pattern
+    initAnimationData(boopData, boopAnimation, 48, 10, 1500, TimeBasedAnimation::CONFIG_QUICK_LOOP);    // Auto-reset after 1.5s
+    initAnimationData(oFaceData, oFaceAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_QUICK_LOOP);     // No auto-reset
+    initAnimationData(smileData, smileAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMILE_LOOP);     // No auto-reset, special ping-pong loop
+    initAnimationData(angryData, eyeAngryAnimation, 48, 10, 2000, TimeBasedAnimation::CONFIG_QUICK_LOOP); // Auto-reset after 2s
 
     // Initialize idle timers
     nextIdleAction = millis() + 1000;  // First idle action after 1s
     nextBlink = millis() + 3000;       // First blink after 3s
 }
 
+void EyeState::initAnimationData(AnimationData& data, const uint8_t** frames, uint8_t frameCount,
+                                 uint8_t loopFrameCount, unsigned long autoResetDuration,
+                                 const TimeBasedAnimConfig& loopConfig) {
+    data.frames = frames;
+    data.frameCount = frameCount;
+    data.loopFrameCount = loopFrameCount;
+    data.autoResetDuration = autoResetDuration;
+
+    // Initialize transition animation (full animation, plays once)
+    TimeBasedAnimation::init(data.transitionAnim, frames, frameCount, TimeBasedAnimation::CONFIG_TRANSITION);
+
+    // Initialize loop animation (last N frames only)
+    // Uses pointer arithmetic to reference the last N frames without duplicating data
+    TimeBasedAnimation::init(data.loopAnim, &frames[frameCount - loopFrameCount], loopFrameCount, loopConfig);
+}
+
+void EyeState::resetAnimation(AnimationData& data) {
+    TimeBasedAnimation::reset(data.transitionAnim);
+    TimeBasedAnimation::reset(data.loopAnim);
+}
+
+AnimationData* EyeState::getAnimationData(EyeStateEnum state) {
+    switch (state) {
+        case EyeStateEnum::BOOP:  return &boopData;
+        case EyeStateEnum::OEYE:  return &oFaceData;
+        case EyeStateEnum::SMILE: return &smileData;
+        case EyeStateEnum::ANGRY: return &angryData;
+        default: return nullptr;
+    }
+}
+
 void EyeState::update() {
+    // Check for auto-reset states
+    AnimationData* animData = getAnimationData(currentState);
+    if (animData && animData->autoResetDuration > 0) {
+        if (millis() - stateStartTime >= animData->autoResetDuration) {
+            currentState = prevState;
+        }
+    }
+
     switch (currentState) {
         case EyeStateEnum::IDLE:
             idleFace();
@@ -49,28 +66,22 @@ void EyeState::update() {
             blink();
             break;
         case EyeStateEnum::BOOP:
-            arrowFace();
-            if (millis() - resetBoop >= 1500) {
-                currentState = prevState;
-            }
+            playAnimationWithLoop(boopData);
             break;
         case EyeStateEnum::GOOGLY:
             renderGooglyEye();
             break;
         case EyeStateEnum::OEYE:
-            oFace();
+            playAnimationWithLoop(oFaceData);
             break;
         case EyeStateEnum::HEART:
             display->drawEye(eyeHeart);
             break;
         case EyeStateEnum::SMILE:
-            smileFace();
+            playAnimationWithLoop(smileData);
             break;
         case EyeStateEnum::ANGRY:
-            angryFace();
-            if (millis() - resetBoop >= 2000) {
-                currentState = prevState;
-            }
+            playAnimationWithLoop(angryData);
             break;
         case EyeStateEnum::SLEEP:
             sleepFace();
@@ -84,37 +95,45 @@ void EyeState::update() {
 }
 
 void EyeState::setState(EyeStateEnum newState) {
-    if (newState == EyeStateEnum::BOOP || newState == EyeStateEnum::ANGRY) {
-        resetBoop = millis();
-    }
-    if (newState == EyeStateEnum::SLEEP) {
-        resetSleepFace();
-    }
-    if (newState == EyeStateEnum::SMILE) {
-        // Reset smile animation to start from beginning with transition timing
-        TimeBasedAnimation::setConfig(smileAnim, TimeBasedAnimation::CONFIG_SMILE_TRANSITION);
-        TimeBasedAnimation::reset(smileAnim);
-    }
-    if (newState == EyeStateEnum::BLINK) {
-        // Reset blink animation
-        TimeBasedAnimation::reset(blinkAnim);
-    }
-    if (newState == EyeStateEnum::BOOP) {
-        // Reset boop animation
-        TimeBasedAnimation::reset(boopAnim);
-    }
-    if (newState == EyeStateEnum::OEYE) {
-        // Reset O-face animation
-        TimeBasedAnimation::reset(oFaceAnim);
-    }
-    if (newState == EyeStateEnum::ANGRY) {
-        // Reset angry animation
-        TimeBasedAnimation::reset(angryAnim);
-    }
+    // Mark as transitioning if state is changing
     if (currentState != newState) {
         isTransitioning = true;
     }
+
+    // State-specific initialization
+    switch (newState) {
+        case EyeStateEnum::BLINK:
+            TimeBasedAnimation::reset(blinkAnim);
+            break;
+
+        case EyeStateEnum::SLEEP:
+            resetSleepFace();
+            break;
+
+        case EyeStateEnum::SMILE:
+            // Smile uses special transition config
+            TimeBasedAnimation::setConfig(smileData.transitionAnim, TimeBasedAnimation::CONFIG_SMILE_TRANSITION);
+            resetAnimation(smileData);
+            break;
+
+        case EyeStateEnum::BOOP:
+        case EyeStateEnum::OEYE:
+        case EyeStateEnum::ANGRY: {
+            // Reset animation data for states with transition + loop
+            AnimationData* animData = getAnimationData(newState);
+            if (animData) {
+                resetAnimation(*animData);
+            }
+            break;
+        }
+
+        default:
+            break;
+    }
+
+    // Update state and timestamp
     currentState = newState;
+    stateStartTime = millis();
     savePrevState(currentState);
 }
 
@@ -281,136 +300,60 @@ void EyeState::blink() {
     }
 }
 
-void EyeState::arrowFace() {
+void EyeState::playAnimationWithLoop(AnimationData& animData) {
     const uint8_t* currentFrame;
 
     if (isTransitioning) {
-        // During transition: use full animation (frames 0-47)
-        currentFrame = TimeBasedAnimation::update(boopAnim);
+        // During transition: use full animation
+        currentFrame = TimeBasedAnimation::update(animData.transitionAnim);
+
+        // Also update loop animation in the background so it's in sync when we switch
+        TimeBasedAnimation::update(animData.loopAnim);
 
         // Check if transition animation is complete
-        if (TimeBasedAnimation::isComplete(boopAnim)) {
+        if (TimeBasedAnimation::isComplete(animData.transitionAnim)) {
             isTransitioning = false;
-            // Reset the loop animation to start fresh
-            TimeBasedAnimation::reset(boopLoopAnim);
+            // Loop animation is already running in sync, no reset needed
         }
     } else {
-        // After transition: loop only the last 10 frames (frames 38-47)
-        currentFrame = TimeBasedAnimation::update(boopLoopAnim);
+        // After transition: loop only the last N frames
+        currentFrame = TimeBasedAnimation::update(animData.loopAnim);
     }
 
     display->drawEye(currentFrame);
-}
-
-void EyeState::oFace() {
-    const uint8_t* currentFrame;
-
-    if (isTransitioning) {
-        // During transition: use full animation (frames 0-47)
-        currentFrame = TimeBasedAnimation::update(oFaceAnim);
-
-        // Check if transition animation is complete
-        if (TimeBasedAnimation::isComplete(oFaceAnim)) {
-            isTransitioning = false;
-            // Reset the loop animation to start fresh
-            TimeBasedAnimation::reset(oFaceLoopAnim);
-        }
-    } else {
-        // After transition: loop only the last 10 frames (frames 38-47)
-        currentFrame = TimeBasedAnimation::update(oFaceLoopAnim);
-    }
-
-    display->drawEye(currentFrame);
-}
-
-void EyeState::smileFace() {
-    const uint8_t* currentFrame;
-
-    if (isTransitioning) {
-        // During transition: use full animation (frames 0-19)
-        currentFrame = TimeBasedAnimation::update(smileAnim);
-
-        // Check if transition animation is complete
-        if (TimeBasedAnimation::isComplete(smileAnim)) {
-            isTransitioning = false;
-            // Reset the loop animation to start fresh
-            TimeBasedAnimation::reset(smileLoopAnim);
-        }
-    } else {
-        // After transition: loop only the last 5 frames (frames 15-19)
-        currentFrame = TimeBasedAnimation::update(smileLoopAnim);
-    }
-
-    display->drawEye(currentFrame);
-}
-
-void EyeState::angryFace() {
-    const uint8_t* currentFrame;
-
-    if (isTransitioning) {
-        // During transition: use full animation (frames 0-47)
-        currentFrame = TimeBasedAnimation::update(angryAnim);
-
-        // Check if transition animation is complete
-        if (TimeBasedAnimation::isComplete(angryAnim)) {
-            isTransitioning = false;
-            // Reset the loop animation to start fresh
-            TimeBasedAnimation::reset(angryLoopAnim);
-        }
-    } else {
-        // After transition: loop only the last 10 frames (frames 38-47)
-        currentFrame = TimeBasedAnimation::update(angryLoopAnim);
-    }
-
-    display->drawEye(currentFrame);
-}
-
-int EyeState::calculateSleepIndex(int currentIndex) {
-    unsigned long elapsedTime = millis() - startSleepTime;
-    // Calculate minIndex based on elapsed time (updated for 48 frames)
-    // Increased from 5000 to 10000 to slow down the progression
-    int minIndex = min(pow(elapsedTime / 10000.0, 2), (double)(sleepLength - 1));
-    // Calculate decrease probability based on elapsed time
-    // Increased from 20000 to 40000 to slow down the closing probability
-    float decreaseProbability = min(1.0f, elapsedTime / 40000.0f);
-    // Randomly determine whether to increase or decrease the index
-    if (esp_random() % 100 < (100 * decreaseProbability)) {
-        // Chance to increase index
-        return min(currentIndex + 1, sleepLength - 1);
-    } else {
-        // Chance to decrease index
-        return max(currentIndex - 1, minIndex);
-    }
 }
 
 void EyeState::sleepFace() {
     unsigned long currentMillis = millis();
+    unsigned long elapsedTime = currentMillis - startSleepTime;
 
-    // Check interval: how often we evaluate whether to change frames (responsive)
-    const unsigned long CHECK_INTERVAL = 100;  // Check every 100ms for smooth response
+    // Time it takes to fully close eyes (in milliseconds)
+    const unsigned long FULL_CLOSE_DURATION = 30000;  // 30 seconds to fully close
 
-    // Frame change interval: minimum time between actual frame changes (controls visual speed)
-    const unsigned long FRAME_CHANGE_INTERVAL = 400;  // Only allow frame changes every 400ms
+    // Calculate target frame based on elapsed time (linear progression)
+    uint8_t targetIndex = min((elapsedTime * sleepLength) / FULL_CLOSE_DURATION, (unsigned long)(sleepLength - 1));
 
-    if (currentMillis >= nextSleep) {
-        // Time to check if we should change frames
-        if (currentMillis - lastSleepFrameChange >= FRAME_CHANGE_INTERVAL) {
-            // Enough time has passed since last frame change, allow a new one
-            if (sleepIndex < sleepLength - 1) {
-                sleepIndex = calculateSleepIndex(sleepIndex);
-                lastSleepFrameChange = currentMillis;
-            }
+    // Update frame at regular intervals with slight randomness for natural feel
+    if (currentMillis >= nextSleepFrameChange) {
+        // Gradually move toward target index (creates smooth, natural closing)
+        if (sleepIndex < targetIndex) {
+            sleepIndex++;
+        } else if (sleepIndex > targetIndex && esp_random() % 100 < 30) {
+            // 30% chance to occasionally open slightly (natural sleep movement)
+            sleepIndex--;
         }
-        // Schedule next check (independent of frame changes)
-        nextSleep = currentMillis + CHECK_INTERVAL;
+
+        // Next frame change in 300-500ms (natural variation)
+        nextSleepFrameChange = currentMillis + 300 + (esp_random() % 200);
     }
+
     display->drawEye(eyeSleepAnimation[sleepIndex]);
 }
 
 void EyeState::resetSleepFace() {
     sleepIndex = 0;
     startSleepTime = millis();
-    lastSleepFrameChange = millis();  // Initialize frame change timer
+    nextSleepFrameChange = millis();
 }
 
 void EyeState::detransition() {

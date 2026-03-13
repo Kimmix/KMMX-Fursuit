@@ -158,7 +158,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BREATHING_SLOW = {
 
 // Smile transition preset
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SMILE_TRANSITION = {
-    .durationMs = 500,
+    .durationMs = 700,
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,
