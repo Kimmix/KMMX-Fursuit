@@ -448,16 +448,17 @@ float TimeBasedAnimation::applyEasing(float t, EasingType easingType) {
         }
 
         case EasingType::BREATHING_NATURAL: {
-            // Asymmetric timing - inhale faster, exhale slower
-            // More natural breathing pattern
-            if (t < 0.4f) {
-                // Inhale (40% of time): faster, ease in
-                float t2 = t / 0.4f;  // 0 to 1
-                return t2 * t2;  // Quadratic ease in
+            // Symmetric ease in-out for smooth breathing loop
+            // The asymmetry comes from pauseAtStartMs and pauseAtEndMs in the config
+            // This creates a perfect loop when used with PING_PONG mode
+            if (t < 0.5f) {
+                // First half: ease in (accelerating)
+                float t2 = t * 2.0f;  // 0 to 1
+                return 0.5f * t2 * t2;  // Quadratic ease in
             } else {
-                // Exhale (60% of time): slower, ease out
-                float t2 = (t - 0.4f) / 0.6f;  // 0 to 1
-                return 1.0f - (1.0f - t2) * (1.0f - t2);  // Quadratic ease out
+                // Second half: ease out (decelerating)
+                float t2 = (t - 0.5f) * 2.0f;  // 0 to 1
+                return 0.5f + 0.5f * (1.0f - (1.0f - t2) * (1.0f - t2));  // Quadratic ease out
             }
         }
 
