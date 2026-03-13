@@ -201,14 +201,14 @@ unsigned long EyeState::selectBlinkInterval() {
     uint32_t variance = esp_random() % 100;
 
     if (variance < 10) {
-        // 10% - Quick interval (1-2s) - alert/active
-        return 1000 + (esp_random() % 1000);
+        // 10% - Quick interval (1-3s) - alert/active
+        return 1000 + (esp_random() % 2000);
     } else if (variance < 80) {
-        // 70% - Normal interval (2.5-5s)
-        return 2500 + (esp_random() % 2500);
+        // 70% - Normal interval (5-5.7s)
+        return 5000 + (esp_random() % 2500);
     } else {
-        // 20% - Long interval (5-8s) - relaxed/zoned out
-        return 5000 + (esp_random() % 3000);
+        // 20% - Long interval (10-20s) - relaxed/zoned out
+        return 10000 + (esp_random() % 10000);
     }
 }
 
@@ -316,10 +316,12 @@ void EyeState::angryFace() {
 
 int EyeState::calculateSleepIndex(int currentIndex) {
     unsigned long elapsedTime = millis() - startSleepTime;
-    // Calculate minIndex based on elapsed time
-    int minIndex = min(pow(elapsedTime / 5000.0, 2), 19.0);
+    // Calculate minIndex based on elapsed time (updated for 48 frames)
+    // Increased from 5000 to 10000 to slow down the progression
+    int minIndex = min(pow(elapsedTime / 10000.0, 2), (double)(sleepLength - 1));
     // Calculate decrease probability based on elapsed time
-    float decreaseProbability = min(1.0f, elapsedTime / 20000.0f);
+    // Increased from 20000 to 40000 to slow down the closing probability
+    float decreaseProbability = min(1.0f, elapsedTime / 40000.0f);
     // Randomly determine whether to increase or decrease the index
     if (esp_random() % 100 < (100 * decreaseProbability)) {
         // Chance to increase index
@@ -332,11 +334,24 @@ int EyeState::calculateSleepIndex(int currentIndex) {
 
 void EyeState::sleepFace() {
     unsigned long currentMillis = millis();
+
+    // Check interval: how often we evaluate whether to change frames (responsive)
+    const unsigned long CHECK_INTERVAL = 100;  // Check every 100ms for smooth response
+
+    // Frame change interval: minimum time between actual frame changes (controls visual speed)
+    const unsigned long FRAME_CHANGE_INTERVAL = 400;  // Only allow frame changes every 400ms
+
     if (currentMillis >= nextSleep) {
-        if (sleepIndex < sleepLength - 1) {
-            sleepIndex = calculateSleepIndex(sleepIndex);
-            nextSleep = currentMillis + 300;
+        // Time to check if we should change frames
+        if (currentMillis - lastSleepFrameChange >= FRAME_CHANGE_INTERVAL) {
+            // Enough time has passed since last frame change, allow a new one
+            if (sleepIndex < sleepLength - 1) {
+                sleepIndex = calculateSleepIndex(sleepIndex);
+                lastSleepFrameChange = currentMillis;
+            }
         }
+        // Schedule next check (independent of frame changes)
+        nextSleep = currentMillis + CHECK_INTERVAL;
     }
     display->drawEye(eyeSleepAnimation[sleepIndex]);
 }
@@ -344,6 +359,7 @@ void EyeState::sleepFace() {
 void EyeState::resetSleepFace() {
     sleepIndex = 0;
     startSleepTime = millis();
+    lastSleepFrameChange = millis();  // Initialize frame change timer
 }
 
 void EyeState::detransition() {
