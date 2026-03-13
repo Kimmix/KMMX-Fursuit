@@ -149,10 +149,10 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_WAH = {
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BREATHING_SLOW = {
-    .durationMs = 5000,
+    .durationMs = 3500,
     .playMode = AnimationPlayMode::PING_PONG,
-    .pauseAtEndMs = 1800,
-    .pauseAtStartMs = 2400,
+    .pauseAtEndMs = 1600,
+    .pauseAtStartMs = 2200,
     .easingType = EasingType::BREATHING_NATURAL
 };
 
