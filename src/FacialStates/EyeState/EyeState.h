@@ -17,6 +17,7 @@ enum class EyeStateEnum { IDLE,
                           SMILE,
                           ANGRY,
                           SLEEP,
+                          SAD,
                           DETRANSITION };
 
 // Unified animation data structure to reduce repetition
@@ -107,11 +108,16 @@ class EyeState {
         eyeSleep41, eyeSleep42, eyeSleep43, eyeSleep44, eyeSleep45, eyeSleep46, eyeSleep47, eyeSleep48};
     const uint8_t sleepLength = arrayLength(eyeSleepAnimation);
 
+    const uint8_t* sadAnimation[20] = {
+        eyeSad1, eyeSad2, eyeSad3, eyeSad4, eyeSad5, eyeSad6, eyeSad7, eyeSad8, eyeSad9, eyeSad10,
+        eyeSad11, eyeSad12, eyeSad13, eyeSad14, eyeSad15, eyeSad16, eyeSad17, eyeSad18, eyeSad19, eyeSad20};
+
     // Animation data structures (initialized in constructor)
     AnimationData boopData;
     AnimationData oFaceData;
     AnimationData smileData;
     AnimationData angryData;
+    AnimationData sadData;
 
     // Sleep animation (special case - gradual eye closing)
     uint8_t sleepIndex = 0;

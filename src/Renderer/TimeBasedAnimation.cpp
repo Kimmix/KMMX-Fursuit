@@ -12,7 +12,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_QUICK_LOOP = {
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SMOOTH_LOOP = {
     .durationMs = 900,
-    .playMode = AnimationPlayMode::LOOP,
+    .playMode = AnimationPlayMode::PING_PONG,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,
     .easingType = EasingType::EASE_IN_OUT

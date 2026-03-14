@@ -8,10 +8,11 @@ EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis(
     TimeBasedAnimation::init(blinkAnim, blinkAnimation, blinkAnimationLength, TimeBasedAnimation::CONFIG_BLINK);
 
     // Initialize all animations with transition + loop pattern
-    initAnimationData(boopData, boopAnimation, 48, 10, 1500, TimeBasedAnimation::CONFIG_QUICK_LOOP);    // Auto-reset after 1.5s
+    initAnimationData(boopData, boopAnimation, 48, 18, 2500, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);  // Auto-reset after 2.5s
     initAnimationData(oFaceData, oFaceAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_QUICK_LOOP);     // No auto-reset
     initAnimationData(smileData, smileAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMILE_LOOP);     // No auto-reset, special ping-pong loop
-    initAnimationData(angryData, eyeAngryAnimation, 48, 10, 2000, TimeBasedAnimation::CONFIG_QUICK_LOOP); // Auto-reset after 2s
+    initAnimationData(angryData, eyeAngryAnimation, 48, 18, 2000, TimeBasedAnimation::CONFIG_ANTICIPATION);  // Auto-reset after 2s
+    initAnimationData(sadData, sadAnimation, 20, 8, 3000, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);  // Auto-reset after 3s
 
     // Initialize idle timers
     nextIdleAction = millis() + 1000;  // First idle action after 1s
@@ -45,6 +46,7 @@ AnimationData* EyeState::getAnimationData(EyeStateEnum state) {
         case EyeStateEnum::OEYE:  return &oFaceData;
         case EyeStateEnum::SMILE: return &smileData;
         case EyeStateEnum::ANGRY: return &angryData;
+        case EyeStateEnum::SAD:   return &sadData;
         default: return nullptr;
     }
 }
@@ -86,6 +88,9 @@ void EyeState::update() {
         case EyeStateEnum::SLEEP:
             sleepFace();
             break;
+        case EyeStateEnum::SAD:
+            playAnimationWithLoop(sadData);
+            break;
         case EyeStateEnum::DETRANSITION:
             detransition();
             break;
@@ -118,7 +123,8 @@ void EyeState::setState(EyeStateEnum newState) {
 
         case EyeStateEnum::BOOP:
         case EyeStateEnum::OEYE:
-        case EyeStateEnum::ANGRY: {
+        case EyeStateEnum::ANGRY:
+        case EyeStateEnum::SAD: {
             // Reset animation data for states with transition + loop
             AnimationData* animData = getAnimationData(newState);
             if (animData) {
@@ -138,7 +144,7 @@ void EyeState::setState(EyeStateEnum newState) {
 }
 
 void EyeState::savePrevState(EyeStateEnum newState) {
-    if (newState == EyeStateEnum::BOOP || newState == EyeStateEnum::ANGRY || newState == EyeStateEnum::SLEEP) {
+    if (newState == EyeStateEnum::BOOP || newState == EyeStateEnum::ANGRY || newState == EyeStateEnum::SLEEP || newState == EyeStateEnum::SAD) {
         return;
     }
     prevState = newState;
