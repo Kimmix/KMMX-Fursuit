@@ -200,15 +200,15 @@ void EyeState::updateIdleMicroMovements() {
 
     if (randomAction < 30) {
         // 30% - Quick eye dart (subtle look around)
-        currentIdleFrame = (esp_random() % 5) + 1;
+        currentIdleFrame = esp_random() % idleLookFramesLength;
     } else if (randomAction < 50) {
         // 20% - Return to center
         currentIdleFrame = 0;
     }
     // 50% - Stay in current position (no change needed)
 
-    // Schedule next micro-movement (800ms - 2000ms)
-    nextIdleAction = millis() + 800 + (esp_random() % 1200);
+    // Schedule next micro-movement (800ms - 4000ms)
+    nextIdleAction = millis() + 800 + (esp_random() % 3200);
 }
 
 void EyeState::checkAndTriggerBlink() {

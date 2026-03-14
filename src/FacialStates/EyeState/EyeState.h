@@ -51,8 +51,9 @@ class EyeState {
     unsigned long nextIdleAction;  // Timer for micro-movements and eye darts
 
     // Idle micro-movement frames for variety
-    const uint8_t* idleLookFrames[6] = {eyeDefault, eyeUp5, eyeUp10, eyeLookSharp5, eyeLookSharp10, eyeGiggle8};
+    const uint8_t* idleLookFrames[10] = {eyeDefault, eyeUp5, eyeUp10, eyeLookSharp5, eyeLookSharp10, eyeGiggle14, eyeUnimpressed14, eyeUnimpressed20, eyeSad8, eyeSmile10};
     uint8_t currentIdleFrame = 0;
+    const uint8_t idleLookFramesLength = arrayLength(idleLookFrames);
 
     // Accelerometer-based eye movement animations (currently disabled)
     const uint8_t* eyeDownAnimation[20] = {
