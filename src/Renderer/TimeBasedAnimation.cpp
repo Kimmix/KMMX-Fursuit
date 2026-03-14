@@ -3,7 +3,7 @@
 
 // Preset configurations
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_QUICK_LOOP = {
-    .durationMs = 200,
+    .durationMs = 500,
     .playMode = AnimationPlayMode::LOOP,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,
@@ -11,7 +11,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_QUICK_LOOP = {
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SMOOTH_LOOP = {
-    .durationMs = 500,
+    .durationMs = 900,
     .playMode = AnimationPlayMode::LOOP,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,
@@ -167,12 +167,11 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SMILE_TRANSITION = {
 
 // New expressive animation presets
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT = {
-    .durationMs = 600,
-    .playMode = AnimationPlayMode::ONCE,
+    .durationMs = 1000,
+    .playMode = AnimationPlayMode::PING_PONG,
     .pauseAtEndMs = 0,
-    .pauseAtStartMs = 0,
-    .easingType = EasingType::BOUNCE_OVERSHOOT
-};
+    .pauseAtStartMs = 300,
+    .easingType = EasingType::BOUNCE_OVERSHOOT};
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT_FAST = {
     .durationMs = 350,
@@ -334,7 +333,8 @@ short TimeBasedAnimation::calculateFrameIndex(const TimeBasedAnimState& anim, un
     }
 
     // Convert progress to frame index
-    // Note: Progress can exceed 1.0 for overshoot effects, which is intentional
+    // Note: All easing functions return values in [0.0, 1.0] range
+    // Overshoot effects are built into the animation frames themselves
     short frameIndex;
     if (anim.isReversing) {
         frameIndex = (short)((1.0f - progress) * (anim.frameCount - 1));
@@ -369,55 +369,66 @@ float TimeBasedAnimation::applyEasing(float t, EasingType easingType) {
         }
 
         case EasingType::BOUNCE_OVERSHOOT: {
-            // Overshoots to ~150% at 50% progress, then settles to 100%
+            // Bounces to 50% first, then overshoots to 100% and settles
+            // The overshoot is built into the animation frames (e.g., frame 47 of 48 is the overshoot position)
             // Creates that alive, reactive, bouncy feel!
-            if (t < 0.5f) {
-                // First half: accelerate to overshoot (goes beyond 1.0)
-                float t2 = t * 2.0f;  // 0 to 1
-                return t2 * t2 * 1.5f;  // Quadratic ease to 150%
+            if (t < 0.33f) {
+                // First third: accelerate to 50%
+                float t2 = t / 0.33f;  // 0 to 1
+                return 0.5f * t2 * t2;  // Quadratic ease to 0.5 (50%)
+            } else if (t < 0.66f) {
+                // Second third: bounce from 50% to 100% (overshoot)
+                float t2 = (t - 0.33f) / 0.33f;  // 0 to 1
+                return 0.5f + 0.5f * t2 * t2;  // Quadratic ease from 50% to 100%
             } else {
-                // Second half: bounce back and settle
-                float t2 = (t - 0.5f) * 2.0f;  // 0 to 1
-                float overshoot = 1.5f;
-                float settle = 1.0f;
-                // Exponential decay from overshoot to settle
-                return overshoot - (overshoot - settle) * t2 * t2;
+                // Final third: settle at 100% with slight ease
+                float t2 = (t - 0.66f) / 0.34f;  // 0 to 1
+                // Small bounce back and settle
+                return 1.0f - 0.1f * (1.0f - t2) * (1.0f - t2);  // Slight settle to 100%
             }
         }
 
         case EasingType::ANTICIPATION: {
-            // Pulls back to ~-20% before launching forward
+            // Pulls back slightly before launching forward
+            // The pullback is built into the animation frames (early frames show the anticipation)
             // Great for reactions - adds personality!
             if (t < 0.2f) {
-                // First 20%: pull back
+                // First 20%: ease into the pullback position (stays at ~0%)
                 float t2 = t / 0.2f;  // 0 to 1
-                return -0.2f * t2;  // Linear pull back to -20%
+                return t2 * t2 * 0.1f;  // Quadratic ease to 10% (the pullback frame)
             } else {
-                // Remaining 80%: launch forward with overshoot
+                // Remaining 80%: launch forward to 100%
                 float t2 = (t - 0.2f) / 0.8f;  // 0 to 1
-                // Cubic ease out from -20% to 100%
-                return -0.2f + 1.2f * (1.0f - pow(1.0f - t2, 3.0f));
+                // Cubic ease out from 10% to 100%
+                return 0.1f + 0.9f * (1.0f - pow(1.0f - t2, 3.0f));
             }
         }
 
         case EasingType::ELASTIC_SNAP: {
             // Quick snap with multiple small bounces - fun and bouncy!
-            // Uses damped sine wave for elastic effect
-            float p = 0.3f;  // Period
-            float s = p / 4.0f;  // Shift
+            // The elastic bounces are built into the animation frames
+            // Uses damped sine wave for elastic effect, clamped to [0, 1]
             if (t == 0.0f) return 0.0f;
             if (t == 1.0f) return 1.0f;
-            // Elastic overshoot with decay
-            return pow(2.0f, -10.0f * t) * sin((t - s) * (2.0f * 3.14159f) / p) * 0.5f + 1.0f;
+
+            // Create elastic effect that oscillates but stays within bounds
+            float frequency = 5.0f;  // Number of bounces
+            float decay = 5.0f;  // How fast bounces dampen
+            float oscillation = sin(t * frequency * 3.14159f) * exp(-decay * t);
+            // Blend oscillation with ease-out curve, scaled to stay in [0, 1]
+            float easeOut = 1.0f - pow(1.0f - t, 3.0f);
+            return easeOut + oscillation * 0.15f * (1.0f - t);  // Small bounces that fade out
         }
 
         case EasingType::EXCITED_PULSE: {
             // Rapid pulsing that gradually slows down - excitement calming!
-            // Multiple bounces with exponential decay
+            // The pulses are built into the animation frames
+            // Multiple bounces with exponential decay, stays within [0, 1]
             float frequency = 8.0f;  // Number of pulses
             float decay = 3.0f;  // How fast it calms down
             float pulse = sin(t * frequency * 3.14159f) * exp(-decay * t);
-            return t + pulse * 0.3f * (1.0f - t);  // Blend with linear, fade out
+            // Reduced pulse amplitude to ensure we stay in bounds
+            return t + pulse * 0.15f * (1.0f - t);  // Blend with linear, fade out
         }
 
         case EasingType::CURIOUS_PEEK: {
@@ -434,16 +445,20 @@ float TimeBasedAnimation::applyEasing(float t, EasingType easingType) {
         }
 
         case EasingType::STARTLED_JUMP: {
-            // Instant jump to 100%, then slow settle back
+            // Instant jump to 100%, then slow settle back to mid-point, then back to 100%
+            // The overshoot is built into the animation frames (last frame is the startled position)
             // Perfect for startled reactions!
             if (t < 0.1f) {
-                // First 10%: instant jump
+                // First 10%: instant jump to 100%
                 return 1.0f;
+            } else if (t < 0.5f) {
+                // Next 40%: settle back from 100% to ~70%
+                float t2 = (t - 0.1f) / 0.4f;  // 0 to 1
+                return 1.0f - 0.3f * t2;  // Linear settle to 70%
             } else {
-                // Remaining 90%: slow settle with slight overshoot
-                float t2 = (t - 0.1f) / 0.9f;  // 0 to 1
-                // Ease out from 110% to 100%
-                return 1.1f - 0.1f * (1.0f - pow(1.0f - t2, 3.0f));
+                // Last 50%: ease back to 100%
+                float t2 = (t - 0.5f) / 0.5f;  // 0 to 1
+                return 0.7f + 0.3f * (1.0f - pow(1.0f - t2, 2.0f));  // Ease out to 100%
             }
         }
 
