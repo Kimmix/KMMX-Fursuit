@@ -31,6 +31,10 @@ class KMMXController {
     void setHornBrightness(int i);
     int getCheekBrightness();
     void setCheekBrightness(int i);
+    void setCheekBackgroundColor(uint8_t r, uint8_t g, uint8_t b);
+    void setCheekFadeColor(uint8_t r, uint8_t g, uint8_t b);
+    uint32_t getCheekBackgroundColor();
+    uint32_t getCheekFadeColor();
 
    private:
     // Devices

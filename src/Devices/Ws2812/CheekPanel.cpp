@@ -28,6 +28,22 @@ uint8_t CheekPanel::getBrightness() const {
     return brightness;
 }
 
+void CheekPanel::setBackgroundColorRGB(uint8_t r, uint8_t g, uint8_t b) {
+    backgroundColor = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+}
+
+void CheekPanel::setFadeColorRGB(uint8_t r, uint8_t g, uint8_t b) {
+    fadeColor = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+}
+
+uint32_t CheekPanel::getBackgroundColor() const {
+    return backgroundColor;
+}
+
+uint32_t CheekPanel::getFadeColor() const {
+    return fadeColor;
+}
+
 void CheekPanel::update() {
     unsigned long currentMillis = millis();
 

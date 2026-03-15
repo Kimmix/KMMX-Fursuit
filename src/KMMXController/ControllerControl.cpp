@@ -25,6 +25,22 @@ void KMMXController::setCheekBrightness(int i) {
     cheekPanel.setBrightness(constrain(i, 0, 255));
 }
 
+void KMMXController::setCheekBackgroundColor(uint8_t r, uint8_t g, uint8_t b) {
+    cheekPanel.setBackgroundColorRGB(r, g, b);
+}
+
+void KMMXController::setCheekFadeColor(uint8_t r, uint8_t g, uint8_t b) {
+    cheekPanel.setFadeColorRGB(r, g, b);
+}
+
+uint32_t KMMXController::getCheekBackgroundColor() {
+    return cheekPanel.getBackgroundColor();
+}
+
+uint32_t KMMXController::getCheekFadeColor() {
+    return cheekPanel.getFadeColor();
+}
+
 // State control for BLE
 void KMMXController::setEye(int i) {
     switch (i) {

@@ -17,6 +17,8 @@ class BLEManager {
     BLEByteCharacteristic visemeCharacteristic;
     BLEByteCharacteristic hornBrightnessCharacteristic;
     BLEByteCharacteristic cheekBrightnessCharacteristic;
+    BLECharacteristic cheekBgColorCharacteristic;
+    BLECharacteristic cheekFadeColorCharacteristic;
 
     static BLEManager* instance;
 
@@ -27,4 +29,6 @@ class BLEManager {
     static void visemeStateWritten(BLEDevice central, BLECharacteristic characteristic);
     static void hornBrightnessWritten(BLEDevice central, BLECharacteristic characteristic);
     static void cheekBrightnessWritten(BLEDevice central, BLECharacteristic characteristic);
+    static void cheekBgColorWritten(BLEDevice central, BLECharacteristic characteristic);
+    static void cheekFadeColorWritten(BLEDevice central, BLECharacteristic characteristic);
 };
