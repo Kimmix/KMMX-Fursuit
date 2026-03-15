@@ -20,7 +20,8 @@ BLEManager::BLEManager(KMMXController& ctrl) : controller(ctrl),
                                            hornBrightnessCharacteristic(BLE_HORN_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            cheekBrightnessCharacteristic(BLE_CHEEK_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            cheekBgColorCharacteristic(BLE_CHEEK_BG_COLOR_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
-                                           cheekFadeColorCharacteristic(BLE_CHEEK_FADE_COLOR_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3) {
+                                           cheekFadeColorCharacteristic(BLE_CHEEK_FADE_COLOR_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
+                                           rebootCharacteristic(BLE_REBOOT_CHARACTERISTIC_UUID, BLEWrite) {
 }
 
 void BLEManager::setup() {
@@ -42,6 +43,7 @@ void BLEManager::setup() {
     protoService.addCharacteristic(cheekBrightnessCharacteristic);
     protoService.addCharacteristic(cheekBgColorCharacteristic);
     protoService.addCharacteristic(cheekFadeColorCharacteristic);
+    protoService.addCharacteristic(rebootCharacteristic);
 
     // Set default values for each characteristic
     displayBrightnessCharacteristic.setValue(controller.getDisplayBrightness());
@@ -71,6 +73,7 @@ void BLEManager::setup() {
     cheekBrightnessCharacteristic.setEventHandler(BLEWritten, cheekBrightnessWritten);
     cheekBgColorCharacteristic.setEventHandler(BLEWritten, cheekBgColorWritten);
     cheekFadeColorCharacteristic.setEventHandler(BLEWritten, cheekFadeColorWritten);
+    rebootCharacteristic.setEventHandler(BLEWritten, rebootWritten);
 
     // Start advertising the BLE pService
     BLE.advertise();
@@ -142,6 +145,17 @@ void BLEManager::cheekFadeColorWritten(BLEDevice central, BLECharacteristic char
         const uint8_t* data = characteristic.value();
         if (characteristic.valueLength() >= 3) {
             instance->controller.setCheekFadeColor(data[0], data[1], data[2]);
+        }
+    }
+}
+
+void BLEManager::rebootWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        // Any non-zero value triggers a reboot
+        if (*data != 0) {
+            Serial.println(F("Reboot requested via BLE"));
+            instance->controller.reboot();
         }
     }
 }

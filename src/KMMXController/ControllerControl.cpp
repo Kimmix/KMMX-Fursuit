@@ -107,3 +107,10 @@ void KMMXController::setViseme(int b) {
 int KMMXController::getViseme() {
     return mouthState.getState() == MouthStateEnum::TALKING;
 }
+
+// System Control
+void KMMXController::reboot() {
+    Serial.println("Rebooting device...");
+    delay(100);  // Give time for serial message to be sent
+    ESP.restart();
+}

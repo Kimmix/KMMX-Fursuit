@@ -19,6 +19,7 @@ class BLEManager {
     BLEByteCharacteristic cheekBrightnessCharacteristic;
     BLECharacteristic cheekBgColorCharacteristic;
     BLECharacteristic cheekFadeColorCharacteristic;
+    BLEByteCharacteristic rebootCharacteristic;
 
     static BLEManager* instance;
 
@@ -31,4 +32,5 @@ class BLEManager {
     static void cheekBrightnessWritten(BLEDevice central, BLECharacteristic characteristic);
     static void cheekBgColorWritten(BLEDevice central, BLECharacteristic characteristic);
     static void cheekFadeColorWritten(BLEDevice central, BLECharacteristic characteristic);
+    static void rebootWritten(BLEDevice central, BLECharacteristic characteristic);
 };
