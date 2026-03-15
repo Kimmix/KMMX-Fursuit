@@ -27,6 +27,10 @@ class KMMXController {
     int getViseme();
     int getDisplayBrightness();
     void setDisplayBrightness(int i);
+    int getHornBrightness();
+    void setHornBrightness(int i);
+    int getCheekBrightness();
+    void setCheekBrightness(int i);
 
    private:
     // Devices

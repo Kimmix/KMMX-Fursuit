@@ -13,6 +13,12 @@ EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis(
     initAnimationData(smileData, smileAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMILE_LOOP);     // No auto-reset, special ping-pong loop
     initAnimationData(angryData, eyeAngryAnimation, 48, 18, 2000, TimeBasedAnimation::CONFIG_ANTICIPATION);  // Auto-reset after 2s
     initAnimationData(sadData, sadAnimation, 20, 8, 3000, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);  // Auto-reset after 3s
+    initAnimationData(cryData, cryAnimation, 48, 12, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);  // No auto-reset, for photo shoots
+    initAnimationData(doubtedData, doubtedAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_QUICK_LOOP);  // No auto-reset, for photo shoots
+    initAnimationData(roundedData, roundedAnimation, 48, 15, 0, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);  // No auto-reset, for photo shoots
+    initAnimationData(sharpData, sharpAnimation, 48, 18, 0, TimeBasedAnimation::CONFIG_ANTICIPATION);  // No auto-reset, focused state
+    initAnimationData(giggleData, giggleAnimation, 48, 12, 0, TimeBasedAnimation::CONFIG_SMILE_LOOP);  // No auto-reset, playful state
+    initAnimationData(unimpressedData, unimpressedAnimation, 48, 14, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);  // No auto-reset, for photo shoots
 
     // Initialize idle timers
     nextIdleAction = millis() + 1000;  // First idle action after 1s
@@ -42,11 +48,17 @@ void EyeState::resetAnimation(AnimationData& data) {
 
 AnimationData* EyeState::getAnimationData(EyeStateEnum state) {
     switch (state) {
-        case EyeStateEnum::BOOP:  return &boopData;
-        case EyeStateEnum::OEYE:  return &oFaceData;
-        case EyeStateEnum::SMILE: return &smileData;
-        case EyeStateEnum::ANGRY: return &angryData;
-        case EyeStateEnum::SAD:   return &sadData;
+        case EyeStateEnum::BOOP:        return &boopData;
+        case EyeStateEnum::OEYE:        return &oFaceData;
+        case EyeStateEnum::SMILE:       return &smileData;
+        case EyeStateEnum::ANGRY:       return &angryData;
+        case EyeStateEnum::SAD:         return &sadData;
+        case EyeStateEnum::CRY:         return &cryData;
+        case EyeStateEnum::DOUBTED:     return &doubtedData;
+        case EyeStateEnum::ROUNDED:     return &roundedData;
+        case EyeStateEnum::SHARP:       return &sharpData;
+        case EyeStateEnum::GIGGLE:      return &giggleData;
+        case EyeStateEnum::UNIMPRESSED: return &unimpressedData;
         default: return nullptr;
     }
 }
@@ -91,6 +103,24 @@ void EyeState::update() {
         case EyeStateEnum::SAD:
             playAnimationWithLoop(sadData);
             break;
+        case EyeStateEnum::CRY:
+            playAnimationWithLoop(cryData);
+            break;
+        case EyeStateEnum::DOUBTED:
+            playAnimationWithLoop(doubtedData);
+            break;
+        case EyeStateEnum::ROUNDED:
+            playAnimationWithLoop(roundedData);
+            break;
+        case EyeStateEnum::SHARP:
+            playAnimationWithLoop(sharpData);
+            break;
+        case EyeStateEnum::GIGGLE:
+            playAnimationWithLoop(giggleData);
+            break;
+        case EyeStateEnum::UNIMPRESSED:
+            playAnimationWithLoop(unimpressedData);
+            break;
         case EyeStateEnum::DETRANSITION:
             detransition();
             break;
@@ -124,7 +154,13 @@ void EyeState::setState(EyeStateEnum newState) {
         case EyeStateEnum::BOOP:
         case EyeStateEnum::OEYE:
         case EyeStateEnum::ANGRY:
-        case EyeStateEnum::SAD: {
+        case EyeStateEnum::SAD:
+        case EyeStateEnum::CRY:
+        case EyeStateEnum::DOUBTED:
+        case EyeStateEnum::ROUNDED:
+        case EyeStateEnum::SHARP:
+        case EyeStateEnum::GIGGLE:
+        case EyeStateEnum::UNIMPRESSED: {
             // Reset animation data for states with transition + loop
             AnimationData* animData = getAnimationData(newState);
             if (animData) {
@@ -144,7 +180,11 @@ void EyeState::setState(EyeStateEnum newState) {
 }
 
 void EyeState::savePrevState(EyeStateEnum newState) {
-    if (newState == EyeStateEnum::BOOP || newState == EyeStateEnum::ANGRY || newState == EyeStateEnum::SLEEP || newState == EyeStateEnum::SAD) {
+    // Don't save states that auto-reset as previous state
+    if (newState == EyeStateEnum::BOOP ||
+        newState == EyeStateEnum::ANGRY ||
+        newState == EyeStateEnum::SLEEP ||
+        newState == EyeStateEnum::SAD) {
         return;
     }
     prevState = newState;

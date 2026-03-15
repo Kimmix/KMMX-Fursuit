@@ -18,6 +18,12 @@ enum class EyeStateEnum { IDLE,
                           ANGRY,
                           SLEEP,
                           SAD,
+                          CRY,
+                          DOUBTED,
+                          ROUNDED,
+                          SHARP,
+                          GIGGLE,
+                          UNIMPRESSED,
                           DETRANSITION };
 
 // Unified animation data structure to reduce repetition
@@ -112,12 +118,60 @@ class EyeState {
         eyeSad1, eyeSad2, eyeSad3, eyeSad4, eyeSad5, eyeSad6, eyeSad7, eyeSad8, eyeSad9, eyeSad10,
         eyeSad11, eyeSad12, eyeSad13, eyeSad14, eyeSad15, eyeSad16, eyeSad17, eyeSad18, eyeSad19, eyeSad20};
 
+    const uint8_t* cryAnimation[48] = {
+        eyeCry1, eyeCry2, eyeCry3, eyeCry4, eyeCry5, eyeCry6, eyeCry7, eyeCry8, eyeCry9, eyeCry10,
+        eyeCry11, eyeCry12, eyeCry13, eyeCry14, eyeCry15, eyeCry16, eyeCry17, eyeCry18, eyeCry19, eyeCry20,
+        eyeCry21, eyeCry22, eyeCry23, eyeCry24, eyeCry25, eyeCry26, eyeCry27, eyeCry28, eyeCry29, eyeCry30,
+        eyeCry31, eyeCry32, eyeCry33, eyeCry34, eyeCry35, eyeCry36, eyeCry37, eyeCry38, eyeCry39, eyeCry40,
+        eyeCry41, eyeCry42, eyeCry43, eyeCry44, eyeCry45, eyeCry46, eyeCry47, eyeCry48};
+
+    const uint8_t* doubtedAnimation[48] = {
+        eyeDoubted1, eyeDoubted2, eyeDoubted3, eyeDoubted4, eyeDoubted5, eyeDoubted6, eyeDoubted7, eyeDoubted8, eyeDoubted9, eyeDoubted10,
+        eyeDoubted11, eyeDoubted12, eyeDoubted13, eyeDoubted14, eyeDoubted15, eyeDoubted16, eyeDoubted17, eyeDoubted18, eyeDoubted19, eyeDoubted20,
+        eyeDoubted21, eyeDoubted22, eyeDoubted23, eyeDoubted24, eyeDoubted25, eyeDoubted26, eyeDoubted27, eyeDoubted28, eyeDoubted29, eyeDoubted30,
+        eyeDoubted31, eyeDoubted32, eyeDoubted33, eyeDoubted34, eyeDoubted35, eyeDoubted36, eyeDoubted37, eyeDoubted38, eyeDoubted39, eyeDoubted40,
+        eyeDoubted41, eyeDoubted42, eyeDoubted43, eyeDoubted44, eyeDoubted45, eyeDoubted46, eyeDoubted47, eyeDoubted48};
+
+    const uint8_t* roundedAnimation[48] = {
+        eyeRounded1, eyeRounded2, eyeRounded3, eyeRounded4, eyeRounded5, eyeRounded6, eyeRounded7, eyeRounded8, eyeRounded9, eyeRounded10,
+        eyeRounded11, eyeRounded12, eyeRounded13, eyeRounded14, eyeRounded15, eyeRounded16, eyeRounded17, eyeRounded18, eyeRounded19, eyeRounded20,
+        eyeRounded21, eyeRounded22, eyeRounded23, eyeRounded24, eyeRounded25, eyeRounded26, eyeRounded27, eyeRounded28, eyeRounded29, eyeRounded30,
+        eyeRounded31, eyeRounded32, eyeRounded33, eyeRounded34, eyeRounded35, eyeRounded36, eyeRounded37, eyeRounded38, eyeRounded39, eyeRounded40,
+        eyeRounded41, eyeRounded42, eyeRounded43, eyeRounded44, eyeRounded45, eyeRounded46, eyeRounded47, eyeRounded48};
+
+    const uint8_t* sharpAnimation[48] = {
+        eyeSharp1, eyeSharp2, eyeSharp3, eyeSharp4, eyeSharp5, eyeSharp6, eyeSharp7, eyeSharp8, eyeSharp9, eyeSharp10,
+        eyeSharp11, eyeSharp12, eyeSharp13, eyeSharp14, eyeSharp15, eyeSharp16, eyeSharp17, eyeSharp18, eyeSharp19, eyeSharp20,
+        eyeSharp21, eyeSharp22, eyeSharp23, eyeSharp24, eyeSharp25, eyeSharp26, eyeSharp27, eyeSharp28, eyeSharp29, eyeSharp30,
+        eyeSharp31, eyeSharp32, eyeSharp33, eyeSharp34, eyeSharp35, eyeSharp36, eyeSharp37, eyeSharp38, eyeSharp39, eyeSharp40,
+        eyeSharp41, eyeSharp42, eyeSharp43, eyeSharp44, eyeSharp45, eyeSharp46, eyeSharp47, eyeSharp48};
+
+    const uint8_t* giggleAnimation[48] = {
+        eyeGiggle1, eyeGiggle2, eyeGiggle3, eyeGiggle4, eyeGiggle5, eyeGiggle6, eyeGiggle7, eyeGiggle8, eyeGiggle9, eyeGiggle10,
+        eyeGiggle11, eyeGiggle12, eyeGiggle13, eyeGiggle14, eyeGiggle15, eyeGiggle16, eyeGiggle17, eyeGiggle18, eyeGiggle19, eyeGiggle20,
+        eyeGiggle21, eyeGiggle22, eyeGiggle23, eyeGiggle24, eyeGiggle25, eyeGiggle26, eyeGiggle27, eyeGiggle28, eyeGiggle29, eyeGiggle30,
+        eyeGiggle31, eyeGiggle32, eyeGiggle33, eyeGiggle34, eyeGiggle35, eyeGiggle36, eyeGiggle37, eyeGiggle38, eyeGiggle39, eyeGiggle40,
+        eyeGiggle41, eyeGiggle42, eyeGiggle43, eyeGiggle44, eyeGiggle45, eyeGiggle46, eyeGiggle47, eyeGiggle48};
+
+    const uint8_t* unimpressedAnimation[48] = {
+        eyeUnimpressed1, eyeUnimpressed2, eyeUnimpressed3, eyeUnimpressed4, eyeUnimpressed5, eyeUnimpressed6, eyeUnimpressed7, eyeUnimpressed8, eyeUnimpressed9, eyeUnimpressed10,
+        eyeUnimpressed11, eyeUnimpressed12, eyeUnimpressed13, eyeUnimpressed14, eyeUnimpressed15, eyeUnimpressed16, eyeUnimpressed17, eyeUnimpressed18, eyeUnimpressed19, eyeUnimpressed20,
+        eyeUnimpressed21, eyeUnimpressed22, eyeUnimpressed23, eyeUnimpressed24, eyeUnimpressed25, eyeUnimpressed26, eyeUnimpressed27, eyeUnimpressed28, eyeUnimpressed29, eyeUnimpressed30,
+        eyeUnimpressed31, eyeUnimpressed32, eyeUnimpressed33, eyeUnimpressed34, eyeUnimpressed35, eyeUnimpressed36, eyeUnimpressed37, eyeUnimpressed38, eyeUnimpressed39, eyeUnimpressed40,
+        eyeUnimpressed41, eyeUnimpressed42, eyeUnimpressed43, eyeUnimpressed44, eyeUnimpressed45, eyeUnimpressed46, eyeUnimpressed47, eyeUnimpressed48};
+
     // Animation data structures (initialized in constructor)
     AnimationData boopData;
     AnimationData oFaceData;
     AnimationData smileData;
     AnimationData angryData;
     AnimationData sadData;
+    AnimationData cryData;
+    AnimationData doubtedData;
+    AnimationData roundedData;
+    AnimationData sharpData;
+    AnimationData giggleData;
+    AnimationData unimpressedData;
 
     // Sleep animation (special case - gradual eye closing)
     uint8_t sleepIndex = 0;

@@ -9,6 +9,22 @@ void KMMXController::setDisplayBrightness(int i) {
     display.setBrightnessValue(i);
 }
 
+int KMMXController::getHornBrightness() {
+    return hornLED.getBrightness();
+}
+
+void KMMXController::setHornBrightness(int i) {
+    hornLED.setBrightness(i, 20);  // Set brightness with fade speed of 20 for faster response
+}
+
+int KMMXController::getCheekBrightness() {
+    return cheekPanel.getBrightness();
+}
+
+void KMMXController::setCheekBrightness(int i) {
+    cheekPanel.setBrightness(constrain(i, 0, 255));
+}
+
 // State control for BLE
 void KMMXController::setEye(int i) {
     switch (i) {
@@ -20,6 +36,39 @@ void KMMXController::setEye(int i) {
             break;
         case 3:
             eyeState.setState(EyeStateEnum::SMILE);
+            break;
+        case 4:
+            eyeState.setState(EyeStateEnum::ANGRY);
+            break;
+        case 5:
+            eyeState.setState(EyeStateEnum::SAD);
+            break;
+        case 6:
+            eyeState.setState(EyeStateEnum::BOOP);
+            break;
+        case 7:
+            eyeState.setState(EyeStateEnum::OEYE);
+            break;
+        case 8:
+            eyeState.setState(EyeStateEnum::SLEEP);
+            break;
+        case 9:
+            eyeState.setState(EyeStateEnum::CRY);
+            break;
+        case 10:
+            eyeState.setState(EyeStateEnum::DOUBTED);
+            break;
+        case 11:
+            eyeState.setState(EyeStateEnum::ROUNDED);
+            break;
+        case 12:
+            eyeState.setState(EyeStateEnum::SHARP);
+            break;
+        case 13:
+            eyeState.setState(EyeStateEnum::GIGGLE);
+            break;
+        case 14:
+            eyeState.setState(EyeStateEnum::UNIMPRESSED);
             break;
         default:
             eyeState.setState(EyeStateEnum::IDLE);

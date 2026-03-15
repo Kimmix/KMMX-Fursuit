@@ -16,7 +16,9 @@ BLEManager::BLEManager(KMMXController& ctrl) : controller(ctrl),
                                            protoService(BLE_SERVICE_UUID),
                                            displayBrightnessCharacteristic(BLE_DISPLAY_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            eyeStateCharacteristic(BLE_EYE_STATE_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           visemeCharacteristic(BLE_VISEME_CHARACTERISTIC_UUID, BLERead | BLEWrite) {
+                                           visemeCharacteristic(BLE_VISEME_CHARACTERISTIC_UUID, BLERead | BLEWrite),
+                                           hornBrightnessCharacteristic(BLE_HORN_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
+                                           cheekBrightnessCharacteristic(BLE_CHEEK_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite) {
 }
 
 void BLEManager::setup() {
@@ -34,11 +36,15 @@ void BLEManager::setup() {
     protoService.addCharacteristic(displayBrightnessCharacteristic);
     protoService.addCharacteristic(eyeStateCharacteristic);
     protoService.addCharacteristic(visemeCharacteristic);
+    protoService.addCharacteristic(hornBrightnessCharacteristic);
+    protoService.addCharacteristic(cheekBrightnessCharacteristic);
 
     // Set default values for each characteristic
     displayBrightnessCharacteristic.setValue(controller.getDisplayBrightness());
     eyeStateCharacteristic.setValue(0x00);
     visemeCharacteristic.setValue(controller.getViseme());
+    hornBrightnessCharacteristic.setValue(controller.getHornBrightness());
+    cheekBrightnessCharacteristic.setValue(controller.getCheekBrightness());
 
     BLE.addService(protoService);
     BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
@@ -48,6 +54,8 @@ void BLEManager::setup() {
     displayBrightnessCharacteristic.setEventHandler(BLEWritten, displayBrightnessWritten);
     eyeStateCharacteristic.setEventHandler(BLEWritten, eyeStateWritten);
     visemeCharacteristic.setEventHandler(BLEWritten, visemeStateWritten);
+    hornBrightnessCharacteristic.setEventHandler(BLEWritten, hornBrightnessWritten);
+    cheekBrightnessCharacteristic.setEventHandler(BLEWritten, cheekBrightnessWritten);
 
     // Start advertising the BLE pService
     BLE.advertise();
@@ -88,5 +96,19 @@ void BLEManager::visemeStateWritten(BLEDevice central, BLECharacteristic charact
     if (instance) {
         const uint8_t* data = characteristic.value();
         instance->controller.setViseme(static_cast<int>(*data));
+    }
+}
+
+void BLEManager::hornBrightnessWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        instance->controller.setHornBrightness(static_cast<int>(*data));
+    }
+}
+
+void BLEManager::cheekBrightnessWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        instance->controller.setCheekBrightness(static_cast<int>(*data));
     }
 }

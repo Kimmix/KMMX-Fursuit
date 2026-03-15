@@ -24,7 +24,7 @@ void HornLED::update() {
     unsigned long currentMillis = millis();
 
     // Only proceed if the time interval has elapsed
-    if (currentMillis - previousMillis >= 100) {
+    if (currentMillis - previousMillis >= 20) {  // Faster update: 20ms instead of 100ms
         previousMillis = currentMillis;
 
         // Adjust brightness toward the target
@@ -44,17 +44,13 @@ void HornLED::update() {
 
         // Gradually adjust the actual PWM value
         if (abs(pwmValue - targetPwm) > 0.5) {  // Only update if there's a noticeable difference
-            // Serial.print(targetPwm);
-            // Serial.print(" : ");
-            // Serial.print(pwmValue);
-            pwmValue += (targetPwm - pwmValue) * fadeSpeed / 100.0f;
+            // More aggressive fade calculation for faster response
+            pwmValue += (targetPwm - pwmValue) * fadeSpeed / 50.0f;
 
             // Snap to the target if close enough
             if (abs(pwmValue - targetPwm) < 1.0f) {
                 pwmValue = targetPwm;
             }
-            // Serial.print("  | ledcWrite:");
-            // Serial.println(pwmValue);
             ledcWrite(hornPwmChannel, round(pwmValue));  // Write the new PWM value
         }
     }
