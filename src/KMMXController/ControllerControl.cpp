@@ -66,24 +66,21 @@ void KMMXController::setEye(int i) {
             eyeState.setState(EyeStateEnum::OEYE);
             break;
         case 8:
-            eyeState.setState(EyeStateEnum::SLEEP);
-            break;
-        case 9:
             eyeState.setState(EyeStateEnum::CRY);
             break;
-        case 10:
+        case 9:
             eyeState.setState(EyeStateEnum::DOUBTED);
             break;
-        case 11:
+        case 10:
             eyeState.setState(EyeStateEnum::ROUNDED);
             break;
-        case 12:
+        case 11:
             eyeState.setState(EyeStateEnum::SHARP);
             break;
-        case 13:
+        case 12:
             eyeState.setState(EyeStateEnum::GIGGLE);
             break;
-        case 14:
+        case 13:
             eyeState.setState(EyeStateEnum::UNIMPRESSED);
             break;
         default:
