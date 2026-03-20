@@ -60,7 +60,7 @@ void KMMXController::setEye(int i) {
             eyeState.setState(EyeStateEnum::SAD);
             break;
         case 6:
-            eyeState.setState(EyeStateEnum::BOOP);
+            eyeState.setState(EyeStateEnum::ARROW);  // Changed from BOOP to ARROW for BLE control
             break;
         case 7:
             eyeState.setState(EyeStateEnum::OEYE);

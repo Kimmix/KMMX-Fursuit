@@ -11,6 +11,7 @@
 enum class EyeStateEnum { IDLE,
                           BLINK,
                           BOOP,
+                          ARROW,
                           GOOGLY,
                           OEYE,
                           HEART,
@@ -162,6 +163,7 @@ class EyeState {
 
     // Animation data structures (initialized in constructor)
     AnimationData boopData;
+    AnimationData arrowData;
     AnimationData oFaceData;
     AnimationData smileData;
     AnimationData angryData;

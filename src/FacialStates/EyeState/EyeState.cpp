@@ -9,12 +9,13 @@ EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis(
 
     // Initialize all animations with transition + loop pattern
     initAnimationData(boopData, boopAnimation, 48, 18, 2500, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);  // Auto-reset after 2.5s
-    initAnimationData(oFaceData, oFaceAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_QUICK_LOOP);     // No auto-reset
+    initAnimationData(arrowData, boopAnimation, 48, 18, 0, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);  // No auto-reset (duplicate of boop for BLE)
+    initAnimationData(oFaceData, oFaceAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);      // No auto-reset
     initAnimationData(smileData, smileAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMILE_LOOP);     // No auto-reset, special ping-pong loop
-    initAnimationData(angryData, eyeAngryAnimation, 48, 18, 2000, TimeBasedAnimation::CONFIG_ANTICIPATION);  // Auto-reset after 2s
+    initAnimationData(angryData, eyeAngryAnimation, 48, 18, 0, TimeBasedAnimation::CONFIG_ANTICIPATION);  // No auto-reset
     initAnimationData(sadData, sadAnimation, 20, 8, 3000, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);  // Auto-reset after 3s
     initAnimationData(cryData, cryAnimation, 48, 12, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);  // No auto-reset, for photo shoots
-    initAnimationData(doubtedData, doubtedAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_QUICK_LOOP);  // No auto-reset, for photo shoots
+    initAnimationData(doubtedData, doubtedAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);       // No auto-reset, for photo shoots
     initAnimationData(roundedData, roundedAnimation, 48, 15, 0, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);  // No auto-reset, for photo shoots
     initAnimationData(sharpData, sharpAnimation, 48, 18, 0, TimeBasedAnimation::CONFIG_ANTICIPATION);  // No auto-reset, focused state
     initAnimationData(giggleData, giggleAnimation, 48, 12, 0, TimeBasedAnimation::CONFIG_SMILE_LOOP);  // No auto-reset, playful state
@@ -49,6 +50,7 @@ void EyeState::resetAnimation(AnimationData& data) {
 AnimationData* EyeState::getAnimationData(EyeStateEnum state) {
     switch (state) {
         case EyeStateEnum::BOOP:        return &boopData;
+        case EyeStateEnum::ARROW:       return &arrowData;
         case EyeStateEnum::OEYE:        return &oFaceData;
         case EyeStateEnum::SMILE:       return &smileData;
         case EyeStateEnum::ANGRY:       return &angryData;
@@ -81,6 +83,9 @@ void EyeState::update() {
             break;
         case EyeStateEnum::BOOP:
             playAnimationWithLoop(boopData);
+            break;
+        case EyeStateEnum::ARROW:
+            playAnimationWithLoop(arrowData);
             break;
         case EyeStateEnum::GOOGLY:
             renderGooglyEye();
@@ -152,6 +157,7 @@ void EyeState::setState(EyeStateEnum newState) {
             break;
 
         case EyeStateEnum::BOOP:
+        case EyeStateEnum::ARROW:
         case EyeStateEnum::OEYE:
         case EyeStateEnum::ANGRY:
         case EyeStateEnum::SAD:
@@ -182,7 +188,6 @@ void EyeState::setState(EyeStateEnum newState) {
 void EyeState::savePrevState(EyeStateEnum newState) {
     // Don't save states that auto-reset as previous state
     if (newState == EyeStateEnum::BOOP ||
-        newState == EyeStateEnum::ANGRY ||
         newState == EyeStateEnum::SLEEP ||
         newState == EyeStateEnum::SAD) {
         return;
