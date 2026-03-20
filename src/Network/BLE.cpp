@@ -16,6 +16,7 @@ BLEManager::BLEManager(KMMXController& ctrl) : controller(ctrl),
                                            protoService(BLE_SERVICE_UUID),
                                            displayBrightnessCharacteristic(BLE_DISPLAY_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            eyeStateCharacteristic(BLE_EYE_STATE_CHARACTERISTIC_UUID, BLERead | BLEWrite),
+                                           mouthStateCharacteristic(BLE_MOUTH_STATE_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            visemeCharacteristic(BLE_VISEME_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            hornBrightnessCharacteristic(BLE_HORN_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            cheekBrightnessCharacteristic(BLE_CHEEK_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
@@ -38,6 +39,7 @@ void BLEManager::setup() {
     BLE.setAdvertisedService(protoService);
     protoService.addCharacteristic(displayBrightnessCharacteristic);
     protoService.addCharacteristic(eyeStateCharacteristic);
+    protoService.addCharacteristic(mouthStateCharacteristic);
     protoService.addCharacteristic(visemeCharacteristic);
     protoService.addCharacteristic(hornBrightnessCharacteristic);
     protoService.addCharacteristic(cheekBrightnessCharacteristic);
@@ -48,6 +50,7 @@ void BLEManager::setup() {
     // Set default values for each characteristic
     displayBrightnessCharacteristic.setValue(controller.getDisplayBrightness());
     eyeStateCharacteristic.setValue(0x00);
+    mouthStateCharacteristic.setValue(0x00);
     visemeCharacteristic.setValue(controller.getViseme());
     hornBrightnessCharacteristic.setValue(controller.getHornBrightness());
     cheekBrightnessCharacteristic.setValue(controller.getCheekBrightness());
@@ -68,6 +71,7 @@ void BLEManager::setup() {
     // Assign event handlers for characteristic
     displayBrightnessCharacteristic.setEventHandler(BLEWritten, displayBrightnessWritten);
     eyeStateCharacteristic.setEventHandler(BLEWritten, eyeStateWritten);
+    mouthStateCharacteristic.setEventHandler(BLEWritten, mouthStateWritten);
     visemeCharacteristic.setEventHandler(BLEWritten, visemeStateWritten);
     hornBrightnessCharacteristic.setEventHandler(BLEWritten, hornBrightnessWritten);
     cheekBrightnessCharacteristic.setEventHandler(BLEWritten, cheekBrightnessWritten);
@@ -107,6 +111,13 @@ void BLEManager::eyeStateWritten(BLEDevice central, BLECharacteristic characteri
     if (instance) {
         const uint8_t* data = characteristic.value();
         instance->controller.setEye(static_cast<int>(*data));
+    }
+}
+
+void BLEManager::mouthStateWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        instance->controller.setMouth(static_cast<int>(*data));
     }
 }
 

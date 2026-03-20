@@ -23,6 +23,7 @@ class KMMXController {
     void setupSensors();
     void update();
     void setEye(int i);
+    void setMouth(int i);
     void setViseme(int b);
     int getViseme();
     int getDisplayBrightness();

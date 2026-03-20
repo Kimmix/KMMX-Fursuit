@@ -89,6 +89,26 @@ void KMMXController::setEye(int i) {
     }
 }
 
+void KMMXController::setMouth(int i) {
+    switch (i) {
+        case 1:
+            mouthState.setState(MouthStateEnum::WAH);
+            break;
+        case 2:
+            mouthState.setState(MouthStateEnum::EH);
+            break;
+        case 3:
+            mouthState.setState(MouthStateEnum::POUT);
+            break;
+        case 4:
+            mouthState.setState(MouthStateEnum::DROOLING);
+            break;
+        default:
+            mouthState.setState(MouthStateEnum::IDLE);
+            break;
+    }
+}
+
 void KMMXController::setViseme(int b) {
     static const int noiseThresholds[] = {400, 600, 1000, 1600, 3200, 6400, 1200, 18000, 25000};
     static const int numThresholds = sizeof(noiseThresholds) / sizeof(noiseThresholds[0]);

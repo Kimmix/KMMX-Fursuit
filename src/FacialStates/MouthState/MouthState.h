@@ -11,7 +11,19 @@ enum class MouthStateEnum { IDLE,
                             BOOP,
                             ANGRYBOOP,
                             TALKING,
-                            WAH };
+                            WAH,
+                            EH,
+                            POUT,
+                            DROOLING };
+
+// Animation data structure for mouth animations with transition + loop pattern
+struct MouthAnimationData {
+    const uint8_t** frames;           // Array of frame pointers
+    uint8_t frameCount;               // Total number of frames
+    TimeBasedAnimState transitionAnim; // Full animation (plays once during transition)
+    TimeBasedAnimState loopAnim;      // Loop animation (subset of frames, loops continuously)
+    uint8_t loopFrameCount;           // Number of frames to use for looping
+};
 
 class MouthState {
    public:
@@ -47,14 +59,32 @@ class MouthState {
     const uint8_t* mouthWahAnimation[60] = {mouthWah1, mouthWah2, mouthWah3, mouthWah4, mouthWah5, mouthWah6, mouthWah7, mouthWah8, mouthWah9, mouthWah10, mouthWah11, mouthWah12, mouthWah13, mouthWah14, mouthWah15, mouthWah16, mouthWah17, mouthWah18, mouthWah19, mouthWah20, mouthWah21, mouthWah22, mouthWah23, mouthWah24, mouthWah25, mouthWah26, mouthWah27, mouthWah28, mouthWah29, mouthWah30, mouthWah31, mouthWah32, mouthWah33, mouthWah34, mouthWah35, mouthWah36, mouthWah37, mouthWah38, mouthWah39, mouthWah40, mouthWah41, mouthWah42, mouthWah43, mouthWah44, mouthWah45, mouthWah46, mouthWah47, mouthWah48, mouthWah49, mouthWah50, mouthWah51, mouthWah52, mouthWah53, mouthWah54, mouthWah55, mouthWah56, mouthWah57, mouthWah58, mouthWah59, mouthWah60};
     uint8_t wahLength = arrayLength(mouthWahAnimation);
 
+    const uint8_t* mouthEhAnimation[60] = {mouthEh1, mouthEh2, mouthEh3, mouthEh4, mouthEh5, mouthEh6, mouthEh7, mouthEh8, mouthEh9, mouthEh10, mouthEh11, mouthEh12, mouthEh13, mouthEh14, mouthEh15, mouthEh16, mouthEh17, mouthEh18, mouthEh19, mouthEh20, mouthEh21, mouthEh22, mouthEh23, mouthEh24, mouthEh25, mouthEh26, mouthEh27, mouthEh28, mouthEh29, mouthEh30, mouthEh31, mouthEh32, mouthEh33, mouthEh34, mouthEh35, mouthEh36, mouthEh37, mouthEh38, mouthEh39, mouthEh40, mouthEh41, mouthEh42, mouthEh43, mouthEh44, mouthEh45, mouthEh46, mouthEh47, mouthEh48, mouthEh49, mouthEh50, mouthEh51, mouthEh52, mouthEh53, mouthEh54, mouthEh55, mouthEh56, mouthEh57, mouthEh58, mouthEh59, mouthEh60};
+    uint8_t ehLength = arrayLength(mouthEhAnimation);
+
+    const uint8_t* mouthPoutAnimation[60] = {mouthPout0, mouthPout1, mouthPout2, mouthPout3, mouthPout4, mouthPout5, mouthPout6, mouthPout7, mouthPout8, mouthPout9, mouthPout10, mouthPout11, mouthPout12, mouthPout13, mouthPout14, mouthPout15, mouthPout16, mouthPout17, mouthPout18, mouthPout19, mouthPout20, mouthPout21, mouthPout22, mouthPout23, mouthPout24, mouthPout25, mouthPout26, mouthPout27, mouthPout28, mouthPout29, mouthPout30, mouthPout31, mouthPout32, mouthPout33, mouthPout34, mouthPout35, mouthPout36, mouthPout37, mouthPout38, mouthPout39, mouthPout40, mouthPout41, mouthPout42, mouthPout43, mouthPout44, mouthPout45, mouthPout46, mouthPout47, mouthPout48, mouthPout49, mouthPout50, mouthPout51, mouthPout52, mouthPout53, mouthPout54, mouthPout55, mouthPout56, mouthPout57, mouthPout58, mouthPout59};
+    uint8_t poutLength = arrayLength(mouthPoutAnimation);
+
+    const uint8_t* mouthDroolingAnimation[60] = {mouthDrooling0, mouthDrooling1, mouthDrooling2, mouthDrooling3, mouthDrooling4, mouthDrooling5, mouthDrooling6, mouthDrooling7, mouthDrooling8, mouthDrooling9, mouthDrooling10, mouthDrooling11, mouthDrooling12, mouthDrooling13, mouthDrooling14, mouthDrooling15, mouthDrooling16, mouthDrooling17, mouthDrooling18, mouthDrooling19, mouthDrooling20, mouthDrooling21, mouthDrooling22, mouthDrooling23, mouthDrooling24, mouthDrooling25, mouthDrooling26, mouthDrooling27, mouthDrooling28, mouthDrooling29, mouthDrooling30, mouthDrooling31, mouthDrooling32, mouthDrooling33, mouthDrooling34, mouthDrooling35, mouthDrooling36, mouthDrooling37, mouthDrooling38, mouthDrooling39, mouthDrooling40, mouthDrooling41, mouthDrooling42, mouthDrooling43, mouthDrooling44, mouthDrooling45, mouthDrooling46, mouthDrooling47, mouthDrooling48, mouthDrooling49, mouthDrooling50, mouthDrooling51, mouthDrooling52, mouthDrooling53, mouthDrooling54, mouthDrooling55, mouthDrooling56, mouthDrooling57, mouthDrooling58, mouthDrooling59};
+    uint8_t droolingLength = arrayLength(mouthDroolingAnimation);
+
     // Animation states - TimeBasedAnimation
     TimeBasedAnimState wahAnim;
     TimeBasedAnimState idleAnim;
     TimeBasedAnimState angryAnim;
 
+    // Animation data structures for transition + loop pattern
+    MouthAnimationData ehData;
+    MouthAnimationData poutData;
+    MouthAnimationData droolingData;
+
     void drawDefault();
     void movingMouth();
     void angryBoop();
+    void playAnimationWithLoop(MouthAnimationData& animData);
+    void initAnimationData(MouthAnimationData& data, const uint8_t** frames, uint8_t frameCount,
+                          uint8_t loopFrameCount, const TimeBasedAnimConfig& loopConfig);
+    void resetAnimation(MouthAnimationData& data);
 
     TaskHandle_t visemeTaskHandle = NULL;
     void startVisemeTask();

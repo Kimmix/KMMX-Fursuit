@@ -14,6 +14,7 @@ class BLEManager {
     BLEService protoService;
     BLEByteCharacteristic displayBrightnessCharacteristic;
     BLEByteCharacteristic eyeStateCharacteristic;
+    BLEByteCharacteristic mouthStateCharacteristic;
     BLEByteCharacteristic visemeCharacteristic;
     BLEByteCharacteristic hornBrightnessCharacteristic;
     BLEByteCharacteristic cheekBrightnessCharacteristic;
@@ -27,6 +28,7 @@ class BLEManager {
     static void blePeripheralDisconnectHandler(BLEDevice central);
     static void displayBrightnessWritten(BLEDevice central, BLECharacteristic characteristic);
     static void eyeStateWritten(BLEDevice central, BLECharacteristic characteristic);
+    static void mouthStateWritten(BLEDevice central, BLECharacteristic characteristic);
     static void visemeStateWritten(BLEDevice central, BLECharacteristic characteristic);
     static void hornBrightnessWritten(BLEDevice central, BLECharacteristic characteristic);
     static void cheekBrightnessWritten(BLEDevice central, BLECharacteristic characteristic);
