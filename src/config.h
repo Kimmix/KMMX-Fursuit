@@ -108,6 +108,34 @@ const uint8_t motionCounterDecayRate = 10;     // Samples between counter decay 
 const float gravityMagnitude = 9.81f;          // Earth's gravity for reference (m/s²)
 const bool enableIdleDebug = false;            // Enable debug logging for idle detection
 
+// Motion Detection Configuration
+// Global debug flag for all motion detection features
+const bool enableMotionDebug = true;            // Enable detailed debug logging for all motion detection (shows continuous amplitude/intensity values)
+const uint16_t motionDetectionStartupDelay = 5000; // Delay before motion detection starts (ms) - increased to account for BLE init - prevents false triggers during sensor initialization
+
+// Shake Detection - REMOVED (feature disabled)
+
+// Tilt Detection - Detects sustained head tilt for curious/confused expressions
+const bool enableTiltDetection = true;
+const float tiltThreshold = 4.0f;               // m/s² threshold for tilt detection (reduced for easier triggering)
+const float tiltNeutralThreshold = 3.0f;        // m/s² threshold to return to neutral (increased for easier return)
+const uint16_t tiltSustainTime = 500;           // Time to hold tilt before triggering (ms)
+const uint16_t tiltDebounceTime = 300;          // Cooldown between tilt changes (ms)
+const uint16_t tiltDirectionChangeCooldown = 3000;  // Cooldown when switching from left/right to forward/back (ms) - prevents rapid direction changes
+
+// Bounce Detection - REMOVED (feature disabled)
+// Spin Detection - REMOVED (feature disabled)
+
+// Petting Detection - Detects gentle rocking motion for contentment (simplified to single SMILE response)
+const bool enablePettingDetection = true;
+const float pettingMinMagnitude = 1.0f;         // m/s² minimum oscillation (balanced for easier triggering)
+const float pettingMaxMagnitude = 3.5f;         // m/s² maximum oscillation (narrowed to prevent vigorous movement triggers)
+const float pettingMinFrequency = 0.5f;         // Hz minimum rocking frequency
+const float pettingMaxFrequency = 2.0f;         // Hz maximum rocking frequency
+const uint16_t pettingMinDuration = 1500;       // Minimum duration to trigger SMILE (ms) - balanced sensitivity
+const bool enablePettingCooldownAfterTilt = true;   // Enable cooldown after tilt to prevent immediate petting
+const uint16_t pettingCooldownAfterTilt = 1000;     // Cooldown duration after tilt ends (ms)
+
 // Sample Rate and Samples
 const float i2sSampleRate = 8000.0f;
 const uint16_t i2sSamples = 256;

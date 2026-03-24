@@ -68,6 +68,19 @@ class KMMXController {
     static void renderTask(void *parameter);
     const SensorData& getSensorData() const;
 
+    // Motion detection methods
+    void checkMotionFeatures(KMMXController *controller);
+    // detectShake - REMOVED
+    void detectTilt(const SensorData& current);
+    // detectBounce - REMOVED
+    // detectSpin - REMOVED
+    void detectPetting(const SensorData& current);
+    // triggerShakeResponse - REMOVED
+    void triggerTiltResponse(float angle, bool isLeftRight);
+    // triggerBounceResponse - REMOVED
+    // triggerSpinResponse - REMOVED
+    void triggerPettingResponse(bool sustained);
+
     // Previous sensor values for idle detection
     SensorData prevSensorData;
     SensorData baselineAccel;  // Baseline acceleration when motion was last detected
@@ -80,4 +93,36 @@ class KMMXController {
     bool boopInitialized = false, inBoopRange = false, isBooping = false, isContinuousBoop = false, isAngry = false;
     unsigned short prevHornBright = hornInitBrightness;
     float boopSpeed = 0.0f;
+    unsigned long motionDetectionStartTime = 0;  // Time when motion detection should start (after startup delay)
+
+    // Motion detection state structures
+    // ShakeDetector - REMOVED
+
+    struct TiltDetector {
+        float tiltAngleX = 0.0f;  // Forward/back tilt
+        float tiltAngleZ = 0.0f;  // Left/right tilt
+        unsigned long tiltStartTime = 0;
+        unsigned long lastTiltChangeTime = 0;
+        unsigned long lastForwardBackTime = 0;  // Track last forward/back tilt time
+        unsigned long lastNeutralReturnTime = 0;  // Track when tilt returns to neutral (for petting cooldown)
+        bool isTilted = false;
+        bool isLeftRight = false;  // true = left/right, false = forward/back
+        EyeStateEnum previousEyeState = EyeStateEnum::IDLE;
+        MouthStateEnum previousMouthState = MouthStateEnum::IDLE;
+    } tiltDetector;
+
+    // BounceDetector - REMOVED
+    // SpinDetector - REMOVED
+
+    struct PettingDetector {
+        float oscillationHistory[20];  // Track oscillation pattern
+        uint8_t historyIndex = 0;
+        unsigned long pettingStartTime = 0;
+        unsigned long lastPettingTime = 0;
+        bool isPetting = false;
+        bool isSustained = false;  // Has been petting for extended time
+        float averageFrequency = 0.0f;
+        EyeStateEnum previousEyeState = EyeStateEnum::IDLE;
+        MouthStateEnum previousMouthState = MouthStateEnum::IDLE;
+    } pettingDetector;
 };

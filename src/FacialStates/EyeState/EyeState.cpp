@@ -186,10 +186,11 @@ void EyeState::setState(EyeStateEnum newState) {
 }
 
 void EyeState::savePrevState(EyeStateEnum newState) {
-    // Don't save states that auto-reset as previous state
+    // Don't save states that auto-reset or are temporary as previous state
     if (newState == EyeStateEnum::BOOP ||
         newState == EyeStateEnum::SLEEP ||
-        newState == EyeStateEnum::SAD) {
+        newState == EyeStateEnum::SAD ||
+        newState == EyeStateEnum::SMILE) {  // SMILE is set by motion detection, shouldn't persist
         return;
     }
     prevState = newState;

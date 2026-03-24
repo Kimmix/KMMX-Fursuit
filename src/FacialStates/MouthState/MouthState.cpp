@@ -131,23 +131,7 @@ void MouthState::setSlowAnimation(bool slow) {
 }
 
 void MouthState::movingMouth() {
-    float yAcc = sensorData.accelX;
-    const float upThreshold = -2.00, downThreshold = 3.00,
-                upMaxThreshold = -7.00, downMaxThreshold = 8.00;
-    static float smoothedUpAcc = 0.0f;
-    static float smoothedDownAcc = 0.0f;
-    // Check for upward movement (negative direction)
-    int upLevel = smoothAccelerometerMovement(yAcc, smoothedUpAcc, upThreshold, upMaxThreshold, 0.3f, 0.5f, 59, true);
-    if (upLevel >= 0) {
-        mouthFrame = mouthUp[upLevel];
-        return;
-    }
-    // Check for downward movement (positive direction)
-    int downLevel = smoothAccelerometerMovement(yAcc, smoothedDownAcc, downThreshold, downMaxThreshold, 0.3f, 0.5f, 59, false);
-    if (downLevel >= 0) {
-        mouthFrame = mouthDown[downLevel];
-        return;
-    }
+    // Removed accelerometer-based tilt movement - replaced by motion detection system
     // Default animation using TimeBasedAnimation
     mouthFrame = TimeBasedAnimation::update(idleAnim);
 }
