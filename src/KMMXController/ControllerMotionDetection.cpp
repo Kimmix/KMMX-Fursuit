@@ -237,12 +237,9 @@ void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
     // Note: Tilt does NOT reset idle timer (allows natural sleep if held still while tilted)
 }
 
-// Bounce Detection - REMOVED
-// Spin Detection - REMOVED
-
 /**
- * Petting Detection - Detects gentle rocking motion for contentment
- * Uses low-frequency oscillation detection in acceleration magnitude
+ * Petting Detection - Dynamic happiness accumulation system
+ * Each pat adds happiness which decays over time. More natural and responsive than fixed time windows.
  */
 void KMMXController::detectPetting(const SensorData& current) {
     unsigned long currentTime = millis();
@@ -261,82 +258,81 @@ void KMMXController::detectPetting(const SensorData& current) {
         }
     }
 
-    // Add current magnitude to oscillation history
-    pettingDetector.oscillationHistory[pettingDetector.historyIndex] = current.accelMagnitude;
-    pettingDetector.historyIndex = (pettingDetector.historyIndex + 1) % 20;
-
-    // Calculate average magnitude
-    float avgMagnitude = 0.0f;
-    for (uint8_t i = 0; i < 20; i++) {
-        avgMagnitude += pettingDetector.oscillationHistory[i];
+    // ========== Initialize last update time on first run ==========
+    if (pettingDetector.lastUpdateTime == 0) {
+        pettingDetector.lastUpdateTime = currentTime;
     }
-    avgMagnitude /= 20;
 
-    // Calculate oscillation amplitude (deviation from average)
-    float oscillationAmplitude = fabsf(current.accelMagnitude - avgMagnitude);
+    // ========== Calculate happiness decay ==========
+    // Happiness naturally decays over time (like a leaky bucket)
+    float deltaTime = (currentTime - pettingDetector.lastUpdateTime) / 1000.0f;  // Convert to seconds
+    pettingDetector.lastUpdateTime = currentTime;
 
-    // Check if oscillation is in the gentle range
-    bool isGentleOscillation = (oscillationAmplitude >= pettingMinMagnitude &&
-                                 oscillationAmplitude <= pettingMaxMagnitude);
+    if (deltaTime > 0 && deltaTime < 1.0f) {  // Sanity check (ignore huge time jumps)
+        float decay = pettingHappinessDecayRate * deltaTime;
+        pettingDetector.happiness -= decay;
+        if (pettingDetector.happiness < 0) {
+            pettingDetector.happiness = 0;
+        }
+    }
 
-    if (isGentleOscillation) {
-        if (!pettingDetector.isPetting) {
-            // Start of petting
+    // ========== Spike Detection ==========
+    // Calculate magnitude change (derivative)
+    float magnitudeChange = fabsf(current.accelMagnitude - pettingDetector.lastMagnitude);
+    pettingDetector.lastMagnitude = current.accelMagnitude;
+
+    // Detect spike: sudden increase in acceleration magnitude
+    bool spikeDetected = (magnitudeChange >= pettingSpikeThreshold);
+
+    // Check spike cooldown to prevent double-counting
+    if (spikeDetected && (currentTime - pettingDetector.lastSpikeTime >= pettingSpikeCooldown)) {
+        // Valid spike detected! Add happiness
+        pettingDetector.lastSpikeTime = currentTime;
+        pettingDetector.happiness += pettingHappinessPerPat;
+
+        // Cap happiness at 100
+        if (pettingDetector.happiness > 100.0f) {
+            pettingDetector.happiness = 100.0f;
+        }
+
+        if (enableMotionDebug) {
+            Serial.printf("[PETTING] Pat detected! Change: %.2f m/s² | Happiness: %.1f/%.1f\n",
+                          magnitudeChange, pettingDetector.happiness, pettingHappinessTrigger);
+        }
+    }
+
+    // ========== Check happiness thresholds ==========
+    if (!pettingDetector.isPetting) {
+        // Not currently showing response - check if happiness reached trigger threshold
+        if (pettingDetector.happiness >= pettingHappinessTrigger) {
+            // Trigger petting response!
             pettingDetector.isPetting = true;
-            pettingDetector.pettingStartTime = currentTime;
             pettingDetector.previousEyeState = eyeState.getState();
             pettingDetector.previousMouthState = mouthState.getState();
 
             if (enableMotionDebug) {
-                Serial.printf("[PETTING] ✓ Motion detected! Amplitude: %.2f (range: %.2f-%.2f) | Saved previous state: Eye=%d, Mouth=%d\n",
-                              oscillationAmplitude, pettingMinMagnitude, pettingMaxMagnitude,
+                Serial.printf("[PETTING] ✓ Petting triggered! Happiness: %.1f | Saved previous state: Eye=%d, Mouth=%d\n",
+                              pettingDetector.happiness,
                               pettingDetector.previousEyeState, pettingDetector.previousMouthState);
             }
-        }
 
-        pettingDetector.lastPettingTime = currentTime;
-
-        // Check duration for petting trigger
-        unsigned long pettingDuration = currentTime - pettingDetector.pettingStartTime;
-
-        if (pettingDuration >= pettingMinDuration) {
-            // Petting detected - show SMILE eyes
-            // Continuously maintain SMILE response while petting
-            if (eyeState.getState() != EyeStateEnum::SMILE) {
-                triggerPettingResponse(false);
-                if (enableMotionDebug) {
-                    Serial.printf("[PETTING] Setting SMILE state (current: %d)\n", eyeState.getState());
-                }
-            }
+            triggerPettingResponse(false);
         }
     } else {
-        // Amplitude out of range
-        if (pettingDetector.isPetting) {
-            // Check if we should end immediately or wait for timeout
-            if (currentTime - pettingDetector.lastPettingTime > 2000) {
-                // End petting after timeout (stopped rocking)
-                pettingDetector.isPetting = false;
+        // Currently showing response - check if happiness dropped below end threshold
+        if (pettingDetector.happiness < pettingHappinessEndThreshold) {
+            // End petting response (happiness decayed naturally)
+            pettingDetector.isPetting = false;
+            pettingDetector.happiness = 0;  // Reset happiness
 
-                // Return to previous state (like other motion detectors)
-                eyeState.setState(pettingDetector.previousEyeState);
-                mouthState.setState(pettingDetector.previousMouthState);
+            // Return to previous state
+            eyeState.setState(pettingDetector.previousEyeState);
+            mouthState.setState(pettingDetector.previousMouthState);
 
-                if (enableMotionDebug) {
-                    Serial.printf("[PETTING] Ended - returning to previous state (Eye: %d, Mouth: %d)\n",
-                                  pettingDetector.previousEyeState, pettingDetector.previousMouthState);
-                }
-            } else if (oscillationAmplitude > pettingMaxMagnitude) {
-                // Amplitude exceeded maximum - end petting immediately
-                pettingDetector.isPetting = false;
-
-                // Return to previous state
-                eyeState.setState(pettingDetector.previousEyeState);
-                mouthState.setState(pettingDetector.previousMouthState);
-
-                if (enableMotionDebug) {
-                    Serial.printf("[PETTING] Ended - amplitude too high (%.2f > %.2f)\n",
-                                  oscillationAmplitude, pettingMaxMagnitude);
-                }
+            if (enableMotionDebug) {
+                Serial.printf("[PETTING] Response ended naturally (happiness decayed to %.1f) - returning to previous state (Eye: %d, Mouth: %d)\n",
+                              pettingDetector.happiness,
+                              pettingDetector.previousEyeState, pettingDetector.previousMouthState);
             }
         }
     }

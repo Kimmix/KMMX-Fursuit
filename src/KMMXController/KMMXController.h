@@ -115,13 +115,16 @@ class KMMXController {
     // SpinDetector - REMOVED
 
     struct PettingDetector {
-        float oscillationHistory[20];  // Track oscillation pattern
-        uint8_t historyIndex = 0;
-        unsigned long pettingStartTime = 0;
-        unsigned long lastPettingTime = 0;
-        bool isPetting = false;
-        bool isSustained = false;  // Has been petting for extended time
-        float averageFrequency = 0.0f;
+        // Spike detection fields
+        unsigned long lastSpikeTime = 0;    // Time of last detected spike (for cooldown)
+        float lastMagnitude = 0.0f;         // Previous magnitude reading (for spike detection)
+
+        // Dynamic happiness system
+        float happiness = 0.0f;             // Current happiness level (0-100)
+        unsigned long lastUpdateTime = 0;   // Last time happiness was updated (for decay calculation)
+
+        // Response state
+        bool isPetting = false;             // Currently showing petting response
         EyeStateEnum previousEyeState = EyeStateEnum::IDLE;
         MouthStateEnum previousMouthState = MouthStateEnum::IDLE;
     } pettingDetector;

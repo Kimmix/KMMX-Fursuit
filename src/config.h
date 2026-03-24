@@ -126,15 +126,23 @@ const uint16_t tiltDirectionChangeCooldown = 3000;  // Cooldown when switching f
 // Bounce Detection - REMOVED (feature disabled)
 // Spin Detection - REMOVED (feature disabled)
 
-// Petting Detection - Detects gentle rocking motion for contentment (simplified to single SMILE response)
+// Petting Detection - Detects quick pats/taps (spike-based) for contentment
 const bool enablePettingDetection = true;
-const float pettingMinMagnitude = 1.0f;         // m/s² minimum oscillation (balanced for easier triggering)
-const float pettingMaxMagnitude = 3.5f;         // m/s² maximum oscillation (narrowed to prevent vigorous movement triggers)
-const float pettingMinFrequency = 0.5f;         // Hz minimum rocking frequency
-const float pettingMaxFrequency = 2.0f;         // Hz maximum rocking frequency
-const uint16_t pettingMinDuration = 1500;       // Minimum duration to trigger SMILE (ms) - balanced sensitivity
 const bool enablePettingCooldownAfterTilt = true;   // Enable cooldown after tilt to prevent immediate petting
 const uint16_t pettingCooldownAfterTilt = 1000;     // Cooldown duration after tilt ends (ms)
+
+// Dynamic Petting Detection - Happiness accumulation system (more natural and responsive)
+// Each pat adds happiness, which decays over time. When happiness reaches threshold, trigger SMILE.
+// Continuous petting maintains happiness; stopping petting causes natural decay and response end.
+
+const float pettingSpikeThreshold = 0.8f;           // m/s² threshold for detecting a gentle pat/tap spike
+const uint16_t pettingSpikeCooldown = 300;          // Minimum time between individual spikes (ms) - prevents double-counting
+
+// Dynamic happiness system parameters
+const float pettingHappinessPerPat = 30.0f;         // Happiness added per pat (0-100 scale)
+const float pettingHappinessTrigger = 80.0f;        // Happiness level to trigger SMILE response (0-100)
+const float pettingHappinessDecayRate = 15.0f;      // Happiness decay per second when not petting
+const float pettingHappinessEndThreshold = 20.0f;   // Happiness level below which response ends (allows natural fade-out)
 
 // Sample Rate and Samples
 const float i2sSampleRate = 8000.0f;
