@@ -13,15 +13,27 @@ enum class AnimationPlayMode {
     PING_PONG       // Play forward then backward repeatedly
 };
 
+// Easing types for different animation feels
+enum class EasingType {
+    NONE,                   // Linear, no easing
+    EASE_IN_OUT,           // Smooth ease in and out (original behavior)
+    BOUNCE_OVERSHOOT,      // Overshoots to ~150% then settles to 100% - alive and reactive!
+    ANTICIPATION,          // Pulls back slightly before launching forward - great for reactions
+    ELASTIC_SNAP,          // Quick snap with multiple small bounces - fun and bouncy
+    EXCITED_PULSE,         // Rapid pulsing that gradually slows - excitement calming down
+    CURIOUS_PEEK,          // Slow start, quick middle, slow end - peeking at something
+    STARTLED_JUMP,         // Instant jump with slow settle - startled reaction
+    BREATHING_NATURAL      // Asymmetric timing - inhale faster, exhale slower
+};
+
 // Time-based animation configuration
 // Note: Frame skipping is always enabled to maintain timing
-// Note: Easing uses a fixed strength of 0.5 when enabled
 struct TimeBasedAnimConfig {
     unsigned long durationMs;       // Total duration for one-way playback (ms)
     AnimationPlayMode playMode;     // How the animation should play
     unsigned long pauseAtEndMs;     // Pause duration at end (for PING_PONG)
     unsigned long pauseAtStartMs;   // Pause duration at start (for PING_PONG)
-    bool useEasing;                 // Apply easing to frame progression
+    EasingType easingType;          // Type of easing to apply
 };
 
 // Time-based animation state
@@ -45,10 +57,38 @@ public:
     static const TimeBasedAnimConfig CONFIG_QUICK_LOOP;      // 200ms loop
     static const TimeBasedAnimConfig CONFIG_SMOOTH_LOOP;     // 500ms smooth loop
     static const TimeBasedAnimConfig CONFIG_SLOW_LOOP;       // 1000ms slow loop
-    static const TimeBasedAnimConfig CONFIG_BREATHING;       // 2000ms breathing with pauses
+    static const TimeBasedAnimConfig CONFIG_BREATHING;       // 2000ms natural breathing (asymmetric)
     static const TimeBasedAnimConfig CONFIG_BLINK;           // 150ms quick blink once
     static const TimeBasedAnimConfig CONFIG_TRANSITION;      // 300ms one-shot transition
     static const TimeBasedAnimConfig CONFIG_SMILE_LOOP;      // 500ms smile loop with pauses
+
+    // New expressive animation presets
+    static const TimeBasedAnimConfig CONFIG_BOUNCE_OVERSHOOT;     // Bouncy overshoot - alive and reactive!
+    static const TimeBasedAnimConfig CONFIG_BOUNCE_OVERSHOOT_FAST; // Fast bouncy overshoot
+    static const TimeBasedAnimConfig CONFIG_ANTICIPATION;         // Pull back then launch - great for reactions
+    static const TimeBasedAnimConfig CONFIG_ELASTIC_SNAP;         // Quick snap with bounces - fun!
+    static const TimeBasedAnimConfig CONFIG_EXCITED_PULSE;        // Rapid pulse slowing down - excitement!
+    static const TimeBasedAnimConfig CONFIG_CURIOUS_PEEK;         // Slow-fast-slow - peeking motion
+    static const TimeBasedAnimConfig CONFIG_STARTLED_JUMP;        // Instant jump, slow settle - startled!
+
+    // Blink speed variants (for dynamic blink variance)
+    static const TimeBasedAnimConfig CONFIG_BLINK_VERY_FAST;      // 100ms very fast blink
+    static const TimeBasedAnimConfig CONFIG_BLINK_VERY_FAST_DBL;  // 100ms very fast (no pause for double blink)
+    static const TimeBasedAnimConfig CONFIG_BLINK_FAST;           // 120ms fast blink
+    static const TimeBasedAnimConfig CONFIG_BLINK_FAST_DBL;       // 120ms fast (no pause for double blink)
+    static const TimeBasedAnimConfig CONFIG_BLINK_NORMAL;         // 150ms normal blink
+    static const TimeBasedAnimConfig CONFIG_BLINK_NORMAL_DBL;     // 150ms normal (no pause for double blink)
+    static const TimeBasedAnimConfig CONFIG_BLINK_SLOW;           // 200ms slow blink
+    static const TimeBasedAnimConfig CONFIG_BLINK_SLOW_DBL;       // 200ms slow (no pause for double blink)
+    static const TimeBasedAnimConfig CONFIG_BLINK_VERY_SLOW;      // 250ms very slow blink
+    static const TimeBasedAnimConfig CONFIG_BLINK_VERY_SLOW_DBL;  // 250ms very slow (no pause for double blink)
+
+    // Mouth animation presets
+    static const TimeBasedAnimConfig CONFIG_WAH;                  // 800ms wah animation
+    static const TimeBasedAnimConfig CONFIG_BREATHING_SLOW;       // 3000ms slow breathing
+
+    // Smile transition preset
+    static const TimeBasedAnimConfig CONFIG_SMILE_TRANSITION;     // 500ms smile transition
 
     /**
      * Initialize a time-based animation
@@ -103,11 +143,11 @@ private:
     static short calculateFrameIndex(const TimeBasedAnimState& anim, unsigned long elapsedMs);
 
     /**
-     * Apply easing function to linear progress
-     * Uses a fixed strength of 0.5 for balanced smoothing
+     * Apply easing function to linear progress based on easing type
      * @param t Linear progress (0.0 - 1.0)
-     * @return Eased progress
+     * @param easingType Type of easing to apply
+     * @return Eased progress (may exceed 1.0 for overshoot effects)
      */
-    static float applyEasing(float t);
+    static float applyEasing(float t, EasingType easingType);
 };
 

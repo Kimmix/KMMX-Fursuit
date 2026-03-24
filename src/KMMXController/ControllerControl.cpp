@@ -9,6 +9,38 @@ void KMMXController::setDisplayBrightness(int i) {
     display.setBrightnessValue(i);
 }
 
+int KMMXController::getHornBrightness() {
+    return hornLED.getBrightness();
+}
+
+void KMMXController::setHornBrightness(int i) {
+    hornLED.setBrightness(i, 20);  // Set brightness with fade speed of 20 for faster response
+}
+
+int KMMXController::getCheekBrightness() {
+    return cheekPanel.getBrightness();
+}
+
+void KMMXController::setCheekBrightness(int i) {
+    cheekPanel.setBrightness(constrain(i, 0, 255));
+}
+
+void KMMXController::setCheekBackgroundColor(uint8_t r, uint8_t g, uint8_t b) {
+    cheekPanel.setBackgroundColorRGB(r, g, b);
+}
+
+void KMMXController::setCheekFadeColor(uint8_t r, uint8_t g, uint8_t b) {
+    cheekPanel.setFadeColorRGB(r, g, b);
+}
+
+uint32_t KMMXController::getCheekBackgroundColor() {
+    return cheekPanel.getBackgroundColor();
+}
+
+uint32_t KMMXController::getCheekFadeColor() {
+    return cheekPanel.getFadeColor();
+}
+
 // State control for BLE
 void KMMXController::setEye(int i) {
     switch (i) {
@@ -21,8 +53,58 @@ void KMMXController::setEye(int i) {
         case 3:
             eyeState.setState(EyeStateEnum::SMILE);
             break;
+        case 4:
+            eyeState.setState(EyeStateEnum::ANGRY);
+            break;
+        case 5:
+            eyeState.setState(EyeStateEnum::SAD);
+            break;
+        case 6:
+            eyeState.setState(EyeStateEnum::ARROW);  // Changed from BOOP to ARROW for BLE control
+            break;
+        case 7:
+            eyeState.setState(EyeStateEnum::OEYE);
+            break;
+        case 8:
+            eyeState.setState(EyeStateEnum::CRY);
+            break;
+        case 9:
+            eyeState.setState(EyeStateEnum::DOUBTED);
+            break;
+        case 10:
+            eyeState.setState(EyeStateEnum::ROUNDED);
+            break;
+        case 11:
+            eyeState.setState(EyeStateEnum::SHARP);
+            break;
+        case 12:
+            eyeState.setState(EyeStateEnum::GIGGLE);
+            break;
+        case 13:
+            eyeState.setState(EyeStateEnum::UNIMPRESSED);
+            break;
         default:
             eyeState.setState(EyeStateEnum::IDLE);
+            break;
+    }
+}
+
+void KMMXController::setMouth(int i) {
+    switch (i) {
+        case 1:
+            mouthState.setState(MouthStateEnum::WAH);
+            break;
+        case 2:
+            mouthState.setState(MouthStateEnum::EH);
+            break;
+        case 3:
+            mouthState.setState(MouthStateEnum::POUT);
+            break;
+        case 4:
+            mouthState.setState(MouthStateEnum::DROOLING);
+            break;
+        default:
+            mouthState.setState(MouthStateEnum::IDLE);
             break;
     }
 }
@@ -41,4 +123,11 @@ void KMMXController::setViseme(int b) {
 
 int KMMXController::getViseme() {
     return mouthState.getState() == MouthStateEnum::TALKING;
+}
+
+// System Control
+void KMMXController::reboot() {
+    Serial.println("Rebooting device...");
+    delay(100);  // Give time for serial message to be sent
+    ESP.restart();
 }

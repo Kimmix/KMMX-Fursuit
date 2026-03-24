@@ -16,7 +16,13 @@ BLEManager::BLEManager(KMMXController& ctrl) : controller(ctrl),
                                            protoService(BLE_SERVICE_UUID),
                                            displayBrightnessCharacteristic(BLE_DISPLAY_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            eyeStateCharacteristic(BLE_EYE_STATE_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           visemeCharacteristic(BLE_VISEME_CHARACTERISTIC_UUID, BLERead | BLEWrite) {
+                                           mouthStateCharacteristic(BLE_MOUTH_STATE_CHARACTERISTIC_UUID, BLERead | BLEWrite),
+                                           visemeCharacteristic(BLE_VISEME_CHARACTERISTIC_UUID, BLERead | BLEWrite),
+                                           hornBrightnessCharacteristic(BLE_HORN_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
+                                           cheekBrightnessCharacteristic(BLE_CHEEK_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
+                                           cheekBgColorCharacteristic(BLE_CHEEK_BG_COLOR_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
+                                           cheekFadeColorCharacteristic(BLE_CHEEK_FADE_COLOR_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
+                                           rebootCharacteristic(BLE_REBOOT_CHARACTERISTIC_UUID, BLEWrite) {
 }
 
 void BLEManager::setup() {
@@ -33,12 +39,30 @@ void BLEManager::setup() {
     BLE.setAdvertisedService(protoService);
     protoService.addCharacteristic(displayBrightnessCharacteristic);
     protoService.addCharacteristic(eyeStateCharacteristic);
+    protoService.addCharacteristic(mouthStateCharacteristic);
     protoService.addCharacteristic(visemeCharacteristic);
+    protoService.addCharacteristic(hornBrightnessCharacteristic);
+    protoService.addCharacteristic(cheekBrightnessCharacteristic);
+    protoService.addCharacteristic(cheekBgColorCharacteristic);
+    protoService.addCharacteristic(cheekFadeColorCharacteristic);
+    protoService.addCharacteristic(rebootCharacteristic);
 
     // Set default values for each characteristic
     displayBrightnessCharacteristic.setValue(controller.getDisplayBrightness());
     eyeStateCharacteristic.setValue(0x00);
+    mouthStateCharacteristic.setValue(0x00);
     visemeCharacteristic.setValue(controller.getViseme());
+    hornBrightnessCharacteristic.setValue(controller.getHornBrightness());
+    cheekBrightnessCharacteristic.setValue(controller.getCheekBrightness());
+
+    // Set default color values (RGB format)
+    uint32_t bgColor = controller.getCheekBackgroundColor();
+    uint8_t bgColorData[3] = {(uint8_t)(bgColor >> 16), (uint8_t)(bgColor >> 8), (uint8_t)bgColor};
+    cheekBgColorCharacteristic.setValue(bgColorData, 3);
+
+    uint32_t fadeColor = controller.getCheekFadeColor();
+    uint8_t fadeColorData[3] = {(uint8_t)(fadeColor >> 16), (uint8_t)(fadeColor >> 8), (uint8_t)fadeColor};
+    cheekFadeColorCharacteristic.setValue(fadeColorData, 3);
 
     BLE.addService(protoService);
     BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
@@ -47,7 +71,13 @@ void BLEManager::setup() {
     // Assign event handlers for characteristic
     displayBrightnessCharacteristic.setEventHandler(BLEWritten, displayBrightnessWritten);
     eyeStateCharacteristic.setEventHandler(BLEWritten, eyeStateWritten);
+    mouthStateCharacteristic.setEventHandler(BLEWritten, mouthStateWritten);
     visemeCharacteristic.setEventHandler(BLEWritten, visemeStateWritten);
+    hornBrightnessCharacteristic.setEventHandler(BLEWritten, hornBrightnessWritten);
+    cheekBrightnessCharacteristic.setEventHandler(BLEWritten, cheekBrightnessWritten);
+    cheekBgColorCharacteristic.setEventHandler(BLEWritten, cheekBgColorWritten);
+    cheekFadeColorCharacteristic.setEventHandler(BLEWritten, cheekFadeColorWritten);
+    rebootCharacteristic.setEventHandler(BLEWritten, rebootWritten);
 
     // Start advertising the BLE pService
     BLE.advertise();
@@ -84,9 +114,59 @@ void BLEManager::eyeStateWritten(BLEDevice central, BLECharacteristic characteri
     }
 }
 
+void BLEManager::mouthStateWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        instance->controller.setMouth(static_cast<int>(*data));
+    }
+}
+
 void BLEManager::visemeStateWritten(BLEDevice central, BLECharacteristic characteristic) {
     if (instance) {
         const uint8_t* data = characteristic.value();
         instance->controller.setViseme(static_cast<int>(*data));
+    }
+}
+
+void BLEManager::hornBrightnessWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        instance->controller.setHornBrightness(static_cast<int>(*data));
+    }
+}
+
+void BLEManager::cheekBrightnessWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        instance->controller.setCheekBrightness(static_cast<int>(*data));
+    }
+}
+
+void BLEManager::cheekBgColorWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        if (characteristic.valueLength() >= 3) {
+            instance->controller.setCheekBackgroundColor(data[0], data[1], data[2]);
+        }
+    }
+}
+
+void BLEManager::cheekFadeColorWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        if (characteristic.valueLength() >= 3) {
+            instance->controller.setCheekFadeColor(data[0], data[1], data[2]);
+        }
+    }
+}
+
+void BLEManager::rebootWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        // Any non-zero value triggers a reboot
+        if (*data != 0) {
+            Serial.println(F("Reboot requested via BLE"));
+            instance->controller.reboot();
+        }
     }
 }

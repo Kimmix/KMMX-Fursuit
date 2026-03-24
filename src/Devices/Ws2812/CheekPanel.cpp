@@ -12,10 +12,36 @@ void CheekPanel::configure(uint32_t backgroundColor, uint32_t fadeColor, uint16_
 
 void CheekPanel::init() {
     strip.begin();
+    strip.setBrightness(brightness);
     strip.show();  // Initialize all pixels to 'off'
     setBackgroundColor(applyGammaCorrection(backgroundColor));
     previousMillis = millis();
     positionChangeMillis = millis();  // Initialize the position change timer
+}
+
+void CheekPanel::setBrightness(uint8_t value) {
+    brightness = value;
+    strip.setBrightness(brightness);
+}
+
+uint8_t CheekPanel::getBrightness() const {
+    return brightness;
+}
+
+void CheekPanel::setBackgroundColorRGB(uint8_t r, uint8_t g, uint8_t b) {
+    backgroundColor = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+}
+
+void CheekPanel::setFadeColorRGB(uint8_t r, uint8_t g, uint8_t b) {
+    fadeColor = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+}
+
+uint32_t CheekPanel::getBackgroundColor() const {
+    return backgroundColor;
+}
+
+uint32_t CheekPanel::getFadeColor() const {
+    return fadeColor;
 }
 
 void CheekPanel::update() {
