@@ -108,6 +108,46 @@ const uint8_t motionCounterDecayRate = 10;     // Samples between counter decay 
 const float gravityMagnitude = 9.81f;          // Earth's gravity for reference (m/s²)
 const bool enableIdleDebug = false;            // Enable debug logging for idle detection
 
+// Motion Detection Configuration
+// Global debug flag for all motion detection features
+const bool enableMotionDebug = true;            // Enable detailed debug logging for all motion detection (shows continuous amplitude/intensity values)
+const uint16_t motionDetectionStartupDelay = 5000; // Delay before motion detection starts (ms) - increased to account for BLE init - prevents false triggers during sensor initialization
+
+// Tilt Detection - Detects sustained head tilt for curious/confused expressions
+const bool enableTiltDetection = true;
+const float tiltThreshold = 4.0f;               // m/s² threshold for tilt detection (reduced for easier triggering)
+const float tiltNeutralThreshold = 3.0f;        // m/s² threshold to return to neutral (increased for easier return)
+const uint16_t tiltSustainTime = 500;           // Time to hold tilt before triggering (ms)
+const uint16_t tiltDebounceTime = 300;          // Cooldown between tilt changes (ms)
+const uint16_t tiltDirectionChangeCooldown = 3000;  // Cooldown when switching from left/right to forward/back (ms) - prevents rapid direction changes
+
+// Upside Down Detection - Detects when the character is held upside down
+const bool enableUpsideDownDetection = true;
+const float upsideDownThreshold = -7.0f;            // m/s² threshold for Y-axis (negative = upside down)
+const uint16_t upsideDownSustainTime = 1500;        // Time to hold upside down before triggering (ms)
+const uint16_t upsideDownDebounceTime = 500;        // Cooldown between state changes (ms)
+
+// Swaying Detection - REMOVED
+
+// Petting Detection - Detects quick pats/taps (spike-based) for contentment
+const bool enablePettingDetection = true;
+const bool enablePettingCooldownAfterTilt = true;   // Enable cooldown after tilt to prevent immediate petting
+const uint16_t pettingCooldownAfterTilt = 1000;     // Cooldown duration after tilt ends (ms)
+
+// Dynamic Petting Detection - Happiness accumulation system (more natural and responsive)
+// Each pat adds happiness, which decays over time. When happiness reaches threshold, trigger SMILE.
+// Continuous petting maintains happiness; stopping petting causes natural decay and response end.
+
+const float pettingSpikeThreshold = 0.8f;           // m/s² threshold for detecting a gentle pat/tap spike
+const uint16_t pettingSpikeCooldown = 300;          // Minimum time between individual spikes (ms) - prevents double-counting
+
+// Dynamic happiness system parameters
+const float pettingHappinessPerPat = 30.0f;         // Happiness added per pat (0-100 scale)
+const float pettingHappinessTrigger = 80.0f;        // Happiness level to trigger SMILE response (0-100)
+const float pettingHappinessDecayRate = 15.0f;      // Happiness decay per second when not petting
+const float pettingHappinessEndThreshold = 20.0f;   // Happiness level below which response ends (allows natural fade-out)
+const float pettingDeltaTimeMax = 1.0f;             // Maximum delta time in seconds to accept (sanity check for time jumps)
+
 // Sample Rate and Samples
 const float i2sSampleRate = 8000.0f;
 const uint16_t i2sSamples = 256;

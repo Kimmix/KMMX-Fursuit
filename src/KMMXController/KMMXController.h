@@ -68,6 +68,27 @@ class KMMXController {
     static void renderTask(void *parameter);
     const SensorData& getSensorData() const;
 
+    // Motion detection methods
+    void checkMotionFeatures(KMMXController *controller);
+    void detectTilt(const SensorData& current);
+    void detectUpsideDown(const SensorData& current);
+    void detectPetting(const SensorData& current);
+    void triggerTiltResponse(float angle, bool isLeftRight);
+    void triggerUpsideDownResponse();
+    void triggerPettingResponse();  // Removed unused 'sustained' parameter
+
+    // Motion detection helper methods
+    inline bool hasDebounceExpired(unsigned long lastTime, uint16_t debounceTime) const;
+    void restorePreviousState(EyeStateEnum prevEye, MouthStateEnum prevMouth);
+    void resetTiltToNeutral(unsigned long currentTime, bool wasForwardBack);
+    bool canSwitchTiltDirection(unsigned long currentTime);
+    void handleActiveTiltState(unsigned long currentTime, bool isNeutral,
+                               bool isTiltedForwardBack, bool isTiltedLeftRight,
+                               float tiltX, float tiltZ);
+    void handleTiltTracking(unsigned long currentTime, bool isNeutral,
+                           bool isTiltedForwardBack, bool isTiltedLeftRight,
+                           float tiltX, float tiltZ);
+
     // Previous sensor values for idle detection
     SensorData prevSensorData;
     SensorData baselineAccel;  // Baseline acceleration when motion was last detected
@@ -80,4 +101,42 @@ class KMMXController {
     bool boopInitialized = false, inBoopRange = false, isBooping = false, isContinuousBoop = false, isAngry = false;
     unsigned short prevHornBright = hornInitBrightness;
     float boopSpeed = 0.0f;
+    unsigned long motionDetectionStartTime = 0;  // Time when motion detection should start (after startup delay)
+
+    // Motion detection state structures
+    struct TiltDetector {
+        float tiltAngleX = 0.0f;  // Forward/back tilt
+        float tiltAngleZ = 0.0f;  // Left/right tilt
+        unsigned long tiltStartTime = 0;
+        unsigned long lastTiltChangeTime = 0;
+        unsigned long lastForwardBackTime = 0;  // Track last forward/back tilt time
+        unsigned long lastNeutralReturnTime = 0;  // Track when tilt returns to neutral (for petting cooldown)
+        bool isTilted = false;
+        bool isLeftRight = false;  // true = left/right, false = forward/back
+        EyeStateEnum previousEyeState = EyeStateEnum::IDLE;
+        MouthStateEnum previousMouthState = MouthStateEnum::IDLE;
+    } tiltDetector;
+
+    struct UpsideDownDetector {
+        unsigned long upsideDownStartTime = 0;
+        unsigned long lastStateChangeTime = 0;
+        bool isUpsideDown = false;
+        EyeStateEnum previousEyeState = EyeStateEnum::IDLE;
+        MouthStateEnum previousMouthState = MouthStateEnum::IDLE;
+    } upsideDownDetector;
+
+    struct PettingDetector {
+        // Spike detection fields
+        unsigned long lastSpikeTime = 0;    // Time of last detected spike (for cooldown)
+        float lastMagnitude = 0.0f;         // Previous magnitude reading (for spike detection)
+
+        // Dynamic happiness system
+        float happiness = 0.0f;             // Current happiness level (0-100)
+        unsigned long lastUpdateTime = 0;   // Last time happiness was updated (for decay calculation)
+
+        // Response state
+        bool isPetting = false;             // Currently showing petting response
+        EyeStateEnum previousEyeState = EyeStateEnum::IDLE;
+        MouthStateEnum previousMouthState = MouthStateEnum::IDLE;
+    } pettingDetector;
 };

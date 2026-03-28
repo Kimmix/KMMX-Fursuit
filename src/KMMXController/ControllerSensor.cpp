@@ -10,6 +10,13 @@ void KMMXController::setupSensors() {
     accelerometer.setUp();
     boopInitialized = proximitySensor.setup();
 
+    // Ensure eye state starts at IDLE (prevents lingering states from previous sessions)
+    eyeState.setState(EyeStateEnum::IDLE);
+    mouthState.setState(MouthStateEnum::IDLE);
+
+    // Set motion detection start time (current time + startup delay)
+    motionDetectionStartTime = millis() + motionDetectionStartupDelay;
+
     // Create sensor reading task on Core 0
     xTaskCreatePinnedToCore(readSensorTask, "SensorTask", 4096, this, 2, &sensorTaskHandle, 0);
 
@@ -18,6 +25,7 @@ void KMMXController::setupSensors() {
     xTaskCreatePinnedToCore(renderTask, "RenderTask", 4096, this, 1, &renderTaskHandle, 0);
 
     Serial.println("Sensor and render task initialization complete");
+    Serial.printf("Motion detection will start in %d ms\n", motionDetectionStartupDelay);
 }
 
 void KMMXController::readSensorTask(void *parameter) {
@@ -61,6 +69,9 @@ void KMMXController::readSensorTask(void *parameter) {
 
         // Check idle/sleep state
         ctrl->checkIdleAndSleep(ctrl, millis());
+
+        // Check motion detection features (shake, tilt, bounce, spin, petting)
+        ctrl->checkMotionFeatures(ctrl);
 
         // Update facial states with new sensor data
         ctrl->mouthState.setSensorData(ctrl->sensorBuffer[ctrl->activeBuffer]);
