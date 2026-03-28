@@ -146,6 +146,7 @@ const float pettingHappinessPerPat = 30.0f;         // Happiness added per pat (
 const float pettingHappinessTrigger = 80.0f;        // Happiness level to trigger SMILE response (0-100)
 const float pettingHappinessDecayRate = 15.0f;      // Happiness decay per second when not petting
 const float pettingHappinessEndThreshold = 20.0f;   // Happiness level below which response ends (allows natural fade-out)
+const float pettingDeltaTimeMax = 1.0f;             // Maximum delta time in seconds to accept (sanity check for time jumps)
 
 // Sample Rate and Samples
 const float i2sSampleRate = 8000.0f;

@@ -2,6 +2,165 @@
 #include <cmath>
 
 /**
+ * ========================================================================
+ * MOTION DETECTION HELPER FUNCTIONS
+ * ========================================================================
+ */
+
+/**
+ * Check if enough time has passed since last event (debounce helper)
+ * NOTE: This is overflow-safe! Unsigned subtraction handles millis() wraparound correctly.
+ * Example: If millis() wraps from 0xFFFFFFFF to 0x00000001, and lastTime was 0xFFFFFFFE,
+ * the subtraction (0x00000001 - 0xFFFFFFFE) = 3, which is correct elapsed time.
+ */
+inline bool KMMXController::hasDebounceExpired(unsigned long lastTime, uint16_t debounceTime) const {
+    return (millis() - lastTime) >= debounceTime;
+}
+
+/**
+ * Restore previous eye and mouth state (reusable across all detectors)
+ */
+void KMMXController::restorePreviousState(EyeStateEnum prevEye, MouthStateEnum prevMouth) {
+    eyeState.setState(prevEye);
+    mouthState.setState(prevMouth);
+}
+
+/**
+ * Reset tilt detector to neutral state (eliminates code duplication)
+ */
+void KMMXController::resetTiltToNeutral(unsigned long currentTime, bool wasForwardBack) {
+    tiltDetector.isTilted = false;
+    tiltDetector.tiltStartTime = 0;
+    tiltDetector.lastTiltChangeTime = currentTime;
+    tiltDetector.lastNeutralReturnTime = currentTime;
+
+    if (wasForwardBack) {
+        tiltDetector.lastForwardBackTime = currentTime;
+    }
+
+    restorePreviousState(tiltDetector.previousEyeState, tiltDetector.previousMouthState);
+
+    if (enableMotionDebug) {
+        Serial.printf("[TILT] Returned to neutral (was %s)\n",
+                      wasForwardBack ? "Forward/Back" : "Left/Right");
+    }
+}
+
+/**
+ * Check if tilt direction can be switched (with cooldown enforcement)
+ */
+bool KMMXController::canSwitchTiltDirection(unsigned long currentTime) {
+    unsigned long timeSinceLastChange = currentTime - tiltDetector.lastTiltChangeTime;
+
+    if (timeSinceLastChange < tiltDirectionChangeCooldown) {
+        if (enableMotionDebug) {
+            Serial.printf("[TILT] Direction change blocked - cooldown active (%lu ms / %u ms)\n",
+                          timeSinceLastChange, tiltDirectionChangeCooldown);
+        }
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Handle tilt state when currently tilted (active state)
+ */
+void KMMXController::handleActiveTiltState(unsigned long currentTime, bool isNeutral,
+                                           bool isTiltedForwardBack, bool isTiltedLeftRight,
+                                           float tiltX, float tiltZ) {
+    // Check for return to neutral
+    if (isNeutral) {
+        resetTiltToNeutral(currentTime, !tiltDetector.isLeftRight);
+        return;
+    }
+
+    // Forward/Back mode (with strict lock)
+    if (!tiltDetector.isLeftRight) {
+        // Block Left/Right switching
+        if (isTiltedLeftRight && !isTiltedForwardBack) {
+            if (enableMotionDebug) {
+                Serial.println("[TILT] Left/Right blocked - Forward/Back is active (return to neutral first)");
+            }
+        }
+        // Continue maintaining Forward/Back state
+        return;
+    }
+
+    // Left/Right mode - allow switching to Forward/Back with cooldown
+    if (isTiltedForwardBack && canSwitchTiltDirection(currentTime)) {
+        tiltDetector.isLeftRight = false;
+        tiltDetector.lastTiltChangeTime = currentTime;
+        tiltDetector.lastForwardBackTime = currentTime;
+
+        if (enableMotionDebug) {
+            Serial.printf("[TILT] ✓ Direction changed! Angle: %.2f, Direction: Forward/Back\n", tiltX);
+        }
+        triggerTiltResponse(tiltX, false);
+    }
+}
+
+/**
+ * Handle tilt tracking when not currently tilted
+ */
+void KMMXController::handleTiltTracking(unsigned long currentTime, bool isNeutral,
+                                        bool isTiltedForwardBack, bool isTiltedLeftRight,
+                                        float tiltX, float tiltZ) {
+    // Reset tracking if neutral
+    if (isNeutral) {
+        if (tiltDetector.tiltStartTime != 0) {
+            tiltDetector.tiltStartTime = 0;  // Reset tracking silently
+        }
+        return;
+    }
+
+    // Determine which direction to track (Forward/Back has priority)
+    bool trackForwardBack = isTiltedForwardBack;
+    bool trackLeftRight = isTiltedLeftRight && !isTiltedForwardBack;
+
+    if (!trackForwardBack && !trackLeftRight) {
+        return; // No significant tilt detected
+    }
+
+    // Start tracking on first detection
+    if (tiltDetector.tiltStartTime == 0) {
+        tiltDetector.tiltStartTime = currentTime;
+        tiltDetector.tiltAngleX = tiltX;
+        tiltDetector.tiltAngleZ = tiltZ;
+        return;
+    }
+
+    // Check if sustained long enough
+    if (currentTime - tiltDetector.tiltStartTime >= tiltSustainTime) {
+        // Activate tilt response
+        tiltDetector.isTilted = true;
+        tiltDetector.isLeftRight = trackLeftRight;
+        tiltDetector.previousEyeState = eyeState.getState();
+        tiltDetector.previousMouthState = mouthState.getState();
+        tiltDetector.lastTiltChangeTime = currentTime;
+
+        if (trackForwardBack) {
+            tiltDetector.lastForwardBackTime = currentTime;
+        }
+
+        float angle = trackLeftRight ? tiltZ : tiltX;
+        const char* direction = trackLeftRight ? "Left/Right" : "Forward/Back";
+
+        if (enableMotionDebug) {
+            Serial.printf("[TILT] ✓ Motion detected! Angle: %.2f, Direction: %s (threshold: %.2f)\n",
+                          angle, direction, tiltThreshold);
+        }
+
+        triggerTiltResponse(angle, trackLeftRight);
+    }
+}
+
+/**
+ * ========================================================================
+ * MAIN MOTION DETECTION FUNCTIONS
+ * ========================================================================
+ */
+
+/**
  * Main motion detection dispatcher - called from sensor task
  * Checks all motion features in priority order
  */
@@ -50,153 +209,41 @@ void KMMXController::checkMotionFeatures(KMMXController *controller) {
 }
 
 /**
- * Tilt Detection - Detects sustained head tilt for curious/confused expressions
+ * Tilt Detection - REFACTORED for reduced complexity and better performance
+ * Detects sustained head tilt for curious/confused expressions
  * Uses accelerometer axes to detect tilt angle and direction
  */
 void KMMXController::detectTilt(const SensorData& current) {
     unsigned long currentTime = millis();
 
-    // Calculate tilt angles from accelerometer data
+    // Cache tilt values
     float tiltX = current.accelX;  // Forward/back tilt
     float tiltZ = current.accelZ;  // Left/right tilt
 
-    // Check for significant tilt on each axis
-    bool isTiltedForwardBack = fabsf(tiltX) > tiltThreshold;
-    bool isTiltedLeftRight = fabsf(tiltZ) > tiltThreshold;
+    // Cache absolute values (optimization: avoid redundant fabsf() calls)
+    float absTiltX = fabsf(tiltX);
+    float absTiltZ = fabsf(tiltZ);
 
-    // Check for neutral position (both axes below neutral threshold)
-    bool isNeutral = fabsf(tiltX) < tiltNeutralThreshold &&
-                     fabsf(tiltZ) < tiltNeutralThreshold;
+    // Determine physical state using cached values
+    bool isTiltedForwardBack = absTiltX > tiltThreshold;
+    bool isTiltedLeftRight = absTiltZ > tiltThreshold;
+    bool isNeutral = (absTiltX < tiltNeutralThreshold && absTiltZ < tiltNeutralThreshold);
 
-    // Debounce - prevent rapid state changes
-    if (currentTime - tiltDetector.lastTiltChangeTime < tiltDebounceTime) {
+    // Early exit: debounce check
+    if (!hasDebounceExpired(tiltDetector.lastTiltChangeTime, tiltDebounceTime)) {
         return;
     }
 
     // ========== STATE 1: Currently Tilted ==========
     if (tiltDetector.isTilted) {
-        // STRICT LOCK: If in Forward/Back mode, block Left/Right completely until neutral
-        if (!tiltDetector.isLeftRight) {
-            // Currently in Forward/Back mode
-            if (isTiltedLeftRight && !isTiltedForwardBack) {
-                // Trying to switch to Left/Right - BLOCK IT
-                if (enableMotionDebug) {
-                    Serial.println("[TILT] Left/Right blocked - Forward/Back is active (return to neutral first)");
-                }
-                return;
-            }
-
-            // Check if still tilted forward/back or returning to neutral
-            if (isNeutral) {
-                // Return to neutral from Forward/Back
-                tiltDetector.isTilted = false;
-                tiltDetector.tiltStartTime = 0;
-                tiltDetector.lastTiltChangeTime = currentTime;
-                tiltDetector.lastForwardBackTime = currentTime;  // Track forward/back time
-                tiltDetector.lastNeutralReturnTime = currentTime;  // Track neutral return for petting cooldown
-
-                eyeState.setState(tiltDetector.previousEyeState);
-                mouthState.setState(tiltDetector.previousMouthState);
-
-                if (enableMotionDebug) {
-                    Serial.println("[TILT] Returned to neutral (was Forward/Back)");
-                }
-            }
-            // If still tilted forward/back, maintain current state (no action needed)
-            return;
-        } else {
-            // Currently in Left/Right mode
-            // Check if switching to Forward/Back (with cooldown)
-            if (isTiltedForwardBack) {
-                // Apply cooldown when switching from Left/Right to Forward/Back
-                unsigned long timeSinceLastChange = currentTime - tiltDetector.lastTiltChangeTime;
-                if (timeSinceLastChange < tiltDirectionChangeCooldown) {
-                    if (enableMotionDebug) {
-                        Serial.printf("[TILT] Direction change blocked - cooldown active (%lu ms / %u ms)\n",
-                                      timeSinceLastChange, tiltDirectionChangeCooldown);
-                    }
-                    return;
-                }
-
-                // Cooldown expired - allow switch to Forward/Back
-                tiltDetector.isLeftRight = false;
-                tiltDetector.lastTiltChangeTime = currentTime;
-                tiltDetector.lastForwardBackTime = currentTime;
-
-                Serial.printf("[TILT] ✓ Direction changed! Angle: %.2f, Direction: Forward/Back\n", tiltX);
-                triggerTiltResponse(tiltX, false);
-                return;
-            }
-
-            // Check if returning to neutral
-            if (isNeutral) {
-                // Return to neutral from Left/Right
-                tiltDetector.isTilted = false;
-                tiltDetector.tiltStartTime = 0;
-                tiltDetector.lastTiltChangeTime = currentTime;
-                tiltDetector.lastNeutralReturnTime = currentTime;  // Track neutral return for petting cooldown
-
-                eyeState.setState(tiltDetector.previousEyeState);
-                mouthState.setState(tiltDetector.previousMouthState);
-
-                if (enableMotionDebug) {
-                    Serial.println("[TILT] Returned to neutral (was Left/Right)");
-                }
-            }
-            // If still tilted left/right, maintain current state (no action needed)
-            return;
-        }
+        handleActiveTiltState(currentTime, isNeutral, isTiltedForwardBack, isTiltedLeftRight,
+                              tiltX, tiltZ);
+        return;
     }
 
     // ========== STATE 2: Not Currently Tilted ==========
-    // Check if we should start tracking or trigger a new tilt
-
-    if (isNeutral) {
-        // In neutral - reset any tracking
-        if (tiltDetector.tiltStartTime != 0) {
-            tiltDetector.tiltStartTime = 0;  // Reset tracking silently
-        }
-        return;
-    }
-
-    // Detect which direction to track (Forward/Back has priority)
-    bool trackForwardBack = isTiltedForwardBack;
-    bool trackLeftRight = isTiltedLeftRight && !isTiltedForwardBack;
-
-    if (!trackForwardBack && !trackLeftRight) {
-        return;  // No significant tilt detected
-    }
-
-    if (tiltDetector.tiltStartTime == 0) {
-        // First time detecting tilt - start tracking
-        tiltDetector.tiltStartTime = currentTime;
-        tiltDetector.tiltAngleX = tiltX;
-        tiltDetector.tiltAngleZ = tiltZ;
-        return;
-    }
-
-    // Already tracking - check if sustained long enough
-    if (currentTime - tiltDetector.tiltStartTime >= tiltSustainTime) {
-        // Trigger tilt response
-        tiltDetector.isTilted = true;
-        tiltDetector.isLeftRight = trackLeftRight;
-        tiltDetector.previousEyeState = eyeState.getState();
-        tiltDetector.previousMouthState = mouthState.getState();
-        tiltDetector.lastTiltChangeTime = currentTime;
-
-        // Track forward/back time for petting cooldown
-        if (trackForwardBack) {
-            tiltDetector.lastForwardBackTime = currentTime;
-        }
-
-        float angle = trackLeftRight ? tiltZ : tiltX;
-        const char* direction = trackLeftRight ? "Left/Right" : "Forward/Back";
-
-        Serial.printf("[TILT] ✓ Motion detected! Angle: %.2f, Direction: %s (threshold: %.2f)\n",
-                      angle, direction, tiltThreshold);
-
-        triggerTiltResponse(angle, trackLeftRight);
-    }
+    handleTiltTracking(currentTime, isNeutral, isTiltedForwardBack, isTiltedLeftRight,
+                       tiltX, tiltZ);
 }
 
 /**
@@ -245,8 +292,8 @@ void KMMXController::detectUpsideDown(const SensorData& current) {
     float yAxis = current.accelY;
     bool isFlipped = yAxis > -upsideDownThreshold;
 
-    // Debounce - prevent rapid state changes
-    if (currentTime - upsideDownDetector.lastStateChangeTime < upsideDownDebounceTime) {
+    // Early exit: debounce check
+    if (!hasDebounceExpired(upsideDownDetector.lastStateChangeTime, upsideDownDebounceTime)) {
         return;
     }
 
@@ -259,8 +306,8 @@ void KMMXController::detectUpsideDown(const SensorData& current) {
             upsideDownDetector.upsideDownStartTime = 0;
             upsideDownDetector.lastStateChangeTime = currentTime;
 
-            eyeState.setState(upsideDownDetector.previousEyeState);
-            mouthState.setState(upsideDownDetector.previousMouthState);
+            restorePreviousState(upsideDownDetector.previousEyeState,
+                               upsideDownDetector.previousMouthState);
 
             if (enableMotionDebug) {
                 Serial.println("[UPSIDE DOWN] Returned to normal orientation");
@@ -298,8 +345,10 @@ void KMMXController::detectUpsideDown(const SensorData& current) {
         upsideDownDetector.previousMouthState = mouthState.getState();
         upsideDownDetector.lastStateChangeTime = currentTime;
 
-        Serial.printf("[UPSIDE DOWN] ✓ Upside down detected! Y-axis: %.2f (threshold: %.2f)\n",
-                      yAxis, upsideDownThreshold);
+        if (enableMotionDebug) {
+            Serial.printf("[UPSIDE DOWN] ✓ Upside down detected! Y-axis: %.2f (threshold: %.2f)\n",
+                          yAxis, upsideDownThreshold);
+        }
 
         triggerUpsideDownResponse();
     }
@@ -349,12 +398,11 @@ void KMMXController::detectPetting(const SensorData& current) {
     float deltaTime = (currentTime - pettingDetector.lastUpdateTime) / 1000.0f;  // Convert to seconds
     pettingDetector.lastUpdateTime = currentTime;
 
-    if (deltaTime > 0 && deltaTime < 1.0f) {  // Sanity check (ignore huge time jumps)
+    if (deltaTime > 0 && deltaTime < pettingDeltaTimeMax) {  // Sanity check (ignore huge time jumps)
         float decay = pettingHappinessDecayRate * deltaTime;
         pettingDetector.happiness -= decay;
-        if (pettingDetector.happiness < 0) {
-            pettingDetector.happiness = 0;
-        }
+        // Clamp to 0 using fmaxf (branchless, more efficient)
+        pettingDetector.happiness = fmaxf(pettingDetector.happiness, 0.0f);
     }
 
     // ========== Spike Detection ==========
@@ -366,15 +414,13 @@ void KMMXController::detectPetting(const SensorData& current) {
     bool spikeDetected = (magnitudeChange >= pettingSpikeThreshold);
 
     // Check spike cooldown to prevent double-counting
-    if (spikeDetected && (currentTime - pettingDetector.lastSpikeTime >= pettingSpikeCooldown)) {
+    if (spikeDetected && hasDebounceExpired(pettingDetector.lastSpikeTime, pettingSpikeCooldown)) {
         // Valid spike detected! Add happiness
         pettingDetector.lastSpikeTime = currentTime;
         pettingDetector.happiness += pettingHappinessPerPat;
 
-        // Cap happiness at 100
-        if (pettingDetector.happiness > 100.0f) {
-            pettingDetector.happiness = 100.0f;
-        }
+        // Cap happiness at 100 using fminf (branchless, more efficient)
+        pettingDetector.happiness = fminf(pettingDetector.happiness, 100.0f);
 
         if (enableMotionDebug) {
             Serial.printf("[PETTING] Pat detected! Change: %.2f m/s² | Happiness: %.1f/%.1f\n",
@@ -397,7 +443,7 @@ void KMMXController::detectPetting(const SensorData& current) {
                               pettingDetector.previousEyeState, pettingDetector.previousMouthState);
             }
 
-            triggerPettingResponse(false);
+            triggerPettingResponse();
         }
     } else {
         // Currently showing response - check if happiness dropped below end threshold
@@ -406,9 +452,8 @@ void KMMXController::detectPetting(const SensorData& current) {
             pettingDetector.isPetting = false;
             pettingDetector.happiness = 0;  // Reset happiness
 
-            // Return to previous state
-            eyeState.setState(pettingDetector.previousEyeState);
-            mouthState.setState(pettingDetector.previousMouthState);
+            // Return to previous state using helper
+            restorePreviousState(pettingDetector.previousEyeState, pettingDetector.previousMouthState);
 
             if (enableMotionDebug) {
                 Serial.printf("[PETTING] Response ended naturally (happiness decayed to %.1f) - returning to previous state (Eye: %d, Mouth: %d)\n",
@@ -422,7 +467,7 @@ void KMMXController::detectPetting(const SensorData& current) {
 /**
  * Trigger petting response - simplified to single SMILE state
  */
-void KMMXController::triggerPettingResponse(bool sustained) {
+void KMMXController::triggerPettingResponse() {
     // Petting response - happy SMILE
     eyeState.setState(EyeStateEnum::SMILE);
     mouthState.setState(MouthStateEnum::IDLE);

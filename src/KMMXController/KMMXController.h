@@ -75,7 +75,19 @@ class KMMXController {
     void detectPetting(const SensorData& current);
     void triggerTiltResponse(float angle, bool isLeftRight);
     void triggerUpsideDownResponse();
-    void triggerPettingResponse(bool sustained);
+    void triggerPettingResponse();  // Removed unused 'sustained' parameter
+
+    // Motion detection helper methods
+    inline bool hasDebounceExpired(unsigned long lastTime, uint16_t debounceTime) const;
+    void restorePreviousState(EyeStateEnum prevEye, MouthStateEnum prevMouth);
+    void resetTiltToNeutral(unsigned long currentTime, bool wasForwardBack);
+    bool canSwitchTiltDirection(unsigned long currentTime);
+    void handleActiveTiltState(unsigned long currentTime, bool isNeutral,
+                               bool isTiltedForwardBack, bool isTiltedLeftRight,
+                               float tiltX, float tiltZ);
+    void handleTiltTracking(unsigned long currentTime, bool isNeutral,
+                           bool isTiltedForwardBack, bool isTiltedLeftRight,
+                           float tiltX, float tiltZ);
 
     // Previous sensor values for idle detection
     SensorData prevSensorData;
