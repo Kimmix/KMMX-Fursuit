@@ -113,8 +113,6 @@ const bool enableIdleDebug = false;            // Enable debug logging for idle 
 const bool enableMotionDebug = true;            // Enable detailed debug logging for all motion detection (shows continuous amplitude/intensity values)
 const uint16_t motionDetectionStartupDelay = 5000; // Delay before motion detection starts (ms) - increased to account for BLE init - prevents false triggers during sensor initialization
 
-// Shake Detection - REMOVED (feature disabled)
-
 // Tilt Detection - Detects sustained head tilt for curious/confused expressions
 const bool enableTiltDetection = true;
 const float tiltThreshold = 4.0f;               // m/s² threshold for tilt detection (reduced for easier triggering)
@@ -123,8 +121,13 @@ const uint16_t tiltSustainTime = 500;           // Time to hold tilt before trig
 const uint16_t tiltDebounceTime = 300;          // Cooldown between tilt changes (ms)
 const uint16_t tiltDirectionChangeCooldown = 3000;  // Cooldown when switching from left/right to forward/back (ms) - prevents rapid direction changes
 
-// Bounce Detection - REMOVED (feature disabled)
-// Spin Detection - REMOVED (feature disabled)
+// Upside Down Detection - Detects when the character is held upside down
+const bool enableUpsideDownDetection = true;
+const float upsideDownThreshold = -7.0f;            // m/s² threshold for Y-axis (negative = upside down)
+const uint16_t upsideDownSustainTime = 1500;        // Time to hold upside down before triggering (ms)
+const uint16_t upsideDownDebounceTime = 500;        // Cooldown between state changes (ms)
+
+// Swaying Detection - REMOVED
 
 // Petting Detection - Detects quick pats/taps (spike-based) for contentment
 const bool enablePettingDetection = true;

@@ -18,24 +18,27 @@ void KMMXController::checkMotionFeatures(KMMXController *controller) {
         Serial.println("[MOTION] Motion detection is now active");
     }
 
-    // Skip motion detection if in high-priority states
+    // Get current sensor data from active buffer
+    const SensorData& current = controller->sensorBuffer[controller->activeBuffer];
+
+    // Upside-down detection runs FIRST - even in high-priority states
+    // This allows detecting when to exit crying state
+    if (enableUpsideDownDetection) {
+        controller->detectUpsideDown(current);
+        if (controller->upsideDownDetector.isUpsideDown) return;
+    }
+
+    // Skip other motion detection if in high-priority states
     EyeStateEnum currentEyeState = controller->eyeState.getState();
 
     // Don't interfere with boop, manual states, or transitions
     if (currentEyeState == EyeStateEnum::BOOP ||
         currentEyeState == EyeStateEnum::ANGRY ||
         currentEyeState == EyeStateEnum::CRY) {
-        return;  // Skip motion detection
+        return;  // Skip remaining motion detection
     }
 
-    // Get current sensor data from active buffer
-    const SensorData& current = controller->sensorBuffer[controller->activeBuffer];
-
-    // Check in priority order (first match wins)
-    // Shake detection removed
-    // Bounce detection removed
-    // Spin detection removed
-
+    // Check remaining features in priority order (first match wins)
     if (enableTiltDetection) {
         controller->detectTilt(current);
         if (controller->tiltDetector.isTilted) return;
@@ -45,8 +48,6 @@ void KMMXController::checkMotionFeatures(KMMXController *controller) {
         controller->detectPetting(current);
     }
 }
-
-// Shake Detection - REMOVED
 
 /**
  * Tilt Detection - Detects sustained head tilt for curious/confused expressions
@@ -233,8 +234,88 @@ void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
             }
         }
     }
+}
 
-    // Note: Tilt does NOT reset idle timer (allows natural sleep if held still while tilted)
+/**
+ * Upside Down Detection - Detects when the character is held upside down
+ * Uses Y-axis accelerometer to detect upside-down orientation
+ */
+void KMMXController::detectUpsideDown(const SensorData& current) {
+    unsigned long currentTime = millis();
+    float yAxis = current.accelY;
+    bool isFlipped = yAxis > -upsideDownThreshold;
+
+    // Debounce - prevent rapid state changes
+    if (currentTime - upsideDownDetector.lastStateChangeTime < upsideDownDebounceTime) {
+        return;
+    }
+
+    // ========== STATE 1: Currently Upside Down ==========
+    if (upsideDownDetector.isUpsideDown) {
+        // Check if returning to normal orientation
+        if (!isFlipped) {
+            // Return to normal
+            upsideDownDetector.isUpsideDown = false;
+            upsideDownDetector.upsideDownStartTime = 0;
+            upsideDownDetector.lastStateChangeTime = currentTime;
+
+            eyeState.setState(upsideDownDetector.previousEyeState);
+            mouthState.setState(upsideDownDetector.previousMouthState);
+
+            if (enableMotionDebug) {
+                Serial.println("[UPSIDE DOWN] Returned to normal orientation");
+            }
+        }
+        // If still upside down, maintain crying state (no action needed)
+        return;
+    }
+
+    // ========== STATE 2: Not Currently Upside Down ==========
+    if (!isFlipped) {
+        // Normal orientation - reset any tracking
+        if (upsideDownDetector.upsideDownStartTime != 0) {
+            upsideDownDetector.upsideDownStartTime = 0;  // Reset tracking silently
+        }
+        return;
+    }
+
+    // Upside down detected - start or continue tracking
+    if (upsideDownDetector.upsideDownStartTime == 0) {
+        // First time detecting upside down - start tracking
+        upsideDownDetector.upsideDownStartTime = currentTime;
+        if (enableMotionDebug) {
+            Serial.printf("[UPSIDE DOWN] Starting tracking... Y-axis: %.2f (threshold: %.2f)\n",
+                          yAxis, upsideDownThreshold);
+        }
+        return;
+    }
+
+    // Already tracking - check if sustained long enough
+    if (currentTime - upsideDownDetector.upsideDownStartTime >= upsideDownSustainTime) {
+        // Trigger upside down response (crying)
+        upsideDownDetector.isUpsideDown = true;
+        upsideDownDetector.previousEyeState = eyeState.getState();
+        upsideDownDetector.previousMouthState = mouthState.getState();
+        upsideDownDetector.lastStateChangeTime = currentTime;
+
+        Serial.printf("[UPSIDE DOWN] ✓ Upside down detected! Y-axis: %.2f (threshold: %.2f)\n",
+                      yAxis, upsideDownThreshold);
+
+        triggerUpsideDownResponse();
+    }
+}
+
+/**
+ * Trigger upside down response - crying
+ */
+void KMMXController::triggerUpsideDownResponse() {
+    eyeState.setState(EyeStateEnum::CRY);
+    mouthState.setState(MouthStateEnum::WAH);
+    statusLED.setColor(Color::BLUE);
+
+    if (enableMotionDebug) {
+        Serial.println("[UPSIDE DOWN] Crying response triggered!");
+    }
 }
 
 /**
@@ -351,6 +432,4 @@ void KMMXController::triggerPettingResponse(bool sustained) {
     if (enableMotionDebug) {
         Serial.println("[PETTING] Petting response! (SMILE)");
     }
-
-    // Note: Petting does NOT reset idle timer (allows natural sleep transition)
 }

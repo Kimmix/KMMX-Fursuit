@@ -70,15 +70,11 @@ class KMMXController {
 
     // Motion detection methods
     void checkMotionFeatures(KMMXController *controller);
-    // detectShake - REMOVED
     void detectTilt(const SensorData& current);
-    // detectBounce - REMOVED
-    // detectSpin - REMOVED
+    void detectUpsideDown(const SensorData& current);
     void detectPetting(const SensorData& current);
-    // triggerShakeResponse - REMOVED
     void triggerTiltResponse(float angle, bool isLeftRight);
-    // triggerBounceResponse - REMOVED
-    // triggerSpinResponse - REMOVED
+    void triggerUpsideDownResponse();
     void triggerPettingResponse(bool sustained);
 
     // Previous sensor values for idle detection
@@ -96,8 +92,6 @@ class KMMXController {
     unsigned long motionDetectionStartTime = 0;  // Time when motion detection should start (after startup delay)
 
     // Motion detection state structures
-    // ShakeDetector - REMOVED
-
     struct TiltDetector {
         float tiltAngleX = 0.0f;  // Forward/back tilt
         float tiltAngleZ = 0.0f;  // Left/right tilt
@@ -111,8 +105,13 @@ class KMMXController {
         MouthStateEnum previousMouthState = MouthStateEnum::IDLE;
     } tiltDetector;
 
-    // BounceDetector - REMOVED
-    // SpinDetector - REMOVED
+    struct UpsideDownDetector {
+        unsigned long upsideDownStartTime = 0;
+        unsigned long lastStateChangeTime = 0;
+        bool isUpsideDown = false;
+        EyeStateEnum previousEyeState = EyeStateEnum::IDLE;
+        MouthStateEnum previousMouthState = MouthStateEnum::IDLE;
+    } upsideDownDetector;
 
     struct PettingDetector {
         // Spike detection fields
