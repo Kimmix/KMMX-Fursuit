@@ -3,7 +3,7 @@
 
 void KMMXController::resetIdleTime(KMMXController *controller) {
     controller->eyeState.playPrevState();
-    controller->mouthState.resetMovingMouth();
+    controller->mouthState.playPrevState();  // Restore previous state, not just reset animation
     controller->mouthState.setSlowAnimation(false);
     controller->stillTime = 0;
     controller->motionCounter = 0;
@@ -18,7 +18,7 @@ void KMMXController::resetIdleTime(KMMXController *controller) {
 void KMMXController::resetIdleTime() {
     if (isSleeping) {
         eyeState.playPrevState();
-        mouthState.resetMovingMouth();
+        mouthState.playPrevState();  // Restore previous state, not just reset animation
         mouthState.setSlowAnimation(false);
     }
     stillTime = 0;
@@ -34,7 +34,7 @@ void KMMXController::resetIdleTime() {
 void KMMXController::enterSleep(KMMXController *controller) {
     controller->prevHornBright = controller->hornLED.getBrightness();
     controller->hornLED.setBrightness(5);
-    controller->eyeState.setState(EyeStateEnum::SLEEP);
+    controller->eyeState.setState(EyeStateEnum::SLEEP, false, 0);  // Temporary, no timeout (manual control)
     controller->mouthState.setSlowAnimation(true);
     controller->isSleeping = true;
 

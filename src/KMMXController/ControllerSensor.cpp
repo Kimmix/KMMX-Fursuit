@@ -11,8 +11,8 @@ void KMMXController::setupSensors() {
     boopInitialized = proximitySensor.setup();
 
     // Ensure eye state starts at IDLE (prevents lingering states from previous sessions)
-    eyeState.setState(EyeStateEnum::IDLE);
-    mouthState.setState(MouthStateEnum::IDLE);
+    eyeState.setState(EyeStateEnum::IDLE, true, 0);  // Persistent, no timeout (initial state)
+    mouthState.setState(MouthStateEnum::IDLE, true, 0);  // Persistent, no timeout (initial state)
 
     // Set motion detection start time (current time + startup delay)
     motionDetectionStartTime = millis() + motionDetectionStartupDelay;

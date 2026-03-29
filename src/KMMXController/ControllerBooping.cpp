@@ -14,10 +14,10 @@ void KMMXController::handleBoop() {
             // Only set BOOP state if not already in BOOP state
             // This prevents resetting the animation and causing jerky playback
             if (eyeState.getState() != EyeStateEnum::BOOP) {
-                eyeState.setState(EyeStateEnum::BOOP);
+                eyeState.setState(EyeStateEnum::BOOP, false, 2500);  // Temporary, 2.5s timeout
             }
             if (mouthState.getState() != MouthStateEnum::BOOP) {
-                mouthState.setState(MouthStateEnum::BOOP);
+                mouthState.setState(MouthStateEnum::BOOP, false, 700);  // Temporary, 700ms timeout
             }
             resetIdleTime();
             statusLED.setColor(Color::CYAN);
@@ -25,7 +25,7 @@ void KMMXController::handleBoop() {
             wasInBoopRange = false;
         } else if (inBoopRange) {
             if (mouthState.getState() != MouthStateEnum::BOOP) {
-                mouthState.setState(MouthStateEnum::BOOP);
+                mouthState.setState(MouthStateEnum::BOOP, false, 700);  // Temporary, 700ms timeout
             }
             if (isSleeping) {
                 resetIdleTime();
@@ -36,15 +36,15 @@ void KMMXController::handleBoop() {
             // Only set BOOP state if not already in BOOP state
             // This prevents resetting the auto-reset timer
             if (eyeState.getState() != EyeStateEnum::BOOP) {
-                eyeState.setState(EyeStateEnum::BOOP);
+                eyeState.setState(EyeStateEnum::BOOP, false, 2500);  // Temporary, 2.5s timeout
             }
             statusLED.setColor(Color::PINK);
             wasBooped = true;
             wasInBoopRange = false;
         } else if (isAngry && !lastIsAngry) {
             nextBoop = millis() + 1500;
-            eyeState.setState(EyeStateEnum::ANGRY);
-            mouthState.setState(MouthStateEnum::ANGRYBOOP);
+            eyeState.setState(EyeStateEnum::ANGRY, false, 1500);  // Temporary, 1.5s timeout
+            mouthState.setState(MouthStateEnum::ANGRYBOOP, false, 1500);  // Temporary, 1.5s timeout
             resetIdleTime();
             statusLED.setColor(Color::RED);
             wasBooped = false;
@@ -54,7 +54,7 @@ void KMMXController::handleBoop() {
             // If we were in range but didn't get booped, show sad eyes
             if (wasInBoopRange && !wasBooped) {
                 if (eyeState.getState() != EyeStateEnum::SAD) {
-                    eyeState.setState(EyeStateEnum::SAD);
+                    eyeState.setState(EyeStateEnum::SAD, false, 3000);  // Temporary, 3s timeout
                     statusLED.setColor(Color::BLUE);
                 }
             }

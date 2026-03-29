@@ -31,8 +31,9 @@ class MouthState {
     Viseme viseme;
     void startMic();
     void update();
-    void setState(MouthStateEnum newState);
+    void setState(MouthStateEnum newState, bool isPersistent = false, unsigned long durationMs = 0);
     void savePrevState(MouthStateEnum newState);
+    void playPrevState();
     MouthStateEnum getState() const;
     void setSensorData(const SensorData& data);
     void resetMovingMouth();
@@ -42,7 +43,9 @@ class MouthState {
     Hub75DMA* display;
     SensorData sensorData;
     MouthStateEnum prevState, currentState = MouthStateEnum::IDLE;
-    unsigned long mouthInterval, resetBoop, nextAngry;
+    unsigned long mouthInterval, nextAngry;
+    unsigned long stateStartTime = 0;  // When current state started (for auto-reset)
+    unsigned long customResetDuration = 0;  // Custom duration override (0 = infinite)
     bool isTransitioning = false;
     const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;
 

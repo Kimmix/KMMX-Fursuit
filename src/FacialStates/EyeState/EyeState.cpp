@@ -8,17 +8,17 @@ EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis(
     TimeBasedAnimation::init(blinkAnim, blinkAnimation, blinkAnimationLength, TimeBasedAnimation::CONFIG_BLINK);
 
     // Initialize all animations with transition + loop pattern
-    initAnimationData(boopData, boopAnimation, 48, 18, 2500, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);  // Auto-reset after 2.5s
-    initAnimationData(arrowData, boopAnimation, 48, 18, 0, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);  // No auto-reset (duplicate of boop for BLE)
-    initAnimationData(oFaceData, oFaceAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);      // No auto-reset
-    initAnimationData(smileData, smileAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMILE_LOOP);     // No auto-reset, special ping-pong loop
-    initAnimationData(angryData, eyeAngryAnimation, 48, 18, 0, TimeBasedAnimation::CONFIG_ANTICIPATION);  // No auto-reset
-    initAnimationData(sadData, sadAnimation, 20, 8, 3000, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);  // Auto-reset after 3s
-    initAnimationData(cryData, cryAnimation, 48, 12, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);  // No auto-reset, for photo shoots
-    initAnimationData(doubtedData, doubtedAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);       // No auto-reset, for photo shoots
-    initAnimationData(roundedData, roundedAnimation, 48, 15, 0, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);  // No auto-reset, for photo shoots
-    initAnimationData(sharpData, sharpAnimation, 48, 18, 0, TimeBasedAnimation::CONFIG_ANTICIPATION);  // No auto-reset, focused state
-    initAnimationData(giggleData, giggleAnimation, 48, 12, 0, TimeBasedAnimation::CONFIG_SMILE_LOOP);  // No auto-reset, playful state
+    initAnimationData(boopData, boopAnimation, 48, 18, 2500, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);        // Auto-reset after 2.5s
+    initAnimationData(arrowData, boopAnimation, 48, 18, 0, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);          // No auto-reset (duplicate of boop for BLE)
+    initAnimationData(oFaceData, oFaceAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);              // No auto-reset
+    initAnimationData(smileData, smileAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMILE_LOOP);               // No auto-reset, special ping-pong loop
+    initAnimationData(angryData, eyeAngryAnimation, 48, 18, 0, TimeBasedAnimation::CONFIG_ANTICIPATION);          // No auto-reset
+    initAnimationData(sadData, sadAnimation, 20, 8, 3000, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);                // Auto-reset after 3s
+    initAnimationData(cryData, cryAnimation, 48, 12, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);                  // No auto-reset, for photo shoots
+    initAnimationData(doubtedData, doubtedAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);          // No auto-reset, for photo shoots
+    initAnimationData(roundedData, roundedAnimation, 48, 15, 0, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);     // No auto-reset, for photo shoots
+    initAnimationData(sharpData, sharpAnimation, 48, 18, 0, TimeBasedAnimation::CONFIG_ANTICIPATION);             // No auto-reset, focused state
+    initAnimationData(giggleData, giggleAnimation, 48, 12, 0, TimeBasedAnimation::CONFIG_SMILE_LOOP);             // No auto-reset, playful state
     initAnimationData(unimpressedData, unimpressedAnimation, 48, 14, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);  // No auto-reset, for photo shoots
 
     // Initialize idle timers
@@ -49,28 +49,51 @@ void EyeState::resetAnimation(AnimationData& data) {
 
 AnimationData* EyeState::getAnimationData(EyeStateEnum state) {
     switch (state) {
-        case EyeStateEnum::BOOP:        return &boopData;
-        case EyeStateEnum::ARROW:       return &arrowData;
-        case EyeStateEnum::OEYE:        return &oFaceData;
-        case EyeStateEnum::SMILE:       return &smileData;
-        case EyeStateEnum::ANGRY:       return &angryData;
-        case EyeStateEnum::SAD:         return &sadData;
-        case EyeStateEnum::CRY:         return &cryData;
-        case EyeStateEnum::DOUBTED:     return &doubtedData;
-        case EyeStateEnum::ROUNDED:     return &roundedData;
-        case EyeStateEnum::SHARP:       return &sharpData;
-        case EyeStateEnum::GIGGLE:      return &giggleData;
-        case EyeStateEnum::UNIMPRESSED: return &unimpressedData;
-        default: return nullptr;
+        case EyeStateEnum::BOOP:
+            return &boopData;
+        case EyeStateEnum::ARROW:
+            return &arrowData;
+        case EyeStateEnum::OEYE:
+            return &oFaceData;
+        case EyeStateEnum::SMILE:
+            return &smileData;
+        case EyeStateEnum::ANGRY:
+            return &angryData;
+        case EyeStateEnum::SAD:
+            return &sadData;
+        case EyeStateEnum::CRY:
+            return &cryData;
+        case EyeStateEnum::DOUBTED:
+            return &doubtedData;
+        case EyeStateEnum::ROUNDED:
+            return &roundedData;
+        case EyeStateEnum::SHARP:
+            return &sharpData;
+        case EyeStateEnum::GIGGLE:
+            return &giggleData;
+        case EyeStateEnum::UNIMPRESSED:
+            return &unimpressedData;
+        default:
+            return nullptr;
     }
 }
 
 void EyeState::update() {
-    // Check for auto-reset states
+    // Check for custom duration auto-reset (PRIORITY 1)
+    if (customResetDuration > 0) {
+        if (millis() - stateStartTime >= customResetDuration) {
+            customResetDuration = 0;  // Reset for next state
+            setState(prevState, false, 0);  // Properly restore state (not just direct assignment)
+            return;  // Exit early - state just changed
+        }
+    }
+
+    // Check for animation-specific auto-reset (PRIORITY 2 - fallback)
     AnimationData* animData = getAnimationData(currentState);
     if (animData && animData->autoResetDuration > 0) {
         if (millis() - stateStartTime >= animData->autoResetDuration) {
-            currentState = prevState;
+            setState(prevState, false, 0);  // Properly restore state (not just direct assignment)
+            return;  // Exit early - state just changed
         }
     }
 
@@ -134,7 +157,7 @@ void EyeState::update() {
     }
 }
 
-void EyeState::setState(EyeStateEnum newState) {
+void EyeState::setState(EyeStateEnum newState, bool isPersistent, unsigned long durationMs) {
     // Mark as transitioning if state is changing
     if (currentState != newState) {
         isTransitioning = true;
@@ -182,22 +205,21 @@ void EyeState::setState(EyeStateEnum newState) {
     // Update state and timestamp
     currentState = newState;
     stateStartTime = millis();
-    savePrevState(currentState);
+    customResetDuration = durationMs;  // Store custom duration (0 = infinite/use animation default)
+
+    // Only save as previous state if persistent
+    if (isPersistent) {
+        savePrevState(currentState);
+    }
 }
 
 void EyeState::savePrevState(EyeStateEnum newState) {
-    // Don't save states that auto-reset or are temporary as previous state
-    if (newState == EyeStateEnum::BOOP ||
-        newState == EyeStateEnum::SLEEP ||
-        newState == EyeStateEnum::SAD ||
-        newState == EyeStateEnum::SMILE) {  // SMILE is set by motion detection, shouldn't persist
-        return;
-    }
+    // No exclusions - let isPersistent parameter control saving logic
     prevState = newState;
 }
 
 void EyeState::playPrevState() {
-    setState(prevState);
+    setState(prevState, false, 0);  // Restore previous state (temporary, manual control)
     resetSleepFace();
 }
 

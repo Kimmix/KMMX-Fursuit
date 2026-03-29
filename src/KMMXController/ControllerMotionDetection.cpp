@@ -21,8 +21,8 @@ inline bool KMMXController::hasDebounceExpired(unsigned long lastTime, uint16_t 
  * Restore previous eye and mouth state (reusable across all detectors)
  */
 void KMMXController::restorePreviousState(EyeStateEnum prevEye, MouthStateEnum prevMouth) {
-    eyeState.setState(prevEye);
-    mouthState.setState(prevMouth);
+    eyeState.setState(prevEye, false, 0);  // Temporary, no timeout (manual control)
+    mouthState.setState(prevMouth, false, 0);  // Temporary, no timeout (manual control)
 }
 
 /**
@@ -252,8 +252,8 @@ void KMMXController::detectTilt(const SensorData& current) {
 void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
     if (isLeftRight) {
         // Left/Right tilt - curious/confused
-        eyeState.setState(EyeStateEnum::DOUBTED);
-        mouthState.setState(MouthStateEnum::EH);
+        eyeState.setState(EyeStateEnum::DOUBTED, false, 0);  // Temporary, no timeout (manual control)
+        mouthState.setState(MouthStateEnum::EH, false, 0);  // Temporary, no timeout (manual control)
         statusLED.setColor(Color::MAGENTA);  // Using MAGENTA instead of PURPLE
 
         if (enableMotionDebug) {
@@ -263,8 +263,8 @@ void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
         // Forward/Back tilt
         if (angle > 0) {
             // Forward tilt (looking down) - unimpressed
-            eyeState.setState(EyeStateEnum::UNIMPRESSED);
-            mouthState.setState(MouthStateEnum::IDLE);
+            eyeState.setState(EyeStateEnum::UNIMPRESSED, false, 0);  // Temporary, no timeout (manual control)
+            mouthState.setState(MouthStateEnum::IDLE, false, 0);  // Temporary, no timeout (manual control)
             statusLED.setColor(Color::BLUE);
 
             if (enableMotionDebug) {
@@ -272,8 +272,8 @@ void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
             }
         } else {
             // Back tilt (looking up) - curious/surprised
-            eyeState.setState(EyeStateEnum::ROUNDED);
-            mouthState.setState(MouthStateEnum::IDLE);
+            eyeState.setState(EyeStateEnum::ROUNDED, false, 0);  // Temporary, no timeout (manual control)
+            mouthState.setState(MouthStateEnum::IDLE, false, 0);  // Temporary, no timeout (manual control)
             statusLED.setColor(Color::CYAN);
 
             if (enableMotionDebug) {
@@ -358,8 +358,8 @@ void KMMXController::detectUpsideDown(const SensorData& current) {
  * Trigger upside down response - crying
  */
 void KMMXController::triggerUpsideDownResponse() {
-    eyeState.setState(EyeStateEnum::CRY);
-    mouthState.setState(MouthStateEnum::WAH);
+    eyeState.setState(EyeStateEnum::CRY, false, 0);  // Temporary, no timeout (manual control)
+    mouthState.setState(MouthStateEnum::WAH, false, 0);  // Temporary, no timeout (manual control)
     statusLED.setColor(Color::BLUE);
 
     if (enableMotionDebug) {
@@ -469,8 +469,8 @@ void KMMXController::detectPetting(const SensorData& current) {
  */
 void KMMXController::triggerPettingResponse() {
     // Petting response - happy SMILE
-    eyeState.setState(EyeStateEnum::SMILE);
-    mouthState.setState(MouthStateEnum::IDLE);
+    eyeState.setState(EyeStateEnum::SMILE, false, 0);  // Temporary, no timeout (manual control)
+    mouthState.setState(MouthStateEnum::IDLE, false, 0);  // Temporary, no timeout (manual control)
     cheekPanel.setBrightness(200);
     statusLED.setColor(Color::PINK);
 
