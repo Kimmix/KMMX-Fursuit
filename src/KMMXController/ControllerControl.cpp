@@ -85,6 +85,7 @@ void KMMXController::setEye(int i) {
             break;
         default:
             eyeState.setState(EyeStateEnum::IDLE, true, 0);  // Persistent, no timeout
+            eyeState.savePrevState(EyeStateEnum::IDLE);  // Reset restore point to IDLE for clean slate
             break;
     }
 }
@@ -105,6 +106,7 @@ void KMMXController::setMouth(int i) {
             break;
         default:
             mouthState.setState(MouthStateEnum::IDLE, true, 0);  // Persistent, no timeout
+            mouthState.savePrevState(MouthStateEnum::IDLE);  // Reset restore point to IDLE for clean slate
             break;
     }
 }
@@ -114,6 +116,7 @@ void KMMXController::setViseme(int b) {
     static const int numThresholds = sizeof(noiseThresholds) / sizeof(noiseThresholds[0]);
     if (b == 0) {
         mouthState.setState(MouthStateEnum::IDLE, true, 0);  // Persistent, no timeout
+        mouthState.savePrevState(MouthStateEnum::IDLE);  // Reset restore point to IDLE for clean slate
     } else if (b == 1 || b > numThresholds) {
         mouthState.setState(MouthStateEnum::TALKING, true, 0);  // Persistent, no timeout
     } else {
