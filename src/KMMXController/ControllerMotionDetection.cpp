@@ -180,21 +180,20 @@ void KMMXController::checkMotionFeatures(KMMXController *controller) {
     // Get current sensor data from active buffer
     const SensorData& current = controller->sensorBuffer[controller->activeBuffer];
 
-    // Upside-down detection runs FIRST - even in high-priority states
-    // This allows detecting when to exit crying state
+    // Get current facial states
+    EyeStateEnum currentEyeState = controller->eyeState.getState();
+    MouthStateEnum currentMouthState = controller->mouthState.getState();
+
+    // Skip motion detection if not in fully IDLE state (prevents conflicts with BLE control or special states)
+    // Motion detection only works when BOTH eye and mouth are IDLE
+    if (currentEyeState != EyeStateEnum::IDLE || currentMouthState != MouthStateEnum::IDLE) {
+        return;  // Skip motion detection - not in idle state
+    }
+
+    // Upside-down detection runs FIRST
     if (enableUpsideDownDetection) {
         controller->detectUpsideDown(current);
         if (controller->upsideDownDetector.isUpsideDown) return;
-    }
-
-    // Skip other motion detection if in high-priority states
-    EyeStateEnum currentEyeState = controller->eyeState.getState();
-
-    // Don't interfere with boop, manual states, or transitions
-    if (currentEyeState == EyeStateEnum::BOOP ||
-        currentEyeState == EyeStateEnum::ANGRY ||
-        currentEyeState == EyeStateEnum::CRY) {
-        return;  // Skip remaining motion detection
     }
 
     // Check remaining features in priority order (first match wins)
