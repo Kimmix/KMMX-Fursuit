@@ -184,26 +184,34 @@ void KMMXController::checkMotionFeatures(KMMXController *controller) {
     EyeStateEnum currentEyeState = controller->eyeState.getState();
     MouthStateEnum currentMouthState = controller->mouthState.getState();
 
-    // Skip motion detection if not in fully IDLE state (prevents conflicts with BLE control or special states)
-    // Motion detection only works when BOTH eye and mouth are IDLE
-    if (currentEyeState != EyeStateEnum::IDLE || currentMouthState != MouthStateEnum::IDLE) {
-        return;  // Skip motion detection - not in idle state
-    }
+    // Check if currently in IDLE state (allows new motion detection to trigger)
+    bool isFullyIdle = (currentEyeState == EyeStateEnum::IDLE && currentMouthState == MouthStateEnum::IDLE);
 
-    // Upside-down detection runs FIRST
+    // Upside-down detection (always runs - highest priority, can interrupt anything)
     if (enableUpsideDownDetection) {
         controller->detectUpsideDown(current);
         if (controller->upsideDownDetector.isUpsideDown) return;
     }
 
-    // Check remaining features in priority order (first match wins)
+    // Tilt detection (runs if already active OR if fully idle)
+    // When active: runs cleanup logic to restore state when returning to neutral
+    // When idle: can trigger new tilt responses
     if (enableTiltDetection) {
-        controller->detectTilt(current);
-        if (controller->tiltDetector.isTilted) return;
+        bool shouldRunTilt = controller->tiltDetector.isTilted || isFullyIdle;
+        if (shouldRunTilt) {
+            controller->detectTilt(current);
+            if (controller->tiltDetector.isTilted) return;
+        }
     }
 
+    // Petting detection (runs if already active OR if fully idle)
+    // When active: runs happiness decay and state restoration logic
+    // When idle: can trigger new petting responses
     if (enablePettingDetection) {
-        controller->detectPetting(current);
+        bool shouldRunPetting = controller->pettingDetector.isPetting || isFullyIdle;
+        if (shouldRunPetting) {
+            controller->detectPetting(current);
+        }
     }
 }
 
