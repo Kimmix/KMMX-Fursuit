@@ -29,6 +29,15 @@ void MouthState::startMic() {
 }
 
 void MouthState::update() {
+    // Check for custom duration auto-reset
+    if (customResetDuration > 0) {
+        if (millis() - stateStartTime >= customResetDuration) {
+            customResetDuration = 0;  // Reset for next state
+            setState(prevState, false, 0);  // Properly restore state (not just direct assignment)
+            return;  // Exit early - state just changed
+        }
+    }
+
     switch (currentState) {
         case MouthStateEnum::IDLE:
             movingMouth();
@@ -36,15 +45,11 @@ void MouthState::update() {
             break;
         case MouthStateEnum::BOOP:
             display->drawMouth(mouthOH15);
-            if (millis() - resetBoop >= 700) {
-                currentState = prevState;
-            }
+            // No more manual timeout check - handled by customResetDuration
             break;
         case MouthStateEnum::ANGRYBOOP:
             angryBoop();
-            if (millis() - resetBoop >= 1500) {
-                currentState = prevState;
-            }
+            // No more manual timeout check - handled by customResetDuration
             break;
         case MouthStateEnum::TALKING:
             if (visemeFrame == mouthDefault) {
@@ -70,38 +75,47 @@ void MouthState::update() {
     }
 }
 
-void MouthState::setState(MouthStateEnum newState) {
-    savePrevState(currentState);
-    if (newState == MouthStateEnum::BOOP || newState == MouthStateEnum::ANGRYBOOP) {
-        resetBoop = millis();
+void MouthState::setState(MouthStateEnum newState, bool isPersistent, unsigned long durationMs) {
+    // Save previous state ONLY if persistent
+    if (isPersistent) {
+        savePrevState(currentState);
     }
-    if (newState == MouthStateEnum::ANGRYBOOP) {
-        // Reset angry animation to start from beginning
-        TimeBasedAnimation::reset(angryAnim);
+
+    // Universal duration handling - no special cases
+    customResetDuration = durationMs;
+
+    // State-specific initialization
+    switch (newState) {
+        case MouthStateEnum::ANGRYBOOP:
+            TimeBasedAnimation::reset(angryAnim);
+            break;
+        case MouthStateEnum::EH:
+            resetAnimation(ehData);
+            break;
+        case MouthStateEnum::POUT:
+            resetAnimation(poutData);
+            break;
+        case MouthStateEnum::DROOLING:
+            resetAnimation(droolingData);
+            break;
+        default:
+            break;
     }
-    if (newState == MouthStateEnum::EH) {
-        // Reset Eh animation to start from beginning
-        resetAnimation(ehData);
-    }
-    if (newState == MouthStateEnum::POUT) {
-        // Reset Pout animation to start from beginning
-        resetAnimation(poutData);
-    }
-    if (newState == MouthStateEnum::DROOLING) {
-        // Reset Drooling animation to start from beginning
-        resetAnimation(droolingData);
-    }
+
     if (currentState != newState) {
         isTransitioning = true;
         currentState = newState;
+        stateStartTime = millis();  // Track state start time
     }
 }
 
 void MouthState::savePrevState(MouthStateEnum newState) {
-    if (newState == MouthStateEnum::BOOP || newState == MouthStateEnum::ANGRYBOOP) {
-        return;
-    }
+    // No exclusions - let isPersistent parameter control saving logic
     prevState = newState;
+}
+
+void MouthState::playPrevState() {
+    setState(prevState, false, 0);  // Restore previous state (temporary, manual control)
 }
 
 MouthStateEnum MouthState::getState() const {

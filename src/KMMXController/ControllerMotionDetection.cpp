@@ -21,8 +21,8 @@ inline bool KMMXController::hasDebounceExpired(unsigned long lastTime, uint16_t 
  * Restore previous eye and mouth state (reusable across all detectors)
  */
 void KMMXController::restorePreviousState(EyeStateEnum prevEye, MouthStateEnum prevMouth) {
-    eyeState.setState(prevEye);
-    mouthState.setState(prevMouth);
+    eyeState.setState(prevEye, false, 0);  // Temporary, no timeout (manual control)
+    mouthState.setState(prevMouth, false, 0);  // Temporary, no timeout (manual control)
 }
 
 /**
@@ -180,31 +180,38 @@ void KMMXController::checkMotionFeatures(KMMXController *controller) {
     // Get current sensor data from active buffer
     const SensorData& current = controller->sensorBuffer[controller->activeBuffer];
 
-    // Upside-down detection runs FIRST - even in high-priority states
-    // This allows detecting when to exit crying state
+    // Get current facial states
+    EyeStateEnum currentEyeState = controller->eyeState.getState();
+    MouthStateEnum currentMouthState = controller->mouthState.getState();
+
+    // Check if currently in IDLE state (allows new motion detection to trigger)
+    bool isFullyIdle = (currentEyeState == EyeStateEnum::IDLE && currentMouthState == MouthStateEnum::IDLE);
+
+    // Upside-down detection (always runs - highest priority, can interrupt anything)
     if (enableUpsideDownDetection) {
         controller->detectUpsideDown(current);
         if (controller->upsideDownDetector.isUpsideDown) return;
     }
 
-    // Skip other motion detection if in high-priority states
-    EyeStateEnum currentEyeState = controller->eyeState.getState();
-
-    // Don't interfere with boop, manual states, or transitions
-    if (currentEyeState == EyeStateEnum::BOOP ||
-        currentEyeState == EyeStateEnum::ANGRY ||
-        currentEyeState == EyeStateEnum::CRY) {
-        return;  // Skip remaining motion detection
-    }
-
-    // Check remaining features in priority order (first match wins)
+    // Tilt detection (runs if already active OR if fully idle)
+    // When active: runs cleanup logic to restore state when returning to neutral
+    // When idle: can trigger new tilt responses
     if (enableTiltDetection) {
-        controller->detectTilt(current);
-        if (controller->tiltDetector.isTilted) return;
+        bool shouldRunTilt = controller->tiltDetector.isTilted || isFullyIdle;
+        if (shouldRunTilt) {
+            controller->detectTilt(current);
+            if (controller->tiltDetector.isTilted) return;
+        }
     }
 
+    // Petting detection (runs if already active OR if fully idle)
+    // When active: runs happiness decay and state restoration logic
+    // When idle: can trigger new petting responses
     if (enablePettingDetection) {
-        controller->detectPetting(current);
+        bool shouldRunPetting = controller->pettingDetector.isPetting || isFullyIdle;
+        if (shouldRunPetting) {
+            controller->detectPetting(current);
+        }
     }
 }
 
@@ -252,8 +259,8 @@ void KMMXController::detectTilt(const SensorData& current) {
 void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
     if (isLeftRight) {
         // Left/Right tilt - curious/confused
-        eyeState.setState(EyeStateEnum::DOUBTED);
-        mouthState.setState(MouthStateEnum::EH);
+        eyeState.setState(EyeStateEnum::DOUBTED, false, 0);  // Temporary, no timeout (manual control)
+        mouthState.setState(MouthStateEnum::EH, false, 0);  // Temporary, no timeout (manual control)
         statusLED.setColor(Color::MAGENTA);  // Using MAGENTA instead of PURPLE
 
         if (enableMotionDebug) {
@@ -263,8 +270,8 @@ void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
         // Forward/Back tilt
         if (angle > 0) {
             // Forward tilt (looking down) - unimpressed
-            eyeState.setState(EyeStateEnum::UNIMPRESSED);
-            mouthState.setState(MouthStateEnum::IDLE);
+            eyeState.setState(EyeStateEnum::UNIMPRESSED, false, 0);  // Temporary, no timeout (manual control)
+            mouthState.setState(MouthStateEnum::IDLE, false, 0);  // Temporary, no timeout (manual control)
             statusLED.setColor(Color::BLUE);
 
             if (enableMotionDebug) {
@@ -272,8 +279,8 @@ void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
             }
         } else {
             // Back tilt (looking up) - curious/surprised
-            eyeState.setState(EyeStateEnum::ROUNDED);
-            mouthState.setState(MouthStateEnum::IDLE);
+            eyeState.setState(EyeStateEnum::ROUNDED, false, 0);  // Temporary, no timeout (manual control)
+            mouthState.setState(MouthStateEnum::IDLE, false, 0);  // Temporary, no timeout (manual control)
             statusLED.setColor(Color::CYAN);
 
             if (enableMotionDebug) {
@@ -358,8 +365,8 @@ void KMMXController::detectUpsideDown(const SensorData& current) {
  * Trigger upside down response - crying
  */
 void KMMXController::triggerUpsideDownResponse() {
-    eyeState.setState(EyeStateEnum::CRY);
-    mouthState.setState(MouthStateEnum::WAH);
+    eyeState.setState(EyeStateEnum::CRY, false, 0);  // Temporary, no timeout (manual control)
+    mouthState.setState(MouthStateEnum::WAH, false, 0);  // Temporary, no timeout (manual control)
     statusLED.setColor(Color::BLUE);
 
     if (enableMotionDebug) {
@@ -469,8 +476,8 @@ void KMMXController::detectPetting(const SensorData& current) {
  */
 void KMMXController::triggerPettingResponse() {
     // Petting response - happy SMILE
-    eyeState.setState(EyeStateEnum::SMILE);
-    mouthState.setState(MouthStateEnum::IDLE);
+    eyeState.setState(EyeStateEnum::SMILE, false, 0);  // Temporary, no timeout (manual control)
+    mouthState.setState(MouthStateEnum::IDLE, false, 0);  // Temporary, no timeout (manual control)
     cheekPanel.setBrightness(200);
     statusLED.setColor(Color::PINK);
 

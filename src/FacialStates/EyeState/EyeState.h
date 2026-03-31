@@ -41,7 +41,7 @@ class EyeState {
    public:
     EyeState(Hub75DMA* display);
     void update();
-    void setState(EyeStateEnum newState);
+    void setState(EyeStateEnum newState, bool isPersistent = false, unsigned long durationMs = 0);
     void savePrevState(EyeStateEnum newState);
     void playPrevState();
     EyeStateEnum getState() const;
@@ -55,6 +55,7 @@ class EyeState {
     bool isTransitioning = false;
 
     unsigned long stateStartTime;  // When current state started (for auto-reset)
+    unsigned long customResetDuration = 0;  // Custom duration override (0 = use animation's autoResetDuration)
     unsigned long nextBlink;
     unsigned long nextIdleAction;  // Timer for micro-movements and eye darts
 
