@@ -23,6 +23,7 @@ class BLEManager {
     BLEByteCharacteristic displayColorModeCharacteristic;
     BLECharacteristic displayGradientTopCharacteristic;
     BLECharacteristic displayGradientBottomCharacteristic;
+    BLEByteCharacteristic displayDualSpiralThicknessCharacteristic;
     BLEByteCharacteristic rebootCharacteristic;
 
     static BLEManager* instance;
@@ -40,5 +41,6 @@ class BLEManager {
     static void displayColorModeWritten(BLEDevice central, BLECharacteristic characteristic);
     static void displayGradientTopWritten(BLEDevice central, BLECharacteristic characteristic);
     static void displayGradientBottomWritten(BLEDevice central, BLECharacteristic characteristic);
+    static void displayDualSpiralThicknessWritten(BLEDevice central, BLECharacteristic characteristic);
     static void rebootWritten(BLEDevice central, BLECharacteristic characteristic);
 };

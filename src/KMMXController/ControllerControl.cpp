@@ -61,6 +61,22 @@ void KMMXController::getDisplayGradientBottomColor(uint8_t& r, uint8_t& g, uint8
     display.getGradientBottomColor(r, g, b);
 }
 
+void KMMXController::setDisplayDualSpiralColor(uint8_t spiralR, uint8_t spiralG, uint8_t spiralB) {
+    display.setDualSpiralColor(spiralR, spiralG, spiralB);
+}
+
+void KMMXController::getDisplayDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& b) {
+    display.getDualSpiralColor(r, g, b);
+}
+
+void KMMXController::setDisplayDualSpiralThickness(uint8_t thickness) {
+    display.setDualSpiralThickness(thickness);
+}
+
+uint8_t KMMXController::getDisplayDualSpiralThickness() {
+    return display.getDualSpiralThickness();
+}
+
 // State control for BLE
 void KMMXController::setEye(int i) {
     switch (i) {

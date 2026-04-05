@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include "config.h"
 
 /**
  * @brief Color effects for LED matrix display
@@ -24,6 +25,7 @@ class ColorEffects {
      *        1 = Spiral/Vortex (VRChat hypno style)
      *        2 = Plasma Effect (trippy interference patterns)
      *        3 = Radial Pulse (breathing effect from center)
+     *        4 = Cyan Spiral (clean rotating spiral effect)
      * @param lightness Lightness/brightness value (0-255)
      * @param row Row index (Y coordinate)
      * @param col Column index (X coordinate)
@@ -56,9 +58,39 @@ class ColorEffects {
      */
     void getGradientBottomColor(uint8_t& r, uint8_t& g, uint8_t& b) const;
 
+    /**
+     * @brief Set dual spiral colors for Mode 4
+     * Uses the same color setting as gradient (top color = spiral color, bottom unused)
+     * @param spiralR Spiral color red component (0-255)
+     * @param spiralG Spiral color green component (0-255)
+     * @param spiralB Spiral color blue component (0-255)
+     */
+    void setDualSpiralColor(uint8_t spiralR, uint8_t spiralG, uint8_t spiralB);
+
+    /**
+     * @brief Get the dual spiral color
+     */
+    void getDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& b) const;
+
+    /**
+     * @brief Set dual spiral thickness (affects band width)
+     * @param thickness Thickness value (0-255), higher = thicker bands
+     */
+    void setDualSpiralThickness(uint8_t thickness);
+
+    /**
+     * @brief Get the dual spiral thickness
+     */
+    uint8_t getDualSpiralThickness() const;
+
    private:
     uint8_t panelWidth;
     uint8_t panelHeight;
+
+    // Global center points for effects (calculated from eye configuration in config.h)
+    static constexpr float effectCenterLeftX = eyeOffsetX + eyeWidth / 2.0f;           // Left eye center
+    static constexpr float effectCenterRightX = screenWidth - eyeOffsetX - eyeWidth / 2.0f; // Right eye center (mirrored)
+    static constexpr float effectCenterY = eyeOffsetY + eyeHeight / 2.0f;              // Vertical center of eyes
 
     // Gradient colors for Mode 0 (default KMMX colors, customizable)
     uint8_t gradientTopR = 255;
@@ -67,6 +99,12 @@ class ColorEffects {
     uint8_t gradientBottomR = 255;
     uint8_t gradientBottomG = 43;
     uint8_t gradientBottomB = 91;
+
+    // Dual spiral colors for Mode 4 (default cyan, customizable)
+    uint8_t dualSpiralR = 0;
+    uint8_t dualSpiralG = 255;
+    uint8_t dualSpiralB = 255;
+    uint8_t dualSpiralThickness = 128;  // Default thickness (0-255)
 
     /**
      * @brief Mode 0: Customizable gradient
@@ -87,6 +125,11 @@ class ColorEffects {
      * @brief Mode 3: Radial pulse/breathing effect from center
      */
     void modeRadialPulse(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b);
+
+    /**
+     * @brief Mode 4: Dual spiral effect (customizable color and thickness)
+     */
+    void modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b);
 
     /**
      * @brief Helper: Convert HSV to RGB

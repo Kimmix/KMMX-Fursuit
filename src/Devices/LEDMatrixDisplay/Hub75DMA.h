@@ -170,6 +170,7 @@ class Hub75DMA {
      *        1 = Spiral/Vortex (VRChat hypno style)
      *        2 = Plasma Effect (trippy interference patterns)
      *        3 = Radial Pulse (breathing effect from center)
+     *        4 = Dual Spiral (customizable color and thickness)
      */
     void setColorMode(uint8_t mode);
 
@@ -205,6 +206,34 @@ class Hub75DMA {
      * @param b Reference to blue component (output)
      */
     void getGradientBottomColor(uint8_t& r, uint8_t& g, uint8_t& b) const;
+
+    /**
+     * @brief Sets the dual spiral color for Mode 4.
+     * @param spiralR Spiral color red component (0-255)
+     * @param spiralG Spiral color green component (0-255)
+     * @param spiralB Spiral color blue component (0-255)
+     */
+    void setDualSpiralColor(uint8_t spiralR, uint8_t spiralG, uint8_t spiralB);
+
+    /**
+     * @brief Gets the dual spiral color.
+     * @param r Reference to red component (output)
+     * @param g Reference to green component (output)
+     * @param b Reference to blue component (output)
+     */
+    void getDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& b) const;
+
+    /**
+     * @brief Sets the dual spiral thickness for Mode 4.
+     * @param thickness Thickness value (0-255)
+     */
+    void setDualSpiralThickness(uint8_t thickness);
+
+    /**
+     * @brief Gets the dual spiral thickness.
+     * @return Thickness value (0-255)
+     */
+    uint8_t getDualSpiralThickness() const;
 
     // Drawing functions for various bitmaps
     /**

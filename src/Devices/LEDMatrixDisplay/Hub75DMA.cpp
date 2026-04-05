@@ -70,8 +70,8 @@ void Hub75DMA::setBrightnessValue(uint8_t value) {
 }
 
 void Hub75DMA::setColorMode(uint8_t mode) {
-    // Valid modes: 0 = gradient (customizable), 1 = spiral, 2 = plasma, 3 = radial pulse
-    if (mode <= 3) {
+    // Valid modes: 0 = gradient (customizable), 1 = spiral, 2 = plasma, 3 = radial pulse, 4 = dual spiral
+    if (mode <= 4) {
         colorMode = mode;
     }
 }
@@ -90,6 +90,22 @@ void Hub75DMA::getGradientTopColor(uint8_t& r, uint8_t& g, uint8_t& b) const {
 
 void Hub75DMA::getGradientBottomColor(uint8_t& r, uint8_t& g, uint8_t& b) const {
     colorEffects.getGradientBottomColor(r, g, b);
+}
+
+void Hub75DMA::setDualSpiralColor(uint8_t spiralR, uint8_t spiralG, uint8_t spiralB) {
+    colorEffects.setDualSpiralColor(spiralR, spiralG, spiralB);
+}
+
+void Hub75DMA::getDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& b) const {
+    colorEffects.getDualSpiralColor(r, g, b);
+}
+
+void Hub75DMA::setDualSpiralThickness(uint8_t thickness) {
+    colorEffects.setDualSpiralThickness(thickness);
+}
+
+uint8_t Hub75DMA::getDualSpiralThickness() const {
+    return colorEffects.getDualSpiralThickness();
 }
 
 void Hub75DMA::getColorMap(const uint8_t lightness, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {

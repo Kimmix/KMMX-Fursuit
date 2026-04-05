@@ -20,6 +20,9 @@ void ColorEffects::getColor(uint8_t mode, uint8_t lightness, int row, int col, u
         case 3:
             modeRadialPulse(lightness, row, col, r, g, b);
             break;
+        case 4:
+            modeDualSpiral(lightness, row, col, r, g, b);
+            break;
         default:
             // Fallback to gradient
             modeGradient(lightness, row, r, g, b);
@@ -48,6 +51,26 @@ void ColorEffects::getGradientBottomColor(uint8_t& r, uint8_t& g, uint8_t& b) co
     b = gradientBottomB;
 }
 
+void ColorEffects::setDualSpiralColor(uint8_t spiralR, uint8_t spiralG, uint8_t spiralB) {
+    dualSpiralR = spiralR;
+    dualSpiralG = spiralG;
+    dualSpiralB = spiralB;
+}
+
+void ColorEffects::getDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& b) const {
+    r = dualSpiralR;
+    g = dualSpiralG;
+    b = dualSpiralB;
+}
+
+void ColorEffects::setDualSpiralThickness(uint8_t thickness) {
+    dualSpiralThickness = thickness;
+}
+
+uint8_t ColorEffects::getDualSpiralThickness() const {
+    return dualSpiralThickness;
+}
+
 // ============================================================================
 // Mode 0: Customizable Gradient
 // ============================================================================
@@ -74,11 +97,12 @@ void ColorEffects::modeGradient(uint8_t lightness, int row, uint8_t& r, uint8_t&
 // Mode 1: Spiral/Vortex Effect (VRChat Hypno Shader Inspired)
 // ============================================================================
 void ColorEffects::modeSpiralVortex(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
-    // Calculate position relative to center
-    const float centerX = panelWidth / 2.0f;
-    const float centerY = panelHeight / 2.0f;
+    // Determine which eye center to use based on horizontal position (split at single panel width)
+    const float centerX = (col < panelResX) ? effectCenterLeftX : effectCenterRightX;
+
+    // Calculate position relative to the nearest eye center
     const float dx = col - centerX;
-    const float dy = row - centerY;
+    const float dy = row - effectCenterY;
 
     // Calculate angle and distance from center
     const float angle = atan2f(dy, dx);
@@ -113,9 +137,12 @@ void ColorEffects::modeSpiralVortex(uint8_t lightness, int row, int col, uint8_t
 void ColorEffects::modePlasmaEffect(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
     const float time = millis() * 0.001f;
 
-    // Normalize coordinates to center
-    const float x = (col - panelWidth / 2.0f) / (panelWidth / 2.0f);
-    const float y = (row - panelHeight / 2.0f) / (panelHeight / 2.0f);
+    // Determine which eye center to use based on horizontal position (split at single panel width)
+    const float centerX = (col < panelResX) ? effectCenterLeftX : effectCenterRightX;
+
+    // Normalize coordinates to center (using nearest eye center)
+    const float x = (col - centerX) / centerX;
+    const float y = (row - effectCenterY) / effectCenterY;
 
     // Multiple sine waves creating interference patterns
     float plasma1 = sinf(x * 5.0f + time);
@@ -143,15 +170,16 @@ void ColorEffects::modePlasmaEffect(uint8_t lightness, int row, int col, uint8_t
 void ColorEffects::modeRadialPulse(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
     const float time = millis() * 0.001f;
 
-    // Calculate distance from center
-    const float centerX = panelWidth / 2.0f;
-    const float centerY = panelHeight / 2.0f;
+    // Determine which eye center to use based on horizontal position (split at single panel width)
+    const float centerX = (col < panelResX) ? effectCenterLeftX : effectCenterRightX;
+
+    // Calculate distance from center (using nearest eye center)
     const float dx = col - centerX;
-    const float dy = row - centerY;
+    const float dy = row - effectCenterY;
     const float distance = sqrtf(dx * dx + dy * dy);
 
     // Maximum possible distance (corner to center)
-    const float maxDist = sqrtf(centerX * centerX + centerY * centerY);
+    const float maxDist = sqrtf(centerX * centerX + effectCenterY * effectCenterY);
     const float normalizedDist = distance / maxDist;  // 0 at center, 1 at corners
 
     // Create breathing pulse from center
@@ -169,9 +197,57 @@ void ColorEffects::modeRadialPulse(uint8_t lightness, int row, int col, uint8_t&
     // Color cycling - slower than spiral
     const float hue = fmodf(time * 0.5f + normalizedDist * 2.0f, 1.0f) * 6.0f;
     const float saturation = 0.85f;
-    const float value = pulse * (lightness / 255.0f);
+    const float value = (pulse * 0.3f + 0.7f) * (lightness / 255.0f);  // Min 70% brightness
 
     hsvToRgb(hue, saturation, value, r, g, b);
+}
+
+// ============================================================================
+// Mode 4: Dual Spiral Effect (Customizable color and thickness)
+// ============================================================================
+void ColorEffects::modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
+    // Determine which eye center to use based on horizontal position (split at single panel width)
+    const float centerX = (col < panelResX) ? effectCenterLeftX : effectCenterRightX;
+
+    // Calculate position relative to the nearest eye center
+    const float dx = col - centerX;
+    const float dy = row - effectCenterY;
+
+    // Calculate angle and distance from center
+    const float angle = atan2f(dy, dx);
+    const float distance = sqrtf(dx * dx + dy * dy);
+
+    // Create rotating spiral pattern
+    const float time = millis() * 0.001f;  // Convert to seconds
+    const float rotationSpeed = 1.5f;     // Rotation speed
+    const float spiralArms = 12.0f;        // Number of spiral arms/bands
+
+    // Thickness control: map 0-255 to distance multiplier with wider range (0.05 to 2.0)
+    // This gives more dramatic variation from very tight to very loose spirals
+    // 0 = super tight spiral (0.05), 128 = medium (1.0), 255 = very loose (2.0)
+    const float thicknessFactor = 0.05f + (dualSpiralThickness / 255.0f) * 1.95f;
+
+    // Combine angle with time for rotation, add distance for spiral effect
+    float spiralValue = angle * spiralArms + distance * thicknessFactor - time * rotationSpeed * 2.0f * PI;
+
+    // Create bands using sine wave - gives the alternating pattern
+    float bands = sinf(spiralValue);
+
+    // Threshold to create sharp edges between color and black
+    const float threshold = 0.0f;
+
+    if (bands > threshold) {
+        // Use customizable spiral color
+        const float intensity = (lightness / 255.0f);
+        r = (uint8_t)(dualSpiralR * intensity);
+        g = (uint8_t)(dualSpiralG * intensity);
+        b = (uint8_t)(dualSpiralB * intensity);
+    } else {
+        // Black
+        r = 0;
+        g = 0;
+        b = 0;
+    }
 }
 
 // ============================================================================

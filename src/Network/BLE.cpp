@@ -25,6 +25,7 @@ BLEManager::BLEManager(KMMXController& ctrl) : controller(ctrl),
                                            displayColorModeCharacteristic(BLE_DISPLAY_COLOR_MODE_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            displayGradientTopCharacteristic(BLE_DISPLAY_GRADIENT_TOP_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
                                            displayGradientBottomCharacteristic(BLE_DISPLAY_GRADIENT_BOTTOM_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
+                                           displayDualSpiralThicknessCharacteristic(BLE_DISPLAY_DUAL_SPIRAL_THICKNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            rebootCharacteristic(BLE_REBOOT_CHARACTERISTIC_UUID, BLEWrite) {
 }
 
@@ -51,6 +52,7 @@ void BLEManager::setup() {
     protoService.addCharacteristic(displayColorModeCharacteristic);
     protoService.addCharacteristic(displayGradientTopCharacteristic);
     protoService.addCharacteristic(displayGradientBottomCharacteristic);
+    protoService.addCharacteristic(displayDualSpiralThicknessCharacteristic);
     protoService.addCharacteristic(rebootCharacteristic);
 
     // Set default values for each characteristic
@@ -81,6 +83,9 @@ void BLEManager::setup() {
     displayGradientTopCharacteristic.setValue(topColorData, 3);
     displayGradientBottomCharacteristic.setValue(bottomColorData, 3);
 
+    // Set dual spiral thickness value
+    displayDualSpiralThicknessCharacteristic.setValue(controller.getDisplayDualSpiralThickness());
+
     BLE.addService(protoService);
     BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
     BLE.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
@@ -97,6 +102,7 @@ void BLEManager::setup() {
     displayColorModeCharacteristic.setEventHandler(BLEWritten, displayColorModeWritten);
     displayGradientTopCharacteristic.setEventHandler(BLEWritten, displayGradientTopWritten);
     displayGradientBottomCharacteristic.setEventHandler(BLEWritten, displayGradientBottomWritten);
+    displayDualSpiralThicknessCharacteristic.setEventHandler(BLEWritten, displayDualSpiralThicknessWritten);
     rebootCharacteristic.setEventHandler(BLEWritten, rebootWritten);
 
     // Start advertising the BLE pService
@@ -230,6 +236,9 @@ void BLEManager::displayGradientTopWritten(BLEDevice central, BLECharacteristic 
             // Get current bottom color to preserve it
             instance->controller.getDisplayGradientBottomColor(bottomR, bottomG, bottomB);
             instance->controller.setDisplayGradientColors(r, g, b, bottomR, bottomG, bottomB);
+
+            // Also set the dual spiral color to match the gradient top color (reuse for dual spiral)
+            instance->controller.setDisplayDualSpiralColor(r, g, b);
         }
     }
 }
@@ -251,7 +260,19 @@ void BLEManager::displayGradientBottomWritten(BLEDevice central, BLECharacterist
             // Get current top color to preserve it
             instance->controller.getDisplayGradientTopColor(topR, topG, topB);
             instance->controller.setDisplayGradientColors(topR, topG, topB, r, g, b);
+
+            // Also set the dual spiral color to match the gradient top color (reuse for dual spiral)
+            instance->controller.setDisplayDualSpiralColor(topR, topG, topB);
         }
+    }
+}
+
+void BLEManager::displayDualSpiralThicknessWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        Serial.print(F("[BLE] Dual Spiral Thickness: "));
+        Serial.println(*data);
+        instance->controller.setDisplayDualSpiralThickness(*data);
     }
 }
 

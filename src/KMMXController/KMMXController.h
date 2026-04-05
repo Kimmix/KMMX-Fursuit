@@ -41,6 +41,10 @@ class KMMXController {
     void setDisplayGradientColors(uint8_t topR, uint8_t topG, uint8_t topB, uint8_t bottomR, uint8_t bottomG, uint8_t bottomB);
     void getDisplayGradientTopColor(uint8_t& r, uint8_t& g, uint8_t& b);
     void getDisplayGradientBottomColor(uint8_t& r, uint8_t& g, uint8_t& b);
+    void setDisplayDualSpiralColor(uint8_t spiralR, uint8_t spiralG, uint8_t spiralB);
+    void getDisplayDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& b);
+    void setDisplayDualSpiralThickness(uint8_t thickness);
+    uint8_t getDisplayDualSpiralThickness();
     void reboot();
 
    private:
