@@ -3,6 +3,7 @@
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 #include "config.h"
 #include "Bitmaps/Bitmaps.h"
+#include "ColorEffects.h"
 
 class Hub75DMA {
    private:
@@ -11,16 +12,21 @@ class Hub75DMA {
     const uint8_t panelHeight = panelResY;  // Panel height from config
     uint8_t panelBrightness = panelInitBrightness; // Default brightness
 
+    // Color effects engine
+    ColorEffects colorEffects = ColorEffects(panelResX, panelResY);
+    uint8_t colorMode = 0;  // 0 = default gradient, 1 = spiral/vortex, etc.
+
     // Helper functions to generate colors and patterns
     /**
-     * @brief Generates a color based on the lightness and row.
+     * @brief Generates a color based on the lightness, row, and column.
      * @param lightness Lightness value (0-255)
      * @param row Row index
+     * @param col Column index
      * @param r Reference to red component (output)
      * @param g Reference to green component (output)
      * @param b Reference to blue component (output)
      */
-    void getColorMap(const uint8_t lightness, const int row, uint8_t& r, uint8_t& g, uint8_t& b);
+    void getColorMap(const uint8_t lightness, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b);
 
     /**
      * @brief Generates a spiral color pattern.
@@ -156,6 +162,49 @@ class Hub75DMA {
      * @param value Brightness value (0-255)
      */
     void setBrightnessValue(uint8_t value);
+
+    /**
+     * @brief Sets the color mode.
+     * @param mode Color mode:
+     *        0 = Gradient (customizable via setGradientColors)
+     *        1 = Spiral/Vortex (VRChat hypno style)
+     *        2 = Plasma Effect (trippy interference patterns)
+     *        3 = Radial Pulse (breathing effect from center)
+     */
+    void setColorMode(uint8_t mode);
+
+    /**
+     * @brief Gets the current color mode.
+     * @return Current color mode
+     */
+    uint8_t getColorMode() const;
+
+    /**
+     * @brief Sets the custom gradient colors.
+     * @param topR Top color red component (0-255)
+     * @param topG Top color green component (0-255)
+     * @param topB Top color blue component (0-255)
+     * @param bottomR Bottom color red component (0-255)
+     * @param bottomG Bottom color green component (0-255)
+     * @param bottomB Bottom color blue component (0-255)
+     */
+    void setGradientColors(uint8_t topR, uint8_t topG, uint8_t topB, uint8_t bottomR, uint8_t bottomG, uint8_t bottomB);
+
+    /**
+     * @brief Gets the top gradient color.
+     * @param r Reference to red component (output)
+     * @param g Reference to green component (output)
+     * @param b Reference to blue component (output)
+     */
+    void getGradientTopColor(uint8_t& r, uint8_t& g, uint8_t& b) const;
+
+    /**
+     * @brief Gets the bottom gradient color.
+     * @param r Reference to red component (output)
+     * @param g Reference to green component (output)
+     * @param b Reference to blue component (output)
+     */
+    void getGradientBottomColor(uint8_t& r, uint8_t& g, uint8_t& b) const;
 
     // Drawing functions for various bitmaps
     /**

@@ -40,9 +40,11 @@ void Hub75DMA::drawMouth(const uint8_t* bitmap) {
 void Hub75DMA::drawColorTest() {
     uint8_t r, g, b;
     for (int i = 0; i < 64; i++) {
-        getColorMap(255, i, r, g, b);
+        getColorMap(255, i, screenWidth - 1, r, g, b);
         matrix->drawPixelRGB888(screenWidth - 1, i, r, g, b);
+        getColorMap(255, i, screenWidth - 2, r, g, b);
         matrix->drawPixelRGB888(screenWidth - 2, i, r, g, b);
+        getColorMap(255, i, screenWidth - 3, r, g, b);
         matrix->drawPixelRGB888(screenWidth - 3, i, r, g, b);
     }
 }
@@ -57,9 +59,12 @@ void Hub75DMA::drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight
             const uint8_t pixel = pgm_read_byte(rowPtr + j);
             if (pixel > minimumPixelBrightness) {
                 uint8_t r, g, b;
-                getColorMap(pixel, offsetYPlusI, r, g, b);
-                matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
-                matrix->drawPixelRGB888(mirrorBaseX + (panelWidth - 1 - j), offsetYPlusI, r, g, b);
+                const int colLeft = offsetX + j;
+                const int colRight = mirrorBaseX + (panelWidth - 1 - j);
+                getColorMap(pixel, offsetYPlusI, colLeft, r, g, b);
+                matrix->drawPixelRGB888(colLeft, offsetYPlusI, r, g, b);
+                getColorMap(pixel, offsetYPlusI, colRight, r, g, b);
+                matrix->drawPixelRGB888(colRight, offsetYPlusI, r, g, b);
             }
         }
     }
@@ -78,13 +83,15 @@ void Hub75DMA::drawBitmap(const uint8_t* bitmapL, const uint8_t* bitmapR, int im
 
             if (pixelL > minimumPixelBrightness) {
                 uint8_t r, g, b;
-                getColorMap(pixelL, offsetYPlusI, r, g, b);
-                matrix->drawPixelRGB888(offsetX + j, offsetYPlusI, r, g, b);
+                const int colLeft = offsetX + j;
+                getColorMap(pixelL, offsetYPlusI, colLeft, r, g, b);
+                matrix->drawPixelRGB888(colLeft, offsetYPlusI, r, g, b);
             }
             if (pixelR > minimumPixelBrightness) {
                 uint8_t r, g, b;
-                getColorMap(pixelR, offsetYPlusI, r, g, b);
-                matrix->drawPixelRGB888(mirrorBaseX + (panelWidth - 1 - j), offsetYPlusI, r, g, b);
+                const int colRight = mirrorBaseX + (panelWidth - 1 - j);
+                getColorMap(pixelR, offsetYPlusI, colRight, r, g, b);
+                matrix->drawPixelRGB888(colRight, offsetYPlusI, r, g, b);
             }
         }
     }
@@ -113,14 +120,18 @@ void Hub75DMA::drawBitmapRLE(const uint8_t* rleBitmap, int imageWidth, int image
         const uint8_t value = pgm_read_byte(rleBitmap + i++);
 
         if (value > minimumPixelBrightness) {
-            uint8_t r, g, b;
-            getColorMap(value, y + offsetY, r, g, b);
-
             for (uint8_t c = 0; c < count; c++) {
+                uint8_t r, g, b;
+                const int colLeft = offsetX + x;
+                const int colRight = mirrorBaseX + (panelWidth - 1 - x);
+                const int row = offsetY + y;
+
                 // Draw left panel
-                matrix->drawPixelRGB888(offsetX + x, offsetY + y, r, g, b);
+                getColorMap(value, row, colLeft, r, g, b);
+                matrix->drawPixelRGB888(colLeft, row, r, g, b);
                 // Draw right panel (mirrored, consistent with drawBitmap)
-                matrix->drawPixelRGB888(mirrorBaseX + (panelWidth - 1 - x), offsetY + y, r, g, b);
+                getColorMap(value, row, colRight, r, g, b);
+                matrix->drawPixelRGB888(colRight, row, r, g, b);
 
                 x++;
                 if (x >= imageWidth) {
@@ -173,11 +184,12 @@ void Hub75DMA::drawBitmapRLE(const uint8_t* rleBitmapL, const uint8_t* rleBitmap
         const uint8_t valueL = pgm_read_byte(rleBitmapL + iL++);
 
         if (valueL > minimumPixelBrightness) {
-            uint8_t r, g, b;
-            getColorMap(valueL, yL + offsetY, r, g, b);
-
             for (uint8_t c = 0; c < countL; c++) {
-                matrix->drawPixelRGB888(offsetX + xL, offsetY + yL, r, g, b);
+                uint8_t r, g, b;
+                const int colLeft = offsetX + xL;
+                const int row = offsetY + yL;
+                getColorMap(valueL, row, colLeft, r, g, b);
+                matrix->drawPixelRGB888(colLeft, row, r, g, b);
 
                 xL++;
                 if (xL >= imageWidth) {
@@ -204,11 +216,12 @@ void Hub75DMA::drawBitmapRLE(const uint8_t* rleBitmapL, const uint8_t* rleBitmap
         const uint8_t valueR = pgm_read_byte(rleBitmapR + iR++);
 
         if (valueR > minimumPixelBrightness) {
-            uint8_t r, g, b;
-            getColorMap(valueR, yR + offsetY, r, g, b);
-
             for (uint8_t c = 0; c < countR; c++) {
-                matrix->drawPixelRGB888(mirrorBaseX + (panelWidth - 1 - xR), offsetY + yR, r, g, b);
+                uint8_t r, g, b;
+                const int colRight = mirrorBaseX + (panelWidth - 1 - xR);
+                const int row = offsetY + yR;
+                getColorMap(valueR, row, colRight, r, g, b);
+                matrix->drawPixelRGB888(colRight, row, r, g, b);
 
                 xR++;
                 if (xR >= imageWidth) {

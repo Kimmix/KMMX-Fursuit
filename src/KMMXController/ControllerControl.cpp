@@ -41,6 +41,26 @@ uint32_t KMMXController::getCheekFadeColor() {
     return cheekPanel.getFadeColor();
 }
 
+void KMMXController::setDisplayColorMode(uint8_t mode) {
+    display.setColorMode(mode);
+}
+
+uint8_t KMMXController::getDisplayColorMode() {
+    return display.getColorMode();
+}
+
+void KMMXController::setDisplayGradientColors(uint8_t topR, uint8_t topG, uint8_t topB, uint8_t bottomR, uint8_t bottomG, uint8_t bottomB) {
+    display.setGradientColors(topR, topG, topB, bottomR, bottomG, bottomB);
+}
+
+void KMMXController::getDisplayGradientTopColor(uint8_t& r, uint8_t& g, uint8_t& b) {
+    display.getGradientTopColor(r, g, b);
+}
+
+void KMMXController::getDisplayGradientBottomColor(uint8_t& r, uint8_t& g, uint8_t& b) {
+    display.getGradientBottomColor(r, g, b);
+}
+
 // State control for BLE
 void KMMXController::setEye(int i) {
     switch (i) {

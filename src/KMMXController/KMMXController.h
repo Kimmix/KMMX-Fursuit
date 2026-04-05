@@ -36,6 +36,11 @@ class KMMXController {
     void setCheekFadeColor(uint8_t r, uint8_t g, uint8_t b);
     uint32_t getCheekBackgroundColor();
     uint32_t getCheekFadeColor();
+    void setDisplayColorMode(uint8_t mode);
+    uint8_t getDisplayColorMode();
+    void setDisplayGradientColors(uint8_t topR, uint8_t topG, uint8_t topB, uint8_t bottomR, uint8_t bottomG, uint8_t bottomB);
+    void getDisplayGradientTopColor(uint8_t& r, uint8_t& g, uint8_t& b);
+    void getDisplayGradientBottomColor(uint8_t& r, uint8_t& g, uint8_t& b);
     void reboot();
 
    private:

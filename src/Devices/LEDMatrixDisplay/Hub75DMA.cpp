@@ -69,16 +69,31 @@ void Hub75DMA::setBrightnessValue(uint8_t value) {
     matrix->setBrightness8(panelBrightness);
 }
 
-void Hub75DMA::getColorMap(const uint8_t lightness, const int row, uint8_t& r, uint8_t& g, uint8_t& b) {
-    const int index = row * 3;
-    if (row >= 0 && index < sizeof(accColor)) {
-        uint16_t factor = lightness << 8;
-        r = (factor * accColor[index]) >> 16;
-        g = (factor * accColor[index + 1]) >> 16;
-        b = (factor * accColor[index + 2]) >> 16;
-    } else {
-        r = g = b = 0;
+void Hub75DMA::setColorMode(uint8_t mode) {
+    // Valid modes: 0 = gradient (customizable), 1 = spiral, 2 = plasma, 3 = radial pulse
+    if (mode <= 3) {
+        colorMode = mode;
     }
+}
+
+uint8_t Hub75DMA::getColorMode() const {
+    return colorMode;
+}
+
+void Hub75DMA::setGradientColors(uint8_t topR, uint8_t topG, uint8_t topB, uint8_t bottomR, uint8_t bottomG, uint8_t bottomB) {
+    colorEffects.setGradientColors(topR, topG, topB, bottomR, bottomG, bottomB);
+}
+
+void Hub75DMA::getGradientTopColor(uint8_t& r, uint8_t& g, uint8_t& b) const {
+    colorEffects.getGradientTopColor(r, g, b);
+}
+
+void Hub75DMA::getGradientBottomColor(uint8_t& r, uint8_t& g, uint8_t& b) const {
+    colorEffects.getGradientBottomColor(r, g, b);
+}
+
+void Hub75DMA::getColorMap(const uint8_t lightness, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {
+    colorEffects.getColor(colorMode, lightness, row, col, r, g, b);
 }
 
 void Hub75DMA::colorSpiral(const uint8_t brightness, const int startX, const int startY, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {

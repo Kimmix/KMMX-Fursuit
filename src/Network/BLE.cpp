@@ -22,6 +22,9 @@ BLEManager::BLEManager(KMMXController& ctrl) : controller(ctrl),
                                            cheekBrightnessCharacteristic(BLE_CHEEK_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            cheekBgColorCharacteristic(BLE_CHEEK_BG_COLOR_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
                                            cheekFadeColorCharacteristic(BLE_CHEEK_FADE_COLOR_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
+                                           displayColorModeCharacteristic(BLE_DISPLAY_COLOR_MODE_CHARACTERISTIC_UUID, BLERead | BLEWrite),
+                                           displayGradientTopCharacteristic(BLE_DISPLAY_GRADIENT_TOP_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
+                                           displayGradientBottomCharacteristic(BLE_DISPLAY_GRADIENT_BOTTOM_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
                                            rebootCharacteristic(BLE_REBOOT_CHARACTERISTIC_UUID, BLEWrite) {
 }
 
@@ -45,6 +48,9 @@ void BLEManager::setup() {
     protoService.addCharacteristic(cheekBrightnessCharacteristic);
     protoService.addCharacteristic(cheekBgColorCharacteristic);
     protoService.addCharacteristic(cheekFadeColorCharacteristic);
+    protoService.addCharacteristic(displayColorModeCharacteristic);
+    protoService.addCharacteristic(displayGradientTopCharacteristic);
+    protoService.addCharacteristic(displayGradientBottomCharacteristic);
     protoService.addCharacteristic(rebootCharacteristic);
 
     // Set default values for each characteristic
@@ -64,6 +70,17 @@ void BLEManager::setup() {
     uint8_t fadeColorData[3] = {(uint8_t)(fadeColor >> 16), (uint8_t)(fadeColor >> 8), (uint8_t)fadeColor};
     cheekFadeColorCharacteristic.setValue(fadeColorData, 3);
 
+    // Set display color mode and gradient values
+    displayColorModeCharacteristic.setValue(controller.getDisplayColorMode());
+
+    uint8_t topR, topG, topB, bottomR, bottomG, bottomB;
+    controller.getDisplayGradientTopColor(topR, topG, topB);
+    controller.getDisplayGradientBottomColor(bottomR, bottomG, bottomB);
+    uint8_t topColorData[3] = {topR, topG, topB};
+    uint8_t bottomColorData[3] = {bottomR, bottomG, bottomB};
+    displayGradientTopCharacteristic.setValue(topColorData, 3);
+    displayGradientBottomCharacteristic.setValue(bottomColorData, 3);
+
     BLE.addService(protoService);
     BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
     BLE.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
@@ -77,6 +94,9 @@ void BLEManager::setup() {
     cheekBrightnessCharacteristic.setEventHandler(BLEWritten, cheekBrightnessWritten);
     cheekBgColorCharacteristic.setEventHandler(BLEWritten, cheekBgColorWritten);
     cheekFadeColorCharacteristic.setEventHandler(BLEWritten, cheekFadeColorWritten);
+    displayColorModeCharacteristic.setEventHandler(BLEWritten, displayColorModeWritten);
+    displayGradientTopCharacteristic.setEventHandler(BLEWritten, displayGradientTopWritten);
+    displayGradientBottomCharacteristic.setEventHandler(BLEWritten, displayGradientBottomWritten);
     rebootCharacteristic.setEventHandler(BLEWritten, rebootWritten);
 
     // Start advertising the BLE pService
@@ -103,6 +123,8 @@ void BLEManager::blePeripheralDisconnectHandler(BLEDevice central) {
 void BLEManager::displayBrightnessWritten(BLEDevice central, BLECharacteristic characteristic) {
     if (instance) {
         const uint8_t* data = characteristic.value();
+        Serial.print(F("[BLE] Display Brightness: "));
+        Serial.println(*data);
         instance->controller.setDisplayBrightness(static_cast<int>(*data));
     }
 }
@@ -110,6 +132,8 @@ void BLEManager::displayBrightnessWritten(BLEDevice central, BLECharacteristic c
 void BLEManager::eyeStateWritten(BLEDevice central, BLECharacteristic characteristic) {
     if (instance) {
         const uint8_t* data = characteristic.value();
+        Serial.print(F("[BLE] Eye State: "));
+        Serial.println(*data);
         instance->controller.setEye(static_cast<int>(*data));
     }
 }
@@ -117,6 +141,8 @@ void BLEManager::eyeStateWritten(BLEDevice central, BLECharacteristic characteri
 void BLEManager::mouthStateWritten(BLEDevice central, BLECharacteristic characteristic) {
     if (instance) {
         const uint8_t* data = characteristic.value();
+        Serial.print(F("[BLE] Mouth State: "));
+        Serial.println(*data);
         instance->controller.setMouth(static_cast<int>(*data));
     }
 }
@@ -124,6 +150,8 @@ void BLEManager::mouthStateWritten(BLEDevice central, BLECharacteristic characte
 void BLEManager::visemeStateWritten(BLEDevice central, BLECharacteristic characteristic) {
     if (instance) {
         const uint8_t* data = characteristic.value();
+        Serial.print(F("[BLE] Viseme: "));
+        Serial.println(*data);
         instance->controller.setViseme(static_cast<int>(*data));
     }
 }
@@ -131,6 +159,8 @@ void BLEManager::visemeStateWritten(BLEDevice central, BLECharacteristic charact
 void BLEManager::hornBrightnessWritten(BLEDevice central, BLECharacteristic characteristic) {
     if (instance) {
         const uint8_t* data = characteristic.value();
+        Serial.print(F("[BLE] Horn Brightness: "));
+        Serial.println(*data);
         instance->controller.setHornBrightness(static_cast<int>(*data));
     }
 }
@@ -138,6 +168,8 @@ void BLEManager::hornBrightnessWritten(BLEDevice central, BLECharacteristic char
 void BLEManager::cheekBrightnessWritten(BLEDevice central, BLECharacteristic characteristic) {
     if (instance) {
         const uint8_t* data = characteristic.value();
+        Serial.print(F("[BLE] Cheek Brightness: "));
+        Serial.println(*data);
         instance->controller.setCheekBrightness(static_cast<int>(*data));
     }
 }
@@ -146,6 +178,12 @@ void BLEManager::cheekBgColorWritten(BLEDevice central, BLECharacteristic charac
     if (instance) {
         const uint8_t* data = characteristic.value();
         if (characteristic.valueLength() >= 3) {
+            Serial.print(F("[BLE] Cheek BG Color: R="));
+            Serial.print(data[0]);
+            Serial.print(F(" G="));
+            Serial.print(data[1]);
+            Serial.print(F(" B="));
+            Serial.println(data[2]);
             instance->controller.setCheekBackgroundColor(data[0], data[1], data[2]);
         }
     }
@@ -155,7 +193,64 @@ void BLEManager::cheekFadeColorWritten(BLEDevice central, BLECharacteristic char
     if (instance) {
         const uint8_t* data = characteristic.value();
         if (characteristic.valueLength() >= 3) {
+            Serial.print(F("[BLE] Cheek Fade Color: R="));
+            Serial.print(data[0]);
+            Serial.print(F(" G="));
+            Serial.print(data[1]);
+            Serial.print(F(" B="));
+            Serial.println(data[2]);
             instance->controller.setCheekFadeColor(data[0], data[1], data[2]);
+        }
+    }
+}
+
+void BLEManager::displayColorModeWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        Serial.print(F("[BLE] Display Color Mode: "));
+        Serial.println(*data);
+        instance->controller.setDisplayColorMode(static_cast<uint8_t>(*data));
+    }
+}
+
+void BLEManager::displayGradientTopWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        if (characteristic.valueLength() >= 3) {
+            uint8_t r, g, b, bottomR, bottomG, bottomB;
+            r = data[0];
+            g = data[1];
+            b = data[2];
+            Serial.print(F("[BLE] Display Gradient Top: R="));
+            Serial.print(r);
+            Serial.print(F(" G="));
+            Serial.print(g);
+            Serial.print(F(" B="));
+            Serial.println(b);
+            // Get current bottom color to preserve it
+            instance->controller.getDisplayGradientBottomColor(bottomR, bottomG, bottomB);
+            instance->controller.setDisplayGradientColors(r, g, b, bottomR, bottomG, bottomB);
+        }
+    }
+}
+
+void BLEManager::displayGradientBottomWritten(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        if (characteristic.valueLength() >= 3) {
+            uint8_t r, g, b, topR, topG, topB;
+            r = data[0];
+            g = data[1];
+            b = data[2];
+            Serial.print(F("[BLE] Display Gradient Bottom: R="));
+            Serial.print(r);
+            Serial.print(F(" G="));
+            Serial.print(g);
+            Serial.print(F(" B="));
+            Serial.println(b);
+            // Get current top color to preserve it
+            instance->controller.getDisplayGradientTopColor(topR, topG, topB);
+            instance->controller.setDisplayGradientColors(topR, topG, topB, r, g, b);
         }
     }
 }
