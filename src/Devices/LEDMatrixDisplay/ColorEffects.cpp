@@ -87,7 +87,7 @@ void ColorEffects::modeSpiralVortex(uint8_t lightness, int row, int col, uint8_t
     // Create animated spiral effect
     const float time = millis() * 0.001f;  // Convert to seconds
     const float spiralSpeed = 2.0f;        // Rotation speed
-    const float spiralTightness = 0.3f;    // How tight the spiral is
+    const float spiralTightness = 0.15f;   // How tight the spiral is (lower = wider)
 
     // Combine angle and distance for spiral pattern
     float spiralValue = angle + distance * spiralTightness - time * spiralSpeed;
@@ -96,7 +96,7 @@ void ColorEffects::modeSpiralVortex(uint8_t lightness, int row, int col, uint8_t
     float hue = fmodf(spiralValue / (2.0f * PI) + 1.0f, 1.0f);
 
     // Add radial pulse effect
-    float pulse = sinf(distance * 0.2f - time * 3.0f) * 0.5f + 0.5f;
+    float pulse = sinf(distance * 0.1f - time * 3.0f) * 0.5f + 0.5f;
 
     // Convert HSV to RGB (hue cycling rainbow effect)
     // Hue: 0-1, Saturation: 1.0, Value: based on pulse and lightness
