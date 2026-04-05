@@ -82,6 +82,14 @@ uint8_t ColorEffects::getEffectSpeed() const {
     return dualSpiralSpeed;
 }
 
+void ColorEffects::setEffectDirectionInverted(uint8_t inverted) {
+    effectDirectionInverted = (inverted != 0);
+}
+
+uint8_t ColorEffects::getEffectDirectionInverted() const {
+    return effectDirectionInverted ? 1 : 0;
+}
+
 void ColorEffects::setDualCircleColor(uint8_t circleR, uint8_t circleG, uint8_t circleB) {
     dualCircleR = circleR;
     dualCircleG = circleG;
@@ -226,7 +234,7 @@ void ColorEffects::modeRadialPulse(uint8_t lightness, int row, int col, uint8_t&
 }
 
 // ============================================================================
-// Mode 4: Dual Spiral Effect (Customizable color, thickness, and speed)
+// Mode 4: Dual Spiral Effect (Customizable colors, thickness, and speed)
 // ============================================================================
 void ColorEffects::modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
     // Determine which eye center to use based on horizontal position (split at single panel width)
@@ -248,36 +256,39 @@ void ColorEffects::modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& 
     // 0 = very slow (0.2), 128 = medium (1.5), 255 = very fast (3.0)
     const float rotationSpeed = 0.2f + (dualSpiralSpeed / 255.0f) * 2.8f;
 
-    // Thickness control: map 0-255 to distance multiplier with wider range (0.05 to 2.0)
-    // This gives more dramatic variation from very tight to very loose spirals
-    // 0 = super tight spiral (0.05), 128 = medium (1.0), 255 = very loose (2.0)
-    const float thicknessFactor = 0.05f + (dualSpiralThickness / 255.0f) * 1.95f;
+    // Direction control: invert rotation direction if enabled
+    const float directionMultiplier = effectDirectionInverted ? -1.0f : 1.0f;
+
+    // Thickness control: map 0-255 to distance multiplier (INVERTED for intuitive control)
+    // Higher values = thicker/wider bands (fewer bands in same space)
+    // 0 = very thin/tight bands (2.0), 128 = medium (1.0), 255 = very thick/wide bands (0.05)
+    const float thicknessFactor = 2.0f - (dualSpiralThickness / 255.0f) * 1.95f;
 
     // Combine angle with time for rotation, add distance for spiral effect
-    float spiralValue = angle * spiralArms + distance * thicknessFactor - time * rotationSpeed * 2.0f * PI;
+    float spiralValue = angle * spiralArms + distance * thicknessFactor - time * rotationSpeed * directionMultiplier * 2.0f * PI;
 
     // Create bands using sine wave - gives the alternating pattern
     float bands = sinf(spiralValue);
 
-    // Threshold to create sharp edges between color and black
+    // Threshold to create sharp edges between colors
     const float threshold = 0.0f;
+    const float intensity = (lightness / 255.0f);
 
     if (bands > threshold) {
-        // Use customizable spiral color
-        const float intensity = (lightness / 255.0f);
+        // Use Color 1 (spiral primary color)
         r = (uint8_t)(dualSpiralR * intensity);
         g = (uint8_t)(dualSpiralG * intensity);
         b = (uint8_t)(dualSpiralB * intensity);
     } else {
-        // Black
-        r = 0;
-        g = 0;
-        b = 0;
+        // Use Color 2 (gradient bottom / secondary color)
+        r = (uint8_t)(gradientBottomR * intensity);
+        g = (uint8_t)(gradientBottomG * intensity);
+        b = (uint8_t)(gradientBottomB * intensity);
     }
 }
 
 // ============================================================================
-// Mode 5: Dual Circle Effect (Customizable color, thickness, and speed)
+// Mode 5: Dual Circle Effect (Customizable colors, thickness, and speed)
 // ============================================================================
 void ColorEffects::modeDualCircle(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
     // Determine which eye center to use based on horizontal position (split at single panel width)
@@ -298,32 +309,35 @@ void ColorEffects::modeDualCircle(uint8_t lightness, int row, int col, uint8_t& 
     // 0 = very slow (2.0), 128 = medium (10.0), 255 = very fast (20.0)
     const float rotationSpeed = 2.0f + (dualSpiralSpeed / 255.0f) * 18.0f;
 
-    // Thickness control: map 0-255 to distance multiplier with wider range
-    // This controls the spacing between circles
-    // 0 = very tight circles (0.5), 128 = medium (2.0), 255 = very loose (3.5)
-    const float thicknessFactor = 0.5f + (dualSpiralThickness / 255.0f) * 3.0f;
+    // Direction control: invert rotation direction if enabled
+    const float directionMultiplier = effectDirectionInverted ? -1.0f : 1.0f;
+
+    // Thickness control: map 0-255 to distance multiplier (INVERTED for intuitive control)
+    // Higher values = thicker/wider bands (fewer bands in same space)
+    // 0 = very thin/tight circles (3.5), 128 = medium (2.0), 255 = very thick/wide circles (0.5)
+    const float thicknessFactor = 3.5f - (dualSpiralThickness / 255.0f) * 3.0f;
 
     // Create concentric circles using distance and time for rotation effect
     // We use time to create a rotating/expanding effect
-    float circleValue = distance * thicknessFactor - time * rotationSpeed;
+    float circleValue = distance * thicknessFactor - time * rotationSpeed * directionMultiplier;
 
     // Create bands using sine wave - gives the alternating pattern
     float bands = sinf(circleValue);
 
-    // Threshold to create sharp edges between color and black
+    // Threshold to create sharp edges between colors
     const float threshold = 0.0f;
+    const float intensity = (lightness / 255.0f);
 
     if (bands > threshold) {
-        // Use customizable circle color
-        const float intensity = (lightness / 255.0f);
+        // Use Color 1 (circle primary color)
         r = (uint8_t)(dualCircleR * intensity);
         g = (uint8_t)(dualCircleG * intensity);
         b = (uint8_t)(dualCircleB * intensity);
     } else {
-        // Black
-        r = 0;
-        g = 0;
-        b = 0;
+        // Use Color 2 (gradient bottom / secondary color)
+        r = (uint8_t)(gradientBottomR * intensity);
+        g = (uint8_t)(gradientBottomG * intensity);
+        b = (uint8_t)(gradientBottomB * intensity);
     }
 }
 

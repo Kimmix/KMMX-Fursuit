@@ -49,6 +49,8 @@ class KMMXController {
     uint8_t getDisplayEffectThickness();
     void setDisplayEffectSpeed(uint8_t speed);
     uint8_t getDisplayEffectSpeed();
+    void setDisplayEffectDirectionInverted(uint8_t inverted);
+    uint8_t getDisplayEffectDirectionInverted();
     void reboot();
 
    private:

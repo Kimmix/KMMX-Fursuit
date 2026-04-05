@@ -96,6 +96,18 @@ class ColorEffects {
     uint8_t getEffectSpeed() const;
 
     /**
+     * @brief Set effect direction for Mode 4 & 5 (invert rotation)
+     * @param inverted Direction inverted (0 = normal, 1 = inverted)
+     */
+    void setEffectDirectionInverted(uint8_t inverted);
+
+    /**
+     * @brief Get the effect direction inversion state
+     * @return Direction inverted (0 = normal, 1 = inverted)
+     */
+    uint8_t getEffectDirectionInverted() const;
+
+    /**
      * @brief Set dual circle colors for Mode 5
      * @param circleR Circle color red component (0-255)
      * @param circleG Circle color green component (0-255)
@@ -131,12 +143,13 @@ class ColorEffects {
     uint8_t dualSpiralB = 255;
     uint8_t dualSpiralThickness = 128;  // Default thickness (0-255) - shared with dual circle
     uint8_t dualSpiralSpeed = 128;      // Default rotation speed (0-255) - shared with dual circle
+    bool effectDirectionInverted = false; // Default direction (false = normal, true = inverted) - shared
 
     // Dual circle colors for Mode 5 (default magenta, customizable)
     uint8_t dualCircleR = 255;
     uint8_t dualCircleG = 0;
     uint8_t dualCircleB = 255;
-    // Note: thickness and speed are shared with dual spiral (above)
+    // Note: thickness, speed, and direction are shared with dual spiral (above)
 
     /**
      * @brief Mode 0: Customizable gradient

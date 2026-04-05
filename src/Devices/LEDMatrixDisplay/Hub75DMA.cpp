@@ -124,6 +124,14 @@ uint8_t Hub75DMA::getEffectSpeed() const {
     return colorEffects.getEffectSpeed();
 }
 
+void Hub75DMA::setEffectDirectionInverted(uint8_t inverted) {
+    colorEffects.setEffectDirectionInverted(inverted);
+}
+
+uint8_t Hub75DMA::getEffectDirectionInverted() const {
+    return colorEffects.getEffectDirectionInverted();
+}
+
 void Hub75DMA::getColorMap(const uint8_t lightness, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {
     colorEffects.getColor(colorMode, lightness, row, col, r, g, b);
 }

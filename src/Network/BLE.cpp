@@ -27,6 +27,7 @@ BLEManager::BLEManager(KMMXController& ctrl) : controller(ctrl),
                                            displayEffectColor2Characteristic(BLE_DISPLAY_EFFECT_COLOR2_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
                                            displayEffectOption1Characteristic(BLE_DISPLAY_EFFECT_OPTION1_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            displayEffectOption2Characteristic(BLE_DISPLAY_EFFECT_OPTION2_CHARACTERISTIC_UUID, BLERead | BLEWrite),
+                                           displayEffectOption3Characteristic(BLE_DISPLAY_EFFECT_OPTION3_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            rebootCharacteristic(BLE_REBOOT_CHARACTERISTIC_UUID, BLEWrite) {
 }
 
@@ -55,6 +56,7 @@ void BLEManager::setup() {
     protoService.addCharacteristic(displayEffectColor2Characteristic);
     protoService.addCharacteristic(displayEffectOption1Characteristic);
     protoService.addCharacteristic(displayEffectOption2Characteristic);
+    protoService.addCharacteristic(displayEffectOption3Characteristic);
     protoService.addCharacteristic(rebootCharacteristic);
 
     // Set default values for each characteristic
@@ -85,9 +87,10 @@ void BLEManager::setup() {
     displayEffectColor1Characteristic.setValue(color1Data, 3);
     displayEffectColor2Characteristic.setValue(color2Data, 3);
 
-    // Set effect option values (Option1 = thickness, Option2 = speed for modes 4 & 5)
+    // Set effect option values (Option1 = thickness, Option2 = speed, Option3 = direction for modes 4 & 5)
     displayEffectOption1Characteristic.setValue(controller.getDisplayEffectThickness());
     displayEffectOption2Characteristic.setValue(controller.getDisplayEffectSpeed());
+    displayEffectOption3Characteristic.setValue(controller.getDisplayEffectDirectionInverted());
 
     BLE.addService(protoService);
     BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
@@ -107,6 +110,7 @@ void BLEManager::setup() {
     displayEffectColor2Characteristic.setEventHandler(BLEWritten, displayEffectColor2Written);
     displayEffectOption1Characteristic.setEventHandler(BLEWritten, displayEffectOption1Written);
     displayEffectOption2Characteristic.setEventHandler(BLEWritten, displayEffectOption2Written);
+    displayEffectOption3Characteristic.setEventHandler(BLEWritten, displayEffectOption3Written);
     rebootCharacteristic.setEventHandler(BLEWritten, rebootWritten);
 
     // Start advertising the BLE pService
@@ -288,6 +292,15 @@ void BLEManager::displayEffectOption2Written(BLEDevice central, BLECharacteristi
         Serial.print(F("[BLE] Display Effect Option 2 (Speed): "));
         Serial.println(*data);
         instance->controller.setDisplayEffectSpeed(*data);
+    }
+}
+
+void BLEManager::displayEffectOption3Written(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        Serial.print(F("[BLE] Display Effect Option 3 (Direction Inverted): "));
+        Serial.println(*data);
+        instance->controller.setDisplayEffectDirectionInverted(*data);
     }
 }
 

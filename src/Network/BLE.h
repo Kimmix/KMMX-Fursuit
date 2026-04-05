@@ -25,6 +25,7 @@ class BLEManager {
     BLECharacteristic displayEffectColor2Characteristic;
     BLEByteCharacteristic displayEffectOption1Characteristic;
     BLEByteCharacteristic displayEffectOption2Characteristic;
+    BLEByteCharacteristic displayEffectOption3Characteristic;
     BLEByteCharacteristic rebootCharacteristic;
 
     static BLEManager* instance;
@@ -44,5 +45,6 @@ class BLEManager {
     static void displayEffectColor2Written(BLEDevice central, BLECharacteristic characteristic);
     static void displayEffectOption1Written(BLEDevice central, BLECharacteristic characteristic);
     static void displayEffectOption2Written(BLEDevice central, BLECharacteristic characteristic);
+    static void displayEffectOption3Written(BLEDevice central, BLECharacteristic characteristic);
     static void rebootWritten(BLEDevice central, BLECharacteristic characteristic);
 };

@@ -93,6 +93,14 @@ uint8_t KMMXController::getDisplayEffectSpeed() {
     return display.getEffectSpeed();
 }
 
+void KMMXController::setDisplayEffectDirectionInverted(uint8_t inverted) {
+    display.setEffectDirectionInverted(inverted);
+}
+
+uint8_t KMMXController::getDisplayEffectDirectionInverted() {
+    return display.getEffectDirectionInverted();
+}
+
 // State control for BLE
 void KMMXController::setEye(int i) {
     switch (i) {

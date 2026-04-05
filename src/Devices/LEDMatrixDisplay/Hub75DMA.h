@@ -264,6 +264,18 @@ class Hub75DMA {
      */
     uint8_t getEffectSpeed() const;
 
+    /**
+     * @brief Sets the effect direction inversion for Mode 4 & 5.
+     * @param inverted Direction inverted (0 = normal, 1 = inverted)
+     */
+    void setEffectDirectionInverted(uint8_t inverted);
+
+    /**
+     * @brief Gets the effect direction inversion state.
+     * @return Direction inverted (0 = normal, 1 = inverted)
+     */
+    uint8_t getEffectDirectionInverted() const;
+
     // Drawing functions for various bitmaps
     /**
      * @brief Draws a bitmap fullscreen.
