@@ -21,9 +21,10 @@ class BLEManager {
     BLECharacteristic cheekBgColorCharacteristic;
     BLECharacteristic cheekFadeColorCharacteristic;
     BLEByteCharacteristic displayColorModeCharacteristic;
-    BLECharacteristic displayGradientTopCharacteristic;
-    BLECharacteristic displayGradientBottomCharacteristic;
-    BLEByteCharacteristic displayDualSpiralThicknessCharacteristic;
+    BLECharacteristic displayEffectColor1Characteristic;
+    BLECharacteristic displayEffectColor2Characteristic;
+    BLEByteCharacteristic displayEffectOption1Characteristic;
+    BLEByteCharacteristic displayEffectOption2Characteristic;
     BLEByteCharacteristic rebootCharacteristic;
 
     static BLEManager* instance;
@@ -39,8 +40,9 @@ class BLEManager {
     static void cheekBgColorWritten(BLEDevice central, BLECharacteristic characteristic);
     static void cheekFadeColorWritten(BLEDevice central, BLECharacteristic characteristic);
     static void displayColorModeWritten(BLEDevice central, BLECharacteristic characteristic);
-    static void displayGradientTopWritten(BLEDevice central, BLECharacteristic characteristic);
-    static void displayGradientBottomWritten(BLEDevice central, BLECharacteristic characteristic);
-    static void displayDualSpiralThicknessWritten(BLEDevice central, BLECharacteristic characteristic);
+    static void displayEffectColor1Written(BLEDevice central, BLECharacteristic characteristic);
+    static void displayEffectColor2Written(BLEDevice central, BLECharacteristic characteristic);
+    static void displayEffectOption1Written(BLEDevice central, BLECharacteristic characteristic);
+    static void displayEffectOption2Written(BLEDevice central, BLECharacteristic characteristic);
     static void rebootWritten(BLEDevice central, BLECharacteristic characteristic);
 };

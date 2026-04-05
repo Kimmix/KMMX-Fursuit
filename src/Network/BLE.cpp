@@ -23,9 +23,10 @@ BLEManager::BLEManager(KMMXController& ctrl) : controller(ctrl),
                                            cheekBgColorCharacteristic(BLE_CHEEK_BG_COLOR_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
                                            cheekFadeColorCharacteristic(BLE_CHEEK_FADE_COLOR_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
                                            displayColorModeCharacteristic(BLE_DISPLAY_COLOR_MODE_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           displayGradientTopCharacteristic(BLE_DISPLAY_GRADIENT_TOP_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
-                                           displayGradientBottomCharacteristic(BLE_DISPLAY_GRADIENT_BOTTOM_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
-                                           displayDualSpiralThicknessCharacteristic(BLE_DISPLAY_DUAL_SPIRAL_THICKNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
+                                           displayEffectColor1Characteristic(BLE_DISPLAY_EFFECT_COLOR1_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
+                                           displayEffectColor2Characteristic(BLE_DISPLAY_EFFECT_COLOR2_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
+                                           displayEffectOption1Characteristic(BLE_DISPLAY_EFFECT_OPTION1_CHARACTERISTIC_UUID, BLERead | BLEWrite),
+                                           displayEffectOption2Characteristic(BLE_DISPLAY_EFFECT_OPTION2_CHARACTERISTIC_UUID, BLERead | BLEWrite),
                                            rebootCharacteristic(BLE_REBOOT_CHARACTERISTIC_UUID, BLEWrite) {
 }
 
@@ -50,9 +51,10 @@ void BLEManager::setup() {
     protoService.addCharacteristic(cheekBgColorCharacteristic);
     protoService.addCharacteristic(cheekFadeColorCharacteristic);
     protoService.addCharacteristic(displayColorModeCharacteristic);
-    protoService.addCharacteristic(displayGradientTopCharacteristic);
-    protoService.addCharacteristic(displayGradientBottomCharacteristic);
-    protoService.addCharacteristic(displayDualSpiralThicknessCharacteristic);
+    protoService.addCharacteristic(displayEffectColor1Characteristic);
+    protoService.addCharacteristic(displayEffectColor2Characteristic);
+    protoService.addCharacteristic(displayEffectOption1Characteristic);
+    protoService.addCharacteristic(displayEffectOption2Characteristic);
     protoService.addCharacteristic(rebootCharacteristic);
 
     // Set default values for each characteristic
@@ -72,19 +74,20 @@ void BLEManager::setup() {
     uint8_t fadeColorData[3] = {(uint8_t)(fadeColor >> 16), (uint8_t)(fadeColor >> 8), (uint8_t)fadeColor};
     cheekFadeColorCharacteristic.setValue(fadeColorData, 3);
 
-    // Set display color mode and gradient values
+    // Set display color mode and effect color values
     displayColorModeCharacteristic.setValue(controller.getDisplayColorMode());
 
-    uint8_t topR, topG, topB, bottomR, bottomG, bottomB;
-    controller.getDisplayGradientTopColor(topR, topG, topB);
-    controller.getDisplayGradientBottomColor(bottomR, bottomG, bottomB);
-    uint8_t topColorData[3] = {topR, topG, topB};
-    uint8_t bottomColorData[3] = {bottomR, bottomG, bottomB};
-    displayGradientTopCharacteristic.setValue(topColorData, 3);
-    displayGradientBottomCharacteristic.setValue(bottomColorData, 3);
+    uint8_t color1R, color1G, color1B, color2R, color2G, color2B;
+    controller.getDisplayGradientTopColor(color1R, color1G, color1B);
+    controller.getDisplayGradientBottomColor(color2R, color2G, color2B);
+    uint8_t color1Data[3] = {color1R, color1G, color1B};
+    uint8_t color2Data[3] = {color2R, color2G, color2B};
+    displayEffectColor1Characteristic.setValue(color1Data, 3);
+    displayEffectColor2Characteristic.setValue(color2Data, 3);
 
-    // Set dual spiral thickness value
-    displayDualSpiralThicknessCharacteristic.setValue(controller.getDisplayDualSpiralThickness());
+    // Set effect option values (Option1 = thickness, Option2 = speed for modes 4 & 5)
+    displayEffectOption1Characteristic.setValue(controller.getDisplayEffectThickness());
+    displayEffectOption2Characteristic.setValue(controller.getDisplayEffectSpeed());
 
     BLE.addService(protoService);
     BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
@@ -100,9 +103,10 @@ void BLEManager::setup() {
     cheekBgColorCharacteristic.setEventHandler(BLEWritten, cheekBgColorWritten);
     cheekFadeColorCharacteristic.setEventHandler(BLEWritten, cheekFadeColorWritten);
     displayColorModeCharacteristic.setEventHandler(BLEWritten, displayColorModeWritten);
-    displayGradientTopCharacteristic.setEventHandler(BLEWritten, displayGradientTopWritten);
-    displayGradientBottomCharacteristic.setEventHandler(BLEWritten, displayGradientBottomWritten);
-    displayDualSpiralThicknessCharacteristic.setEventHandler(BLEWritten, displayDualSpiralThicknessWritten);
+    displayEffectColor1Characteristic.setEventHandler(BLEWritten, displayEffectColor1Written);
+    displayEffectColor2Characteristic.setEventHandler(BLEWritten, displayEffectColor2Written);
+    displayEffectOption1Characteristic.setEventHandler(BLEWritten, displayEffectOption1Written);
+    displayEffectOption2Characteristic.setEventHandler(BLEWritten, displayEffectOption2Written);
     rebootCharacteristic.setEventHandler(BLEWritten, rebootWritten);
 
     // Start advertising the BLE pService
@@ -219,60 +223,71 @@ void BLEManager::displayColorModeWritten(BLEDevice central, BLECharacteristic ch
     }
 }
 
-void BLEManager::displayGradientTopWritten(BLEDevice central, BLECharacteristic characteristic) {
+void BLEManager::displayEffectColor1Written(BLEDevice central, BLECharacteristic characteristic) {
     if (instance) {
         const uint8_t* data = characteristic.value();
         if (characteristic.valueLength() >= 3) {
-            uint8_t r, g, b, bottomR, bottomG, bottomB;
+            uint8_t r, g, b, color2R, color2G, color2B;
             r = data[0];
             g = data[1];
             b = data[2];
-            Serial.print(F("[BLE] Display Gradient Top: R="));
+            Serial.print(F("[BLE] Display Effect Color 1: R="));
             Serial.print(r);
             Serial.print(F(" G="));
             Serial.print(g);
             Serial.print(F(" B="));
             Serial.println(b);
-            // Get current bottom color to preserve it
-            instance->controller.getDisplayGradientBottomColor(bottomR, bottomG, bottomB);
-            instance->controller.setDisplayGradientColors(r, g, b, bottomR, bottomG, bottomB);
+            // Get current color 2 to preserve it
+            instance->controller.getDisplayGradientBottomColor(color2R, color2G, color2B);
+            instance->controller.setDisplayGradientColors(r, g, b, color2R, color2G, color2B);
 
-            // Also set the dual spiral color to match the gradient top color (reuse for dual spiral)
+            // Also set the dual spiral and dual circle color (shared color for mode 4 & 5)
             instance->controller.setDisplayDualSpiralColor(r, g, b);
+            instance->controller.setDisplayDualCircleColor(r, g, b);
         }
     }
 }
 
-void BLEManager::displayGradientBottomWritten(BLEDevice central, BLECharacteristic characteristic) {
+void BLEManager::displayEffectColor2Written(BLEDevice central, BLECharacteristic characteristic) {
     if (instance) {
         const uint8_t* data = characteristic.value();
         if (characteristic.valueLength() >= 3) {
-            uint8_t r, g, b, topR, topG, topB;
+            uint8_t r, g, b, color1R, color1G, color1B;
             r = data[0];
             g = data[1];
             b = data[2];
-            Serial.print(F("[BLE] Display Gradient Bottom: R="));
+            Serial.print(F("[BLE] Display Effect Color 2: R="));
             Serial.print(r);
             Serial.print(F(" G="));
             Serial.print(g);
             Serial.print(F(" B="));
             Serial.println(b);
-            // Get current top color to preserve it
-            instance->controller.getDisplayGradientTopColor(topR, topG, topB);
-            instance->controller.setDisplayGradientColors(topR, topG, topB, r, g, b);
+            // Get current color 1 to preserve it
+            instance->controller.getDisplayGradientTopColor(color1R, color1G, color1B);
+            instance->controller.setDisplayGradientColors(color1R, color1G, color1B, r, g, b);
 
-            // Also set the dual spiral color to match the gradient top color (reuse for dual spiral)
-            instance->controller.setDisplayDualSpiralColor(topR, topG, topB);
+            // Also set the dual spiral and dual circle color to match color 1
+            instance->controller.setDisplayDualSpiralColor(color1R, color1G, color1B);
+            instance->controller.setDisplayDualCircleColor(color1R, color1G, color1B);
         }
     }
 }
 
-void BLEManager::displayDualSpiralThicknessWritten(BLEDevice central, BLECharacteristic characteristic) {
+void BLEManager::displayEffectOption1Written(BLEDevice central, BLECharacteristic characteristic) {
     if (instance) {
         const uint8_t* data = characteristic.value();
-        Serial.print(F("[BLE] Dual Spiral Thickness: "));
+        Serial.print(F("[BLE] Display Effect Option 1 (Thickness): "));
         Serial.println(*data);
-        instance->controller.setDisplayDualSpiralThickness(*data);
+        instance->controller.setDisplayEffectThickness(*data);
+    }
+}
+
+void BLEManager::displayEffectOption2Written(BLEDevice central, BLECharacteristic characteristic) {
+    if (instance) {
+        const uint8_t* data = characteristic.value();
+        Serial.print(F("[BLE] Display Effect Option 2 (Speed): "));
+        Serial.println(*data);
+        instance->controller.setDisplayEffectSpeed(*data);
     }
 }
 

@@ -69,12 +69,28 @@ void KMMXController::getDisplayDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& 
     display.getDualSpiralColor(r, g, b);
 }
 
-void KMMXController::setDisplayDualSpiralThickness(uint8_t thickness) {
-    display.setDualSpiralThickness(thickness);
+void KMMXController::setDisplayDualCircleColor(uint8_t circleR, uint8_t circleG, uint8_t circleB) {
+    display.setDualCircleColor(circleR, circleG, circleB);
 }
 
-uint8_t KMMXController::getDisplayDualSpiralThickness() {
-    return display.getDualSpiralThickness();
+void KMMXController::getDisplayDualCircleColor(uint8_t& r, uint8_t& g, uint8_t& b) {
+    display.getDualCircleColor(r, g, b);
+}
+
+void KMMXController::setDisplayEffectThickness(uint8_t thickness) {
+    display.setEffectThickness(thickness);
+}
+
+uint8_t KMMXController::getDisplayEffectThickness() {
+    return display.getEffectThickness();
+}
+
+void KMMXController::setDisplayEffectSpeed(uint8_t speed) {
+    display.setEffectSpeed(speed);
+}
+
+uint8_t KMMXController::getDisplayEffectSpeed() {
+    return display.getEffectSpeed();
 }
 
 // State control for BLE

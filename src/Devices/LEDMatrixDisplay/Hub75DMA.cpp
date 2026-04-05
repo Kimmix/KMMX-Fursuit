@@ -70,8 +70,8 @@ void Hub75DMA::setBrightnessValue(uint8_t value) {
 }
 
 void Hub75DMA::setColorMode(uint8_t mode) {
-    // Valid modes: 0 = gradient (customizable), 1 = spiral, 2 = plasma, 3 = radial pulse, 4 = dual spiral
-    if (mode <= 4) {
+    // Valid modes: 0 = gradient (customizable), 1 = spiral, 2 = plasma, 3 = radial pulse, 4 = dual spiral, 5 = dual circle
+    if (mode <= 5) {
         colorMode = mode;
     }
 }
@@ -100,12 +100,28 @@ void Hub75DMA::getDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& b) const {
     colorEffects.getDualSpiralColor(r, g, b);
 }
 
-void Hub75DMA::setDualSpiralThickness(uint8_t thickness) {
-    colorEffects.setDualSpiralThickness(thickness);
+void Hub75DMA::setDualCircleColor(uint8_t circleR, uint8_t circleG, uint8_t circleB) {
+    colorEffects.setDualCircleColor(circleR, circleG, circleB);
 }
 
-uint8_t Hub75DMA::getDualSpiralThickness() const {
-    return colorEffects.getDualSpiralThickness();
+void Hub75DMA::getDualCircleColor(uint8_t& r, uint8_t& g, uint8_t& b) const {
+    colorEffects.getDualCircleColor(r, g, b);
+}
+
+void Hub75DMA::setEffectThickness(uint8_t thickness) {
+    colorEffects.setEffectThickness(thickness);
+}
+
+uint8_t Hub75DMA::getEffectThickness() const {
+    return colorEffects.getEffectThickness();
+}
+
+void Hub75DMA::setEffectSpeed(uint8_t speed) {
+    colorEffects.setEffectSpeed(speed);
+}
+
+uint8_t Hub75DMA::getEffectSpeed() const {
+    return colorEffects.getEffectSpeed();
 }
 
 void Hub75DMA::getColorMap(const uint8_t lightness, const int row, const int col, uint8_t& r, uint8_t& g, uint8_t& b) {

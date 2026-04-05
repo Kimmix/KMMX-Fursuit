@@ -25,7 +25,8 @@ class ColorEffects {
      *        1 = Spiral/Vortex (VRChat hypno style)
      *        2 = Plasma Effect (trippy interference patterns)
      *        3 = Radial Pulse (breathing effect from center)
-     *        4 = Cyan Spiral (clean rotating spiral effect)
+     *        4 = Dual Spiral (clean rotating spiral effect)
+     *        5 = Dual Circle (rotating concentric circles effect)
      * @param lightness Lightness/brightness value (0-255)
      * @param row Row index (Y coordinate)
      * @param col Column index (X coordinate)
@@ -73,15 +74,39 @@ class ColorEffects {
     void getDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& b) const;
 
     /**
-     * @brief Set dual spiral thickness (affects band width)
+     * @brief Set effect thickness for Mode 4 & 5 (affects band width/spacing)
      * @param thickness Thickness value (0-255), higher = thicker bands
      */
-    void setDualSpiralThickness(uint8_t thickness);
+    void setEffectThickness(uint8_t thickness);
 
     /**
-     * @brief Get the dual spiral thickness
+     * @brief Get the effect thickness
      */
-    uint8_t getDualSpiralThickness() const;
+    uint8_t getEffectThickness() const;
+
+    /**
+     * @brief Set effect rotation speed for Mode 4 & 5
+     * @param speed Speed value (0-255), higher = faster rotation
+     */
+    void setEffectSpeed(uint8_t speed);
+
+    /**
+     * @brief Get the effect rotation speed
+     */
+    uint8_t getEffectSpeed() const;
+
+    /**
+     * @brief Set dual circle colors for Mode 5
+     * @param circleR Circle color red component (0-255)
+     * @param circleG Circle color green component (0-255)
+     * @param circleB Circle color blue component (0-255)
+     */
+    void setDualCircleColor(uint8_t circleR, uint8_t circleG, uint8_t circleB);
+
+    /**
+     * @brief Get the dual circle color
+     */
+    void getDualCircleColor(uint8_t& r, uint8_t& g, uint8_t& b) const;
 
    private:
     uint8_t panelWidth;
@@ -104,7 +129,14 @@ class ColorEffects {
     uint8_t dualSpiralR = 0;
     uint8_t dualSpiralG = 255;
     uint8_t dualSpiralB = 255;
-    uint8_t dualSpiralThickness = 128;  // Default thickness (0-255)
+    uint8_t dualSpiralThickness = 128;  // Default thickness (0-255) - shared with dual circle
+    uint8_t dualSpiralSpeed = 128;      // Default rotation speed (0-255) - shared with dual circle
+
+    // Dual circle colors for Mode 5 (default magenta, customizable)
+    uint8_t dualCircleR = 255;
+    uint8_t dualCircleG = 0;
+    uint8_t dualCircleB = 255;
+    // Note: thickness and speed are shared with dual spiral (above)
 
     /**
      * @brief Mode 0: Customizable gradient
@@ -130,6 +162,11 @@ class ColorEffects {
      * @brief Mode 4: Dual spiral effect (customizable color and thickness)
      */
     void modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b);
+
+    /**
+     * @brief Mode 5: Dual circle effect (customizable color and thickness)
+     */
+    void modeDualCircle(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b);
 
     /**
      * @brief Helper: Convert HSV to RGB

@@ -23,6 +23,9 @@ void ColorEffects::getColor(uint8_t mode, uint8_t lightness, int row, int col, u
         case 4:
             modeDualSpiral(lightness, row, col, r, g, b);
             break;
+        case 5:
+            modeDualCircle(lightness, row, col, r, g, b);
+            break;
         default:
             // Fallback to gradient
             modeGradient(lightness, row, r, g, b);
@@ -63,12 +66,32 @@ void ColorEffects::getDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& b) const 
     b = dualSpiralB;
 }
 
-void ColorEffects::setDualSpiralThickness(uint8_t thickness) {
+void ColorEffects::setEffectThickness(uint8_t thickness) {
     dualSpiralThickness = thickness;
 }
 
-uint8_t ColorEffects::getDualSpiralThickness() const {
+uint8_t ColorEffects::getEffectThickness() const {
     return dualSpiralThickness;
+}
+
+void ColorEffects::setEffectSpeed(uint8_t speed) {
+    dualSpiralSpeed = speed;
+}
+
+uint8_t ColorEffects::getEffectSpeed() const {
+    return dualSpiralSpeed;
+}
+
+void ColorEffects::setDualCircleColor(uint8_t circleR, uint8_t circleG, uint8_t circleB) {
+    dualCircleR = circleR;
+    dualCircleG = circleG;
+    dualCircleB = circleB;
+}
+
+void ColorEffects::getDualCircleColor(uint8_t& r, uint8_t& g, uint8_t& b) const {
+    r = dualCircleR;
+    g = dualCircleG;
+    b = dualCircleB;
 }
 
 // ============================================================================
@@ -203,7 +226,7 @@ void ColorEffects::modeRadialPulse(uint8_t lightness, int row, int col, uint8_t&
 }
 
 // ============================================================================
-// Mode 4: Dual Spiral Effect (Customizable color and thickness)
+// Mode 4: Dual Spiral Effect (Customizable color, thickness, and speed)
 // ============================================================================
 void ColorEffects::modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
     // Determine which eye center to use based on horizontal position (split at single panel width)
@@ -219,8 +242,11 @@ void ColorEffects::modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& 
 
     // Create rotating spiral pattern
     const float time = millis() * 0.001f;  // Convert to seconds
-    const float rotationSpeed = 1.5f;     // Rotation speed
     const float spiralArms = 12.0f;        // Number of spiral arms/bands
+
+    // Speed control: map 0-255 to rotation speed (0.2 to 3.0)
+    // 0 = very slow (0.2), 128 = medium (1.5), 255 = very fast (3.0)
+    const float rotationSpeed = 0.2f + (dualSpiralSpeed / 255.0f) * 2.8f;
 
     // Thickness control: map 0-255 to distance multiplier with wider range (0.05 to 2.0)
     // This gives more dramatic variation from very tight to very loose spirals
@@ -242,6 +268,57 @@ void ColorEffects::modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& 
         r = (uint8_t)(dualSpiralR * intensity);
         g = (uint8_t)(dualSpiralG * intensity);
         b = (uint8_t)(dualSpiralB * intensity);
+    } else {
+        // Black
+        r = 0;
+        g = 0;
+        b = 0;
+    }
+}
+
+// ============================================================================
+// Mode 5: Dual Circle Effect (Customizable color, thickness, and speed)
+// ============================================================================
+void ColorEffects::modeDualCircle(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
+    // Determine which eye center to use based on horizontal position (split at single panel width)
+    const float centerX = (col < panelResX) ? effectCenterLeftX : effectCenterRightX;
+
+    // Calculate position relative to the nearest eye center
+    const float dx = col - centerX;
+    const float dy = row - effectCenterY;
+
+    // Calculate distance from center
+    const float distance = sqrtf(dx * dx + dy * dy);
+
+    // Create rotating circle pattern
+    const float time = millis() * 0.001f;  // Convert to seconds
+    const int numBands = 12;               // Number of circle bands
+
+    // Speed control: map 0-255 to rotation speed (2.0 to 20.0)
+    // 0 = very slow (2.0), 128 = medium (10.0), 255 = very fast (20.0)
+    const float rotationSpeed = 2.0f + (dualSpiralSpeed / 255.0f) * 18.0f;
+
+    // Thickness control: map 0-255 to distance multiplier with wider range
+    // This controls the spacing between circles
+    // 0 = very tight circles (0.5), 128 = medium (2.0), 255 = very loose (3.5)
+    const float thicknessFactor = 0.5f + (dualSpiralThickness / 255.0f) * 3.0f;
+
+    // Create concentric circles using distance and time for rotation effect
+    // We use time to create a rotating/expanding effect
+    float circleValue = distance * thicknessFactor - time * rotationSpeed;
+
+    // Create bands using sine wave - gives the alternating pattern
+    float bands = sinf(circleValue);
+
+    // Threshold to create sharp edges between color and black
+    const float threshold = 0.0f;
+
+    if (bands > threshold) {
+        // Use customizable circle color
+        const float intensity = (lightness / 255.0f);
+        r = (uint8_t)(dualCircleR * intensity);
+        g = (uint8_t)(dualCircleG * intensity);
+        b = (uint8_t)(dualCircleB * intensity);
     } else {
         // Black
         r = 0;

@@ -171,6 +171,7 @@ class Hub75DMA {
      *        2 = Plasma Effect (trippy interference patterns)
      *        3 = Radial Pulse (breathing effect from center)
      *        4 = Dual Spiral (customizable color and thickness)
+     *        5 = Dual Circle (rotating concentric circles effect)
      */
     void setColorMode(uint8_t mode);
 
@@ -224,16 +225,44 @@ class Hub75DMA {
     void getDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& b) const;
 
     /**
-     * @brief Sets the dual spiral thickness for Mode 4.
-     * @param thickness Thickness value (0-255)
+     * @brief Sets the dual circle color for Mode 5.
+     * @param circleR Circle color red component (0-255)
+     * @param circleG Circle color green component (0-255)
+     * @param circleB Circle color blue component (0-255)
      */
-    void setDualSpiralThickness(uint8_t thickness);
+    void setDualCircleColor(uint8_t circleR, uint8_t circleG, uint8_t circleB);
 
     /**
-     * @brief Gets the dual spiral thickness.
+     * @brief Gets the dual circle color.
+     * @param r Reference to red component (output)
+     * @param g Reference to green component (output)
+     * @param b Reference to blue component (output)
+     */
+    void getDualCircleColor(uint8_t& r, uint8_t& g, uint8_t& b) const;
+
+    /**
+     * @brief Sets the effect thickness for Mode 4 & 5 (band width/spacing).
+     * @param thickness Thickness value (0-255)
+     */
+    void setEffectThickness(uint8_t thickness);
+
+    /**
+     * @brief Gets the effect thickness.
      * @return Thickness value (0-255)
      */
-    uint8_t getDualSpiralThickness() const;
+    uint8_t getEffectThickness() const;
+
+    /**
+     * @brief Sets the effect rotation speed for Mode 4 & 5.
+     * @param speed Speed value (0-255)
+     */
+    void setEffectSpeed(uint8_t speed);
+
+    /**
+     * @brief Gets the effect rotation speed.
+     * @return Speed value (0-255)
+     */
+    uint8_t getEffectSpeed() const;
 
     // Drawing functions for various bitmaps
     /**
