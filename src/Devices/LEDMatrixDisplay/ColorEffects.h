@@ -191,5 +191,13 @@ class ColorEffects {
      * @param b Reference to blue component (output)
      */
     void hsvToRgb(float h, float s, float v, uint8_t& r, uint8_t& g, uint8_t& b);
+
+    /**
+     * @brief Helper: Check if a pixel is in the eye region
+     * @param row Row index (Y coordinate)
+     * @param col Column index (X coordinate)
+     * @return true if the pixel is within either eye region
+     */
+    bool isInEyeRegion(int row, int col) const;
 };
 

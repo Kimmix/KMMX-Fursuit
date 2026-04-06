@@ -237,6 +237,17 @@ void ColorEffects::modeRadialPulse(uint8_t lightness, int row, int col, uint8_t&
 // Mode 4: Dual Spiral Effect (Customizable colors, thickness, and speed)
 // ============================================================================
 void ColorEffects::modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
+    const float intensity = (lightness / 255.0f);
+
+    // Check if pixel is in eye region - if not, use solid color (gradient bottom color)
+    if (!isInEyeRegion(row, col)) {
+        r = (uint8_t)(gradientBottomR * intensity);
+        g = (uint8_t)(gradientBottomG * intensity);
+        b = (uint8_t)(gradientBottomB * intensity);
+        return;
+    }
+
+    // Pixel is in eye region - apply the spiral effect
     // Determine which eye center to use based on horizontal position (split at single panel width)
     const float centerX = (col < panelResX) ? effectCenterLeftX : effectCenterRightX;
 
@@ -273,7 +284,6 @@ void ColorEffects::modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& 
 
     // Threshold to create sharp edges between colors
     const float threshold = 0.0f;
-    const float intensity = (lightness / 255.0f);
 
     if (bands > threshold) {
         // Use Color 1 (spiral primary color)
@@ -292,6 +302,17 @@ void ColorEffects::modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& 
 // Mode 5: Dual Circle Effect (Customizable colors, thickness, and speed)
 // ============================================================================
 void ColorEffects::modeDualCircle(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
+    const float intensity = (lightness / 255.0f);
+
+    // Check if pixel is in eye region - if not, use solid color (gradient bottom color)
+    if (!isInEyeRegion(row, col)) {
+        r = (uint8_t)(gradientBottomR * intensity);
+        g = (uint8_t)(gradientBottomG * intensity);
+        b = (uint8_t)(gradientBottomB * intensity);
+        return;
+    }
+
+    // Pixel is in eye region - apply the circle effect
     // Determine which eye center to use based on horizontal position (split at single panel width)
     const float centerX = (col < panelResX) ? effectCenterLeftX : effectCenterRightX;
 
@@ -328,7 +349,6 @@ void ColorEffects::modeDualCircle(uint8_t lightness, int row, int col, uint8_t& 
 
     // Threshold to create sharp edges between colors
     const float threshold = 0.0f;
-    const float intensity = (lightness / 255.0f);
 
     if (bands > threshold) {
         // Use Color 1 (circle primary color)
@@ -366,5 +386,26 @@ void ColorEffects::hsvToRgb(float h, float s, float v, uint8_t& r, uint8_t& g, u
     r = constrain((uint8_t)(rf * 255.0f), 0, 255);
     g = constrain((uint8_t)(gf * 255.0f), 0, 255);
     b = constrain((uint8_t)(bf * 255.0f), 0, 255);
+}
+
+bool ColorEffects::isInEyeRegion(int row, int col) const {
+    // Check if row is within eye height range
+    if (row < eyeOffsetY || row >= (eyeOffsetY + eyeHeight)) {
+        return false;
+    }
+
+    // Check left eye region
+    if (col >= eyeOffsetX && col < (eyeOffsetX + eyeWidth)) {
+        return true;
+    }
+
+    // Check right eye region (mirrored on the right side)
+    // Right eye starts at: screenWidth - eyeOffsetX - eyeWidth
+    const int rightEyeOffsetX = screenWidth - eyeOffsetX - eyeWidth;
+    if (col >= rightEyeOffsetX && col < (rightEyeOffsetX + eyeWidth)) {
+        return true;
+    }
+
+    return false;
 }
 
