@@ -261,8 +261,9 @@ void ColorEffects::modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& 
 
     // Thickness control: map 0-255 to distance multiplier (INVERTED for intuitive control)
     // Higher values = thicker/wider bands (fewer bands in same space)
-    // 0 = very thin/tight bands (2.0), 128 = medium (1.0), 255 = very thick/wide bands (0.05)
-    const float thicknessFactor = 2.0f - (dualSpiralThickness / 255.0f) * 1.95f;
+    // Remapped range: effective range is like 4-15 instead of 1-10
+    // 0 = thin bands (1.2), 128 = medium (0.6), 255 = very thick/wide bands (0.02)
+    const float thicknessFactor = 1.2f - (dualSpiralThickness / 255.0f) * 1.18f;
 
     // Combine angle with time for rotation, add distance for spiral effect
     float spiralValue = angle * spiralArms + distance * thicknessFactor - time * rotationSpeed * directionMultiplier * 2.0f * PI;
@@ -314,8 +315,9 @@ void ColorEffects::modeDualCircle(uint8_t lightness, int row, int col, uint8_t& 
 
     // Thickness control: map 0-255 to distance multiplier (INVERTED for intuitive control)
     // Higher values = thicker/wider bands (fewer bands in same space)
-    // 0 = very thin/tight circles (3.5), 128 = medium (2.0), 255 = very thick/wide circles (0.5)
-    const float thicknessFactor = 3.5f - (dualSpiralThickness / 255.0f) * 3.0f;
+    // Remapped range: effective range is like 4-15 instead of 1-10
+    // 0 = thin circles (2.0), 128 = medium (1.1), 255 = very thick/wide circles (0.2)
+    const float thicknessFactor = 2.0f - (dualSpiralThickness / 255.0f) * 1.8f;
 
     // Create concentric circles using distance and time for rotation effect
     // We use time to create a rotating/expanding effect
