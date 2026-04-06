@@ -3,7 +3,11 @@
 #include <math.h>
 
 ColorEffects::ColorEffects(uint8_t width, uint8_t height)
-    : panelWidth(width), panelHeight(height) {
+    : panelWidth(width), panelHeight(height), cachedTime(0.0f) {
+}
+
+void ColorEffects::updateFrame() {
+    cachedTime = millis() * 0.001f;  // Cache time once per frame
 }
 
 void ColorEffects::getColor(uint8_t mode, uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
@@ -139,19 +143,18 @@ void ColorEffects::modeSpiralVortex(uint8_t lightness, int row, int col, uint8_t
     const float angle = atan2f(dy, dx);
     const float distance = sqrtf(dx * dx + dy * dy);
 
-    // Create animated spiral effect
-    const float time = millis() * 0.001f;  // Convert to seconds
+    // Create animated spiral effect (using cached time for performance)
     const float spiralSpeed = 2.0f;        // Rotation speed
     const float spiralTightness = 0.15f;   // How tight the spiral is (lower = wider)
 
     // Combine angle and distance for spiral pattern
-    float spiralValue = angle + distance * spiralTightness - time * spiralSpeed;
+    float spiralValue = angle + distance * spiralTightness - cachedTime * spiralSpeed;
 
     // Normalize to 0-1 range using sine wave for smooth cycling
     float hue = fmodf(spiralValue / (2.0f * PI) + 1.0f, 1.0f);
 
-    // Add radial pulse effect
-    float pulse = sinf(distance * 0.1f - time * 3.0f) * 0.5f + 0.5f;
+    // Add radial pulse effect (using cached time for performance)
+    float pulse = sinf(distance * 0.1f - cachedTime * 3.0f) * 0.5f + 0.5f;
 
     // Convert HSV to RGB (hue cycling rainbow effect)
     // Hue: 0-1, Saturation: 1.0, Value: based on pulse and lightness
@@ -166,8 +169,6 @@ void ColorEffects::modeSpiralVortex(uint8_t lightness, int row, int col, uint8_t
 // Mode 2: Plasma Effect (Demoscene Classic)
 // ============================================================================
 void ColorEffects::modePlasmaEffect(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
-    const float time = millis() * 0.001f;
-
     // Determine which eye center to use based on horizontal position (split at single panel width)
     const float centerX = (col < panelResX) ? effectCenterLeftX : effectCenterRightX;
 
@@ -175,11 +176,11 @@ void ColorEffects::modePlasmaEffect(uint8_t lightness, int row, int col, uint8_t
     const float x = (col - centerX) / centerX;
     const float y = (row - effectCenterY) / effectCenterY;
 
-    // Multiple sine waves creating interference patterns
-    float plasma1 = sinf(x * 5.0f + time);
-    float plasma2 = sinf(y * 5.0f + time * 1.3f);
-    float plasma3 = sinf((x + y) * 4.0f + time * 0.8f);
-    float plasma4 = sinf(sqrtf(x * x + y * y) * 6.0f - time * 2.0f);
+    // Multiple sine waves creating interference patterns (using cached time for performance)
+    float plasma1 = sinf(x * 5.0f + cachedTime);
+    float plasma2 = sinf(y * 5.0f + cachedTime * 1.3f);
+    float plasma3 = sinf((x + y) * 4.0f + cachedTime * 0.8f);
+    float plasma4 = sinf(sqrtf(x * x + y * y) * 6.0f - cachedTime * 2.0f);
 
     // Combine all plasma components
     float plasmaValue = (plasma1 + plasma2 + plasma3 + plasma4) / 4.0f;
@@ -199,34 +200,32 @@ void ColorEffects::modePlasmaEffect(uint8_t lightness, int row, int col, uint8_t
 // Mode 3: Radial Pulse (Breathing Effect)
 // ============================================================================
 void ColorEffects::modeRadialPulse(uint8_t lightness, int row, int col, uint8_t& r, uint8_t& g, uint8_t& b) {
-    const float time = millis() * 0.001f;
-
     // Determine which eye center to use based on horizontal position (split at single panel width)
     const float centerX = (col < panelResX) ? effectCenterLeftX : effectCenterRightX;
+    const float maxDist = (col < panelResX) ? maxDistLeft : maxDistRight;
 
     // Calculate distance from center (using nearest eye center)
     const float dx = col - centerX;
     const float dy = row - effectCenterY;
     const float distance = sqrtf(dx * dx + dy * dy);
 
-    // Maximum possible distance (corner to center)
-    const float maxDist = sqrtf(centerX * centerX + effectCenterY * effectCenterY);
+    // Normalize distance using pre-calculated constant
     const float normalizedDist = distance / maxDist;  // 0 at center, 1 at corners
 
-    // Create breathing pulse from center
+    // Create breathing pulse from center (using cached time for performance)
     const float breathSpeed = 1.5f;
-    const float breathOffset = sinf(time * breathSpeed) * 0.5f + 0.5f;  // 0-1
+    const float breathOffset = sinf(cachedTime * breathSpeed) * 0.5f + 0.5f;  // 0-1
 
     // Create expanding rings
     const float ringSpeed = 2.0f;
     const float ringFrequency = 5.0f;
-    const float rings = sinf(normalizedDist * ringFrequency - time * ringSpeed) * 0.5f + 0.5f;
+    const float rings = sinf(normalizedDist * ringFrequency - cachedTime * ringSpeed) * 0.5f + 0.5f;
 
     // Combine breath and rings
     const float pulse = (breathOffset * 0.6f + rings * 0.4f);
 
     // Color cycling - slower than spiral
-    const float hue = fmodf(time * 0.5f + normalizedDist * 2.0f, 1.0f) * 6.0f;
+    const float hue = fmodf(cachedTime * 0.5f + normalizedDist * 2.0f, 1.0f) * 6.0f;
     const float saturation = 0.85f;
     const float value = (pulse * 0.3f + 0.7f) * (lightness / 255.0f);  // Min 70% brightness
 
@@ -259,8 +258,7 @@ void ColorEffects::modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& 
     const float angle = atan2f(dy, dx);
     const float distance = sqrtf(dx * dx + dy * dy);
 
-    // Create rotating spiral pattern
-    const float time = millis() * 0.001f;  // Convert to seconds
+    // Create rotating spiral pattern (using cached time for performance)
     const float spiralArms = 12.0f;        // Number of spiral arms/bands
 
     // Speed control: map 0-255 to rotation speed (0.2 to 3.0)
@@ -277,7 +275,7 @@ void ColorEffects::modeDualSpiral(uint8_t lightness, int row, int col, uint8_t& 
     const float thicknessFactor = 1.2f - (dualSpiralThickness / 255.0f) * 1.18f;
 
     // Combine angle with time for rotation, add distance for spiral effect
-    float spiralValue = angle * spiralArms + distance * thicknessFactor - time * rotationSpeed * directionMultiplier * 2.0f * PI;
+    float spiralValue = angle * spiralArms + distance * thicknessFactor - cachedTime * rotationSpeed * directionMultiplier * 2.0f * PI;
 
     // Create bands using sine wave - gives the alternating pattern
     float bands = sinf(spiralValue);
@@ -323,8 +321,7 @@ void ColorEffects::modeDualCircle(uint8_t lightness, int row, int col, uint8_t& 
     // Calculate distance from center
     const float distance = sqrtf(dx * dx + dy * dy);
 
-    // Create rotating circle pattern
-    const float time = millis() * 0.001f;  // Convert to seconds
+    // Create rotating circle pattern (using cached time for performance)
     const int numBands = 12;               // Number of circle bands
 
     // Speed control: map 0-255 to rotation speed (2.0 to 20.0)
@@ -342,7 +339,7 @@ void ColorEffects::modeDualCircle(uint8_t lightness, int row, int col, uint8_t& 
 
     // Create concentric circles using distance and time for rotation effect
     // We use time to create a rotating/expanding effect
-    float circleValue = distance * thicknessFactor - time * rotationSpeed * directionMultiplier;
+    float circleValue = distance * thicknessFactor - cachedTime * rotationSpeed * directionMultiplier;
 
     // Create bands using sine wave - gives the alternating pattern
     float bands = sinf(circleValue);
@@ -383,9 +380,10 @@ void ColorEffects::hsvToRgb(float h, float s, float v, uint8_t& r, uint8_t& g, u
         default: rf = v; gf = p; bf = q; break;
     }
 
-    r = constrain((uint8_t)(rf * 255.0f), 0, 255);
-    g = constrain((uint8_t)(gf * 255.0f), 0, 255);
-    b = constrain((uint8_t)(bf * 255.0f), 0, 255);
+    // uint8_t cast automatically clamps to 0-255, no need for constrain()
+    r = (uint8_t)(rf * 255.0f);
+    g = (uint8_t)(gf * 255.0f);
+    b = (uint8_t)(bf * 255.0f);
 }
 
 bool ColorEffects::isInEyeRegion(int row, int col) const {

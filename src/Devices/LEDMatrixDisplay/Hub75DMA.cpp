@@ -24,6 +24,10 @@ void Hub75DMA::clearScreen() {
     matrix->clearScreen();
 }
 
+void Hub75DMA::updateColorEffectsFrame() {
+    colorEffects.updateFrame();
+}
+
 int Hub75DMA::getBrightnessValue() {
     return panelBrightness;
 }

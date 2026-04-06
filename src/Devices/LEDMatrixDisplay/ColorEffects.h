@@ -19,6 +19,12 @@ class ColorEffects {
     ColorEffects(uint8_t width, uint8_t height);
 
     /**
+     * @brief Update cached values for the current frame
+     * Call this once at the beginning of each frame for better performance
+     */
+    void updateFrame();
+
+    /**
      * @brief Get color based on the current color mode
      * @param mode Color mode:
      *        0 = Gradient (customizable via setGradientColors)
@@ -128,6 +134,13 @@ class ColorEffects {
     static constexpr float effectCenterLeftX = eyeOffsetX + eyeWidth / 2.0f;           // Left eye center
     static constexpr float effectCenterRightX = screenWidth - eyeOffsetX - eyeWidth / 2.0f; // Right eye center (mirrored)
     static constexpr float effectCenterY = eyeOffsetY + eyeHeight / 2.0f;              // Vertical center of eyes
+
+    // Pre-calculated constants for performance optimization
+    static constexpr float maxDistLeft = sqrtf(effectCenterLeftX * effectCenterLeftX + effectCenterY * effectCenterY);
+    static constexpr float maxDistRight = sqrtf(effectCenterRightX * effectCenterRightX + effectCenterY * effectCenterY);
+
+    // Cached time value (updated once per frame for performance)
+    float cachedTime;
 
     // Gradient colors for Mode 0 (default KMMX colors, customizable)
     uint8_t gradientTopR = 255;

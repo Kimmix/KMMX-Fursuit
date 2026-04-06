@@ -82,6 +82,12 @@ class Hub75DMA {
     void clearScreen();
 
     /**
+     * @brief Updates color effects cache for the current frame.
+     * Call this once at the beginning of each frame for better performance.
+     */
+    void updateColorEffectsFrame();
+
+    /**
      * @brief Gets the current brightness value.
      * @return Current brightness value.
      */

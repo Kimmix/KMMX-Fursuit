@@ -12,6 +12,7 @@ void KMMXController::update() {
 void KMMXController::renderFace() {
     display.flipDMABuffer();
     display.clearScreen();
+    display.updateColorEffectsFrame();  // Update cached time once per frame
     display.drawNose(noseNew);
     mouthState.update();
     eyeState.update();
@@ -34,6 +35,7 @@ void KMMXController::renderTask(void *parameter) {
 
         // Now render the next frame to the back buffer
         ctrl->display.clearScreen();
+        ctrl->display.updateColorEffectsFrame();  // Update cached time once per frame
         ctrl->display.drawNose(noseNew);
         ctrl->mouthState.update();
         ctrl->eyeState.update();
