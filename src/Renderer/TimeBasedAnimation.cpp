@@ -27,10 +27,10 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SLOW_LOOP = {
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BREATHING = {
-    .durationMs = 2000,
+    .durationMs = 1500,      // Faster: 2000 -> 1500ms
     .playMode = AnimationPlayMode::PING_PONG,
-    .pauseAtEndMs = 500,
-    .pauseAtStartMs = 800,
+    .pauseAtEndMs = 300,     // Shorter pause: 500 -> 300ms
+    .pauseAtStartMs = 400,   // Shorter pause: 800 -> 400ms
     .easingType = EasingType::BREATHING_NATURAL
 };
 
