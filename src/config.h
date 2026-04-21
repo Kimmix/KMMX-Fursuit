@@ -92,7 +92,7 @@ const uint8_t noseOffsetX = 56;
 const uint8_t noseOffsetY = 7;
 const uint8_t eyeWidth = 32;
 const uint8_t eyeHeight = 18;
-const uint8_t eyeOffsetX = 7;
+const uint8_t eyeOffsetX = 15;
 const uint8_t eyeOffsetY = 0;
 const uint8_t mouthWidth = 50;
 const uint8_t mouthHeight = 14;
@@ -120,7 +120,7 @@ const bool enableMotionDebug = true;            // Enable detailed debug logging
 const uint16_t motionDetectionStartupDelay = 5000; // Delay before motion detection starts (ms) - increased to account for BLE init - prevents false triggers during sensor initialization
 
 // Tilt Detection - Detects sustained head tilt for curious/confused expressions
-const bool enableTiltDetection = true;
+const bool enableTiltDetection = false;
 const float tiltThreshold = 4.0f;               // m/s² threshold for tilt detection (reduced for easier triggering)
 const float tiltNeutralThreshold = 3.0f;        // m/s² threshold to return to neutral (increased for easier return)
 const uint16_t tiltSustainTime = 500;           // Time to hold tilt before triggering (ms)
@@ -128,21 +128,15 @@ const uint16_t tiltDebounceTime = 300;          // Cooldown between tilt changes
 const uint16_t tiltDirectionChangeCooldown = 3000;  // Cooldown when switching from left/right to forward/back (ms) - prevents rapid direction changes
 
 // Upside Down Detection - Detects when the character is held upside down
-const bool enableUpsideDownDetection = true;
+const bool enableUpsideDownDetection = false;
 const float upsideDownThreshold = -7.0f;            // m/s² threshold for Y-axis (negative = upside down)
 const uint16_t upsideDownSustainTime = 1500;        // Time to hold upside down before triggering (ms)
 const uint16_t upsideDownDebounceTime = 500;        // Cooldown between state changes (ms)
-
-// Swaying Detection - REMOVED
 
 // Petting Detection - Detects quick pats/taps (spike-based) for contentment
 const bool enablePettingDetection = true;
 const bool enablePettingCooldownAfterTilt = true;   // Enable cooldown after tilt to prevent immediate petting
 const uint16_t pettingCooldownAfterTilt = 1000;     // Cooldown duration after tilt ends (ms)
-
-// Dynamic Petting Detection - Happiness accumulation system (more natural and responsive)
-// Each pat adds happiness, which decays over time. When happiness reaches threshold, trigger SMILE.
-// Continuous petting maintains happiness; stopping petting causes natural decay and response end.
 
 const float pettingSpikeThreshold = 0.8f;           // m/s² threshold for detecting a gentle pat/tap spike
 const uint16_t pettingSpikeCooldown = 300;          // Minimum time between individual spikes (ms) - prevents double-counting
@@ -183,5 +177,5 @@ const float googlyPupilRadius = googlyPupilSize / 2.0f;             // Radius of
 const float googlyInnerRadius = googlyEyeRadius - googlyPupilRadius;  // Radius of pupil motion
 const uint8_t googlyPupilWidth = 6;
 const uint8_t googlyPupilHeight = 6;
-const uint8_t googlyPupilOffsetX = 15;
+const uint8_t googlyPupilOffsetX = eyeOffsetX + 8;
 const uint8_t googlyPupilOffsetY = 5;
