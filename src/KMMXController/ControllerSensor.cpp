@@ -7,8 +7,18 @@ void KMMXController::setupSensors() {
     statusLED.init();
     cheekPanel.configure(sideColor1RGB, sideColor2RGB, sideLEDFadeInterval, sideLEDPositionChangeDelay);
     cheekPanel.init();
-    accelerometer.setUp();
+
+    // Initialize sensors and track their status
+    accelerometerInitialized = accelerometer.setUp();
     boopInitialized = proximitySensor.setup();
+
+    // Print sensor initialization status
+    Serial.println("=== Sensor Initialization ===");
+    Serial.printf("Accelerometer (LIS3DH): %s\n", accelerometerInitialized ? "OK" : "FAILED");
+    Serial.printf("Proximity (APDS9930): %s\n", boopInitialized ? "OK" : "FAILED");
+    if (!accelerometerInitialized || !boopInitialized) {
+        Serial.println("WARNING: One or more sensors failed to initialize. System will continue with reduced functionality.");
+    }
 
     // Ensure eye state starts at IDLE (prevents lingering states from previous sessions)
     eyeState.setState(EyeStateEnum::IDLE, true, 0);  // Persistent, no timeout (initial state)
@@ -38,6 +48,8 @@ void KMMXController::readSensorTask(void *parameter) {
 
         // Write to inactive buffer (double-buffer pattern)
         uint8_t writeBuffer = 1 - ctrl->activeBuffer;
+
+        // Read accelerometer data (safe even if sensor failed to initialize)
         sensors_event_t* event = ctrl->accelerometer.getSensorEvent();
 
         // Update sensor data in inactive buffer
@@ -59,6 +71,7 @@ void KMMXController::readSensorTask(void *parameter) {
         dsps_dotprod_f32(accelVec, accelVec, &dotProduct, 3);
         ctrl->sensorBuffer[writeBuffer].accelMagnitude = sqrtf(dotProduct);
 
+        // Read proximity sensor (safe even if sensor failed to initialize)
         ctrl->proximitySensor.read(&ctrl->sensorBuffer[writeBuffer].proximity);
 
         // Atomic swap - readers now use the new buffer
@@ -67,11 +80,14 @@ void KMMXController::readSensorTask(void *parameter) {
         // Store previous values for idle detection
         ctrl->prevSensorData = ctrl->sensorBuffer[1 - writeBuffer];
 
-        // Check idle/sleep state
-        ctrl->checkIdleAndSleep(ctrl, millis());
+        // Only run motion detection if accelerometer initialized successfully
+        if (ctrl->accelerometerInitialized) {
+            // Check idle/sleep state
+            ctrl->checkIdleAndSleep(ctrl, millis());
 
-        // Check motion detection features (shake, tilt, bounce, spin, petting)
-        ctrl->checkMotionFeatures(ctrl);
+            // Check motion detection features (shake, tilt, bounce, spin, petting)
+            ctrl->checkMotionFeatures(ctrl);
+        }
 
         // Update facial states with new sensor data
         ctrl->mouthState.setSensorData(ctrl->sensorBuffer[ctrl->activeBuffer]);

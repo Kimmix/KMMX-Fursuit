@@ -2,19 +2,31 @@
 
 LIS3DH::LIS3DH() : lis(Adafruit_LIS3DH()) {}
 
-void LIS3DH::setUp() {
-    if (!lis.begin(0x18)) {
+bool LIS3DH::setUp() {
+    sensorInitialized = lis.begin(0x18);
+    if (!sensorInitialized) {
         Serial.println("Could not initialize LIS3DH");
+        return false;
     }
     lis.setDataRate(LIS3DH_DATARATE_50_HZ);  // 50Hz matches sensor polling rate
     lis.setRange(LIS3DH_RANGE_2_G);
+    return true;
 }
 
 void LIS3DH::setDataRate(uint8_t rate) {
-    lis.setDataRate((lis3dh_dataRate_t)rate);
+    if (sensorInitialized) {
+        lis.setDataRate((lis3dh_dataRate_t)rate);
+    }
 }
 
 sensors_event_t* LIS3DH::getSensorEvent() {
-    lis.getEvent(&event);
+    if (sensorInitialized) {
+        lis.getEvent(&event);
+    } else {
+        // Return safe default values if sensor not initialized
+        event.acceleration.x = 0.0f;
+        event.acceleration.y = -9.8f;  // Default gravity when upright
+        event.acceleration.z = 0.0f;
+    }
     return &event;
 }

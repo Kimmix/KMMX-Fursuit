@@ -134,6 +134,8 @@ bool APDS9930Sensor::setup() {
  */
 void APDS9930Sensor::read(uint16_t *proximityData) {
     if (!sensorInitialized) {
+        // Return safe default value (no object nearby) if sensor not initialized
+        *proximityData = 0;
         return;
     }
     float ambientLight;

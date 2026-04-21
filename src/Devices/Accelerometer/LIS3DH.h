@@ -7,10 +7,12 @@ class LIS3DH {
    private:
     sensors_event_t event;
     Adafruit_LIS3DH lis;
+    bool sensorInitialized = false;
 
    public:
     LIS3DH();
-    void setUp();
+    bool setUp();
     sensors_event_t* getSensorEvent();
     void setDataRate(uint8_t rate);
+    bool isInitialized() const { return sensorInitialized; }
 };

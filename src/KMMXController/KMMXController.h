@@ -113,6 +113,7 @@ class KMMXController {
     unsigned long nextFrame;
     unsigned long nextBoop = 0;
     bool isSleeping = false;
+    bool accelerometerInitialized = false;  // Track if accelerometer successfully initialized
     bool boopInitialized = false, inBoopRange = false, isBooping = false, isContinuousBoop = false, isAngry = false;
     unsigned short prevHornBright = hornInitBrightness;
     float boopSpeed = 0.0f;
