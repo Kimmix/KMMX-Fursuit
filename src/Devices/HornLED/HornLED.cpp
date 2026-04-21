@@ -1,5 +1,4 @@
 #include "HornLED.h"
-#include <Arduino.h>
 
 HornLED::HornLED() {
     ledcSetup(hornPwmChannel, hornFrequency, hornResolution);
