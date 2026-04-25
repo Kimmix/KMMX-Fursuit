@@ -11,11 +11,13 @@ void KMMXController::setupSensors() {
     // Initialize sensors and track their status
     accelerometerInitialized = accelerometer.setUp();
     boopInitialized = proximitySensor.setup();
+    oledInitialized = oledDisplay.setup();
 
     // Print sensor initialization status
     Serial.println("=== Sensor Initialization ===");
     Serial.printf("Accelerometer (LIS3DH): %s\n", accelerometerInitialized ? "OK" : "FAILED");
     Serial.printf("Proximity (APDS9930): %s\n", boopInitialized ? "OK" : "FAILED");
+    Serial.printf("OLED Display (SSD1306): %s\n", oledInitialized ? "OK" : "FAILED");
     if (!accelerometerInitialized || !boopInitialized) {
         Serial.println("WARNING: One or more sensors failed to initialize. System will continue with reduced functionality.");
     }

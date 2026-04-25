@@ -7,6 +7,7 @@ class BLEManager {
     static BLEManager& getInstance(KMMXController& controller);
     void setup();
     void poll();
+    bool isConnected() const;
 
    private:
     BLEManager(KMMXController& controller);

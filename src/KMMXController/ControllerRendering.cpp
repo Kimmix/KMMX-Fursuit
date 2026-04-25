@@ -1,4 +1,6 @@
 #include "KMMXController.h"
+#include "Network/BLE.h"
+extern BLEManager& bleManager;
 
 void KMMXController::update() {
     statusLED.update();
@@ -6,6 +8,9 @@ void KMMXController::update() {
     hornLED.update();
     if (boopInitialized) {
         handleBoop();
+    }
+    if (oledInitialized) {
+        updateOLED();
     }
 }
 
@@ -19,8 +24,8 @@ void KMMXController::renderFace() {
     fxState.update();
 }
 
-void KMMXController::renderTask(void *parameter) {
-    KMMXController *ctrl = static_cast<KMMXController *>(parameter);
+void KMMXController::renderTask(void* parameter) {
+    KMMXController* ctrl = static_cast<KMMXController*>(parameter);
 
     // Calculate frame interval based on refresh rate
     int refreshRate = ctrl->display.getRefreshRate();

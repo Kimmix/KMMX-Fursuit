@@ -16,6 +16,7 @@
 #include "Devices/Proximity/APDS9930Sensor.h"
 #include "Devices/Ws2812/RGBStatus.h"
 #include "Devices/Ws2812/CheekPanel.h"
+#include "Devices/OLEDDisplay/SSD1306.h"
 #include "Types/SensorData.h"
 
 class KMMXController {
@@ -61,6 +62,7 @@ class KMMXController {
     HornLED hornLED;
     LIS3DH accelerometer;
     APDS9930Sensor proximitySensor;
+    SSD1306 oledDisplay;
     // Double-buffer for thread-safe sensor access
     SensorData sensorBuffer[2];
     volatile uint8_t activeBuffer = 0;
@@ -75,6 +77,12 @@ class KMMXController {
 
     void renderFace();
     void handleBoop();
+    void updateOLED();
+    void drawOLEDFaceMirror(const SensorData& sensors);
+    void drawOLEDSensorBars(const SensorData& sensors);
+    void drawOLEDBluetooth();
+    void drawOLEDAccelerometer(const SensorData& sensors);
+    void drawOLEDStateNames();
     void resetIdleTime(KMMXController *controller);
     void resetIdleTime();
     void enterSleep(KMMXController *controller);
@@ -114,6 +122,7 @@ class KMMXController {
     unsigned long nextBoop = 0;
     bool isSleeping = false;
     bool accelerometerInitialized = false;  // Track if accelerometer successfully initialized
+    bool oledInitialized = false;  // Track if OLED successfully initialized
     bool boopInitialized = false, inBoopRange = false, isBooping = false, isContinuousBoop = false, isAngry = false;
     unsigned short prevHornBright = hornInitBrightness;
     float boopSpeed = 0.0f;

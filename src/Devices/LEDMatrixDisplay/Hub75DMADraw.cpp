@@ -14,6 +14,7 @@ void Hub75DMA::drawNose(const uint8_t* bitmap) {
 }
 
 void Hub75DMA::drawEye(const uint8_t* bitmap) {
+    lastEyeBitmap = bitmap;  // Track last drawn eye bitmap
 #if defined(USE_RLE_BITMAPS) && USE_RLE_BITMAPS
     drawBitmapRLE(bitmap, eyeWidth, eyeHeight, eyeOffsetX, eyeOffsetY);
 #else
@@ -22,6 +23,7 @@ void Hub75DMA::drawEye(const uint8_t* bitmap) {
 }
 
 void Hub75DMA::drawEye(const uint8_t* bitmapL, const uint8_t* bitmapR) {
+    lastEyeBitmap = bitmapL;  // Track left eye bitmap (for mirroring)
 #if defined(USE_RLE_BITMAPS) && USE_RLE_BITMAPS
     drawBitmapRLE(bitmapL, bitmapR, eyeWidth, eyeHeight, eyeOffsetX, eyeOffsetY);
 #else
@@ -30,6 +32,7 @@ void Hub75DMA::drawEye(const uint8_t* bitmapL, const uint8_t* bitmapR) {
 }
 
 void Hub75DMA::drawMouth(const uint8_t* bitmap) {
+    lastMouthBitmap = bitmap;  // Track last drawn mouth bitmap
 #if defined(USE_RLE_BITMAPS) && USE_RLE_BITMAPS
     drawBitmapRLE(bitmap, mouthWidth, mouthHeight, mouthOffsetX, mouthOffsetY);
 #else

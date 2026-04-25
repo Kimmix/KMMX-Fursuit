@@ -122,6 +122,10 @@ void BLEManager::poll() {
     BLE.poll();
 }
 
+bool BLEManager::isConnected() const {
+    return BLE.connected();
+}
+
 void BLEManager::blePeripheralConnectHandler(BLEDevice central) {
     Serial.print(F("Connected event, central: "));
     Serial.println(central.address());

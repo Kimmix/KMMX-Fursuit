@@ -9,12 +9,6 @@
 
 class Viseme {
    public:
-    void initMic();
-    const uint8_t* renderViseme();
-    float getNoiseThreshold();
-    void setNoiseThreshold(float value);
-
-   private:
     enum VisemeType {
         AH,
         EE,
@@ -22,6 +16,14 @@ class Viseme {
         OO,
         TH
     };
+
+    void initMic();
+    const uint8_t* renderViseme();
+    float getNoiseThreshold();
+    void setNoiseThreshold(float value);
+    VisemeType getCurrentViseme() const { return previousViseme; }
+
+   private:
     I2SMicrophone mic;
     ArduinoFFT<double> FFT = ArduinoFFT<double>(real, imaginary, i2sSamples, i2sSampleRate);
     double real[i2sSamples], imaginary[i2sSamples];  // ArduinoFFT requires double

@@ -58,9 +58,11 @@ void MouthState::update() {
                 display->drawMouth(visemeFrame);
             }
             break;
-        case MouthStateEnum::WAH:
-            display->drawMouth(TimeBasedAnimation::update(wahAnim));
+        case MouthStateEnum::WAH: {
+            const uint8_t* wahFrame = TimeBasedAnimation::update(wahAnim);
+            display->drawMouth(wahFrame);
             break;
+        }
         case MouthStateEnum::EH:
             playAnimationWithLoop(ehData);
             break;

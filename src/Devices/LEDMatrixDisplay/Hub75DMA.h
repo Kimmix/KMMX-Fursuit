@@ -16,6 +16,10 @@ class Hub75DMA {
     ColorEffects colorEffects = ColorEffects(panelResX, panelResY);
     uint8_t colorMode = 0;  // 0 = default gradient, 1 = spiral/vortex, etc.
 
+    // Last rendered bitmaps for OLED mirroring
+    const uint8_t* lastEyeBitmap = nullptr;
+    const uint8_t* lastMouthBitmap = nullptr;
+
     // Helper functions to generate colors and patterns
     /**
      * @brief Generates a color based on the lightness, row, and column.
@@ -321,6 +325,18 @@ class Hub75DMA {
      * @param bitmap Bitmap array
      */
     void drawMouth(const uint8_t* bitmap);
+
+    /**
+     * @brief Gets the last drawn eye bitmap pointer.
+     * @return Pointer to the last eye bitmap, or nullptr if none drawn yet
+     */
+    const uint8_t* getLastEyeBitmap() const { return lastEyeBitmap; }
+
+    /**
+     * @brief Gets the last drawn mouth bitmap pointer.
+     * @return Pointer to the last mouth bitmap, or nullptr if none drawn yet
+     */
+    const uint8_t* getLastMouthBitmap() const { return lastMouthBitmap; }
 
     /**
      * @brief Draws a color test pattern.
