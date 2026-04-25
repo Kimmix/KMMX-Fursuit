@@ -1,6 +1,7 @@
 #include "KMMXController.h"
 
 void KMMXController::handleBoop() {
+    #if HAS_PROXIMITY
     static bool lastIsAngry = false;
     static bool wasInBoopRange = false;
     static bool wasBooped = false;
@@ -20,7 +21,9 @@ void KMMXController::handleBoop() {
                 mouthState.setState(MouthStateEnum::BOOP, false, 700);  // Temporary, 700ms timeout
             }
             resetIdleTime();
+            #if HAS_CHEEK_PANEL
             statusLED.setColor(Color::CYAN);
+            #endif
             wasBooped = true;
             wasInBoopRange = false;
         } else if (inBoopRange) {
@@ -63,4 +66,5 @@ void KMMXController::handleBoop() {
         }
         lastIsAngry = isAngry;
     }
+    #endif  // HAS_PROXIMITY
 }

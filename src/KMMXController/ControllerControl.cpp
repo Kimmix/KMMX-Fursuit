@@ -10,35 +10,59 @@ void KMMXController::setDisplayBrightness(int i) {
 }
 
 int KMMXController::getHornBrightness() {
+    #if HAS_HORN_LED
     return hornLED.getBrightness();
+    #else
+    return 0;
+    #endif
 }
 
 void KMMXController::setHornBrightness(int i) {
+    #if HAS_HORN_LED
     hornLED.setBrightness(i, 20);  // Set brightness with fade speed of 20 for faster response
+    #endif
 }
 
 int KMMXController::getCheekBrightness() {
+    #if HAS_CHEEK_PANEL
     return cheekPanel.getBrightness();
+    #else
+    return 0;
+    #endif
 }
 
 void KMMXController::setCheekBrightness(int i) {
+    #if HAS_CHEEK_PANEL
     cheekPanel.setBrightness(constrain(i, 0, 255));
+    #endif
 }
 
 void KMMXController::setCheekBackgroundColor(uint8_t r, uint8_t g, uint8_t b) {
+    #if HAS_CHEEK_PANEL
     cheekPanel.setBackgroundColorRGB(r, g, b);
+    #endif
 }
 
 void KMMXController::setCheekFadeColor(uint8_t r, uint8_t g, uint8_t b) {
+    #if HAS_CHEEK_PANEL
     cheekPanel.setFadeColorRGB(r, g, b);
+    #endif
 }
 
 uint32_t KMMXController::getCheekBackgroundColor() {
+    #if HAS_CHEEK_PANEL
     return cheekPanel.getBackgroundColor();
+    #else
+    return 0;
+    #endif
 }
 
 uint32_t KMMXController::getCheekFadeColor() {
+    #if HAS_CHEEK_PANEL
     return cheekPanel.getFadeColor();
+    #else
+    return 0;
+    #endif
 }
 
 void KMMXController::setDisplayColorMode(uint8_t mode) {

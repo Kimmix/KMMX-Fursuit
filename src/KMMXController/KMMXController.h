@@ -11,12 +11,25 @@
 #include "Renderer/Boop.h"
 
 #include "Devices/LEDMatrixDisplay/Hub75DMA.h"
+#include "Types/SensorData.h"
+
+// Conditionally include device headers based on board capabilities
+#if HAS_HORN_LED
 #include "Devices/HornLED/HornLED.h"
+#endif
+
+#if HAS_ACCELEROMETER
 #include "Devices/Accelerometer/LIS3DH.h"
+#endif
+
+#if HAS_PROXIMITY
 #include "Devices/Proximity/APDS9930Sensor.h"
+#endif
+
+#if HAS_CHEEK_PANEL
 #include "Devices/Ws2812/RGBStatus.h"
 #include "Devices/Ws2812/CheekPanel.h"
-#include "Types/SensorData.h"
+#endif
 
 class KMMXController {
    public:
@@ -54,13 +67,27 @@ class KMMXController {
     void reboot();
 
    private:
-    // Devices
+    // Devices - Hub75 display is always present
     Hub75DMA display;
+
+    // Conditionally compiled devices based on board capabilities
+    #if HAS_CHEEK_PANEL
     RGBStatus statusLED = RGBStatus(RGB_STATUS_PIN);
     CheekPanel cheekPanel = CheekPanel(argbCount, ARGB_PIN);
+    #endif
+
+    #if HAS_HORN_LED
     HornLED hornLED;
+    #endif
+
+    #if HAS_ACCELEROMETER
     LIS3DH accelerometer;
+    #endif
+
+    #if HAS_PROXIMITY
     APDS9930Sensor proximitySensor;
+    #endif
+
     // Double-buffer for thread-safe sensor access
     SensorData sensorBuffer[2];
     volatile uint8_t activeBuffer = 0;
@@ -113,9 +140,22 @@ class KMMXController {
     unsigned long nextFrame;
     unsigned long nextBoop = 0;
     bool isSleeping = false;
+
+    // Sensor status flags
+    #if HAS_ACCELEROMETER
     bool accelerometerInitialized = false;  // Track if accelerometer successfully initialized
-    bool boopInitialized = false, inBoopRange = false, isBooping = false, isContinuousBoop = false, isAngry = false;
+    #endif
+
+    #if HAS_PROXIMITY
+    bool boopInitialized = false;
+    #endif
+
+    // Boop and interaction state
+    bool inBoopRange = false, isBooping = false, isContinuousBoop = false, isAngry = false;
+
+    #if HAS_HORN_LED
     unsigned short prevHornBright = hornInitBrightness;
+    #endif
     float boopSpeed = 0.0f;
     unsigned long motionDetectionStartTime = 0;  // Time when motion detection should start (after startup delay)
 

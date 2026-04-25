@@ -261,7 +261,9 @@ void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
         // Left/Right tilt - curious/confused
         eyeState.setState(EyeStateEnum::DOUBTED, false, 0);  // Temporary, no timeout (manual control)
         mouthState.setState(MouthStateEnum::EH, false, 0);  // Temporary, no timeout (manual control)
+        #if HAS_CHEEK_PANEL
         statusLED.setColor(Color::MAGENTA);  // Using MAGENTA instead of PURPLE
+        #endif
 
         if (enableMotionDebug) {
             Serial.printf("[TILT] Left/Right tilt response! Angle: %.2f\n", angle);
@@ -272,7 +274,9 @@ void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
             // Forward tilt (looking down) - unimpressed
             eyeState.setState(EyeStateEnum::UNIMPRESSED, false, 0);  // Temporary, no timeout (manual control)
             mouthState.setState(MouthStateEnum::IDLE, false, 0);  // Temporary, no timeout (manual control)
+            #if HAS_CHEEK_PANEL
             statusLED.setColor(Color::BLUE);
+            #endif
 
             if (enableMotionDebug) {
                 Serial.printf("[TILT] Forward tilt response! Angle: %.2f\n", angle);
@@ -281,7 +285,9 @@ void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
             // Back tilt (looking up) - curious/surprised
             eyeState.setState(EyeStateEnum::ROUNDED, false, 0);  // Temporary, no timeout (manual control)
             mouthState.setState(MouthStateEnum::IDLE, false, 0);  // Temporary, no timeout (manual control)
+            #if HAS_CHEEK_PANEL
             statusLED.setColor(Color::CYAN);
+            #endif
 
             if (enableMotionDebug) {
                 Serial.printf("[TILT] Back tilt response! Angle: %.2f\n", angle);
@@ -367,7 +373,9 @@ void KMMXController::detectUpsideDown(const SensorData& current) {
 void KMMXController::triggerUpsideDownResponse() {
     eyeState.setState(EyeStateEnum::CRY, false, 0);  // Temporary, no timeout (manual control)
     mouthState.setState(MouthStateEnum::WAH, false, 0);  // Temporary, no timeout (manual control)
+    #if HAS_CHEEK_PANEL
     statusLED.setColor(Color::BLUE);
+    #endif
 
     if (enableMotionDebug) {
         Serial.println("[UPSIDE DOWN] Crying response triggered!");
@@ -478,8 +486,10 @@ void KMMXController::triggerPettingResponse() {
     // Petting response - happy SMILE
     eyeState.setState(EyeStateEnum::SMILE, false, 0);  // Temporary, no timeout (manual control)
     mouthState.setState(MouthStateEnum::IDLE, false, 0);  // Temporary, no timeout (manual control)
+    #if HAS_CHEEK_PANEL
     cheekPanel.setBrightness(200);
     statusLED.setColor(Color::PINK);
+    #endif
 
     if (enableMotionDebug) {
         Serial.println("[PETTING] Petting response! (SMILE)");

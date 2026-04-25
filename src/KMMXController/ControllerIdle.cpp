@@ -8,7 +8,9 @@ void KMMXController::resetIdleTime(KMMXController *controller) {
     controller->stillTime = 0;
     controller->motionCounter = 0;
     controller->isSleeping = false;
+    #if HAS_HORN_LED
     controller->hornLED.setBrightness(controller->prevHornBright, 5);
+    #endif
 
     if (enableIdleDebug) {
         Serial.println("[IDLE] Reset - Motion detected, returning to active state");
@@ -24,7 +26,9 @@ void KMMXController::resetIdleTime() {
     stillTime = 0;
     motionCounter = 0;
     isSleeping = false;
+    #if HAS_HORN_LED
     hornLED.setBrightness(prevHornBright, 5);
+    #endif
 
     if (enableIdleDebug) {
         Serial.println("[IDLE] Reset - Motion detected, returning to active state");
@@ -32,8 +36,10 @@ void KMMXController::resetIdleTime() {
 }
 
 void KMMXController::enterSleep(KMMXController *controller) {
+    #if HAS_HORN_LED
     controller->prevHornBright = controller->hornLED.getBrightness();
     controller->hornLED.setBrightness(5);
+    #endif
     controller->eyeState.setState(EyeStateEnum::SLEEP, false, 0);  // Temporary, no timeout (manual control)
     controller->mouthState.setSlowAnimation(true);
     controller->isSleeping = true;

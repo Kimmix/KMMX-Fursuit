@@ -2,35 +2,38 @@
 
 #include <stdint.h>
 
-// ESP32S3 Custom board PINS
-// I2C
-#define S3_SDA 9
-#define S3_SCL 3
-#define RANDOM_PIN 2  // Use any usused ADC pin for true random
-// I2S
-#define I2S_WS 10
-#define I2S_SD 12
-#define I2S_SCK 11
-// I2S Processor
-#define I2S_PORT I2S_NUM_0
-// HUB75 pin (Avoid and QSPI pins)
-#define R1 4
-#define G1 5
-#define BL1 6
-#define R2 7
-#define G2 15
-#define BL2 16
-#define CH_A 18
-#define CH_B 8
-#define CH_C 19
-#define CH_D 20
-#define CH_E 17  // assign to any available pin if using two panels or 64x64 panels with 1/32 scan
-#define CLK 41
-#define LAT 40
-#define OE 39
-// Other
-#define LED_PWM_PIN 21  // Horn LED
-#define RGB_STATUS_PIN 45  // RGB onboard pin
+// ========== BOARD SELECTION ==========
+// Include the appropriate board configuration based on build flags
+#if defined(BOARD_KIMMIX_V2)
+    #include "config_kimmix_v2.h"
+    #define BOARD_NAME "Kimmix Controller V2"
+#elif defined(BOARD_ESP32S3_DEVKIT)
+    #include "config_esp32s3_devkit.h"
+    #define BOARD_NAME "ESP32-S3-DevKitC-1"
+#else
+    #error "No board defined! Please select a board in platformio.ini"
+#endif
+
+// Hardware capability checks - these should be defined by platformio.ini
+#ifndef HAS_ACCELEROMETER
+    #define HAS_ACCELEROMETER 0
+#endif
+
+#ifndef HAS_PROXIMITY
+    #define HAS_PROXIMITY 0
+#endif
+
+#ifndef HAS_HORN_LED
+    #define HAS_HORN_LED 0
+#endif
+
+#ifndef HAS_CHEEK_PANEL
+    #define HAS_CHEEK_PANEL 0
+#endif
+
+#ifndef HAS_I2C
+    #define HAS_I2C 0
+#endif
 
 // Enable RLE bitmap support
 #define USE_RLE_BITMAPS 0
@@ -65,23 +68,7 @@ const uint8_t panelInitBrightness = 255;
 const uint16_t minRefreshRate = 240;
 const bool doubleBuffer = true;
 
-// SideLED configuration
-#define ARGB_PIN 14     // Side ARGB Strip
-const uint8_t argbCount = 24;                                                   // Number of LEDs
-const uint8_t sideLEDBrightness = 255;                                          // LED brightness
-const uint16_t sideLEDAnimateInterval = 400;                                    // Animation interval in milliseconds
-const uint32_t sideColor1RGB = 0xFF446C;                                        // #FF446C Reddish Pink (RGB hex)
-const uint32_t sideColor2RGB = 0xF9826C;                                        // #F9826C Coral (RGB hex)
-const uint16_t sideLEDFadeInterval = 500;                                       // Fade interval in milliseconds
-const uint16_t sideLEDPositionChangeDelay = 2000;                               // Position change delay in milliseconds
-
-// HornLED PWM configuration
-const uint8_t hornInitBrightness = 15;
-const uint8_t hornPwmChannel = 0;
-const uint16_t hornFrequency = 20000;
-const uint8_t hornResolution = 8;
-const uint8_t hornMinBrightness = 2;    // Minimum range for PWM
-const uint8_t hornMaxBrightness = 200;   // Maximum range for PWM (255 can cause high heat!!)
+// Note: SideLED and HornLED configuration moved to board-specific config files
 
 // Controller etc. configuration
 const uint8_t sensorUpdateInterval = 20;       // Sensor update interval in ms (50Hz for better responsiveness)

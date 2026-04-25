@@ -1,12 +1,22 @@
 #include "KMMXController.h"
 
 void KMMXController::update() {
+    // Update devices that are present on this board
+    #if HAS_CHEEK_PANEL
     statusLED.update();
     cheekPanel.update();
+    #endif
+
+    #if HAS_HORN_LED
     hornLED.update();
+    #endif
+
+    // Handle boop interaction if proximity sensor is available
+    #if HAS_PROXIMITY
     if (boopInitialized) {
         handleBoop();
     }
+    #endif
 }
 
 void KMMXController::renderFace() {
