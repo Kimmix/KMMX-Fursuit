@@ -32,9 +32,6 @@
 #define LED_PWM_PIN 21  // Horn LED
 #define RGB_STATUS_PIN 45  // RGB onboard pin
 
-// Enable RLE bitmap support
-#define USE_RLE_BITMAPS 0
-
 // BLE settings - can be overridden by platformio.ini build flags
 #ifndef BLE_DEVICE_NAME
 #define BLE_DEVICE_NAME "KMMX"

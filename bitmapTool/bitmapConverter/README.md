@@ -1,10 +1,10 @@
 # Bitmap Converter Tool
 
-A Node.js utility for converting GIF animations into C++ header files containing grayscale or RLE-encoded bitmap arrays for the KMMX-Fursuit LED matrix displays.
+A Node.js utility for converting GIF animations into C++ header files containing grayscale bitmap arrays for the KMMX-Fursuit LED matrix displays.
 
 ## 📋 Overview
 
-This tool takes animated GIF files and converts each frame into a grayscale or RLE-encoded bitmap array that can be used directly in the KMMX-Fursuit firmware. The output is a C++ header file with PROGMEM arrays that can be imported into the project to display custom animations on the LED matrix panels.
+This tool takes animated GIF files and converts each frame into a grayscale bitmap array that can be used directly in the KMMX-Fursuit firmware. The output is a C++ header file with PROGMEM arrays that can be imported into the project to display custom animations on the LED matrix panels.
 
 ## 🔧 Prerequisites
 
@@ -50,20 +50,6 @@ This tool takes animated GIF files and converts each frame into a grayscale or R
    node bmpToGreyscale.js yourAnimationName
    ```
 
-   (defaults to raw/greyscale)
-
-   **For RLE-encoded output:**
-
-   ```sh
-   node bmpToGreyscale.js yourAnimationName rle
-   ```
-
-   **Alternative: Use the dedicated RLE tool:**
-
-   ```sh
-   node bmpToRLE.js yourAnimationName
-   ```
-
    If no name is provided, it will default to "defaultBitmap":
 
    ```sh
@@ -84,8 +70,6 @@ This tool takes animated GIF files and converts each frame into a grayscale or R
 
 The generated header file contains PROGMEM arrays for each frame of the animation in the following format:
 
-**Greyscale output:**
-
 ```cpp
 // Generated output
 static const uint8_t PROGMEM yourAnimationName0[576] = {
@@ -98,26 +82,6 @@ static const uint8_t PROGMEM yourAnimationName1[576] = {
 };
 // ... more frames
 ```
-
-**RLE output:**
-
-```cpp
-// Generated RLE output
-static const uint8_t PROGMEM yourAnimationName0_rle[] = {
-    0x05, 0x00, 0x03, 0x10, 0x01, 0x20, // ... (count, value) pairs
-};
-// ... more frames
-```
-
-**Migrating Existing Bitmaps to RLE:**
-
-To convert all normal bitmap header files in a folder (such as `src/Bitmaps/eyes` or `src/Bitmaps/mouth`) to RLE-encoded versions, use the migration tool:
-
-```sh
-node migrateBitmapToRLE.js ../src/Bitmaps/eyes
-```
-
-This will create a new folder (e.g., `eyes_RLE`) containing only the RLE-encoded arrays for each bitmap file.
 
 ## 🔄 Integration
 
@@ -133,29 +97,13 @@ After generating the header file, you need to:
 
 ## 📝 Examples
 
-### Basic Greyscale Usage
+### Basic Usage
 
 ```sh
 node bmpToGreyscale.js eyeBlink
 ```
 
 Result: `output/eyeBlink.h` with arrays named eyeBlink0, eyeBlink1, eyeBlink2, etc.
-
-### RLE Output Usage
-
-```sh
-node bmpToGreyscale.js mouthLaugh rle
-```
-
-Result: `output/mouthLaugh.h` with arrays named mouthLaugh0_rle, mouthLaugh1_rle, etc.
-
-### Using the Dedicated RLE Tool
-
-```sh
-node bmpToRLE.js mouthLaugh
-```
-
-Result: `output/mouthLaugh.h` with arrays named mouthLaugh0_rle, mouthLaugh1_rle, etc.
 
 ### Using Default Name
 

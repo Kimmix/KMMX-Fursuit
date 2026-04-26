@@ -4,7 +4,6 @@ import path from 'node:path';
 
 // Get bitmapName from command line arguments, with fallback
 const bitmapName = process.argv[2] || 'defaultBitmap';
-const encoding = (process.argv[3] || 'both').toLowerCase(); // 'raw', 'rle', or 'both'
 
 // Directory containing GIF files
 const inputDirectory = './input';
@@ -17,21 +16,16 @@ if (bitmapName.toLowerCase().includes('eye')) {
     baseDirectory = '../../src/Bitmaps/mouth';
 }
 
-// Separate directories for raw and RLE
-const outputDirectoryRaw = `${baseDirectory}`;
-const outputDirectoryRLE = `${baseDirectory}_RLE`;
+// Output directory
+const outputDirectory = `${baseDirectory}`;
 
-// Ensure output directories exist
-if (!fs.existsSync(outputDirectoryRaw)) {
-    fs.mkdirSync(outputDirectoryRaw, { recursive: true });
-}
-if (!fs.existsSync(outputDirectoryRLE)) {
-    fs.mkdirSync(outputDirectoryRLE, { recursive: true });
+// Ensure output directory exists
+if (!fs.existsSync(outputDirectory)) {
+    fs.mkdirSync(outputDirectory, { recursive: true });
 }
 
-// Output file path(s)
-const outputFileRaw = `${outputDirectoryRaw}/${bitmapName}.h`;
-const outputFileRLE = `${outputDirectoryRLE}/${bitmapName}.h`;
+// Output file path
+const outputFile = `${outputDirectory}/${bitmapName}.h`;
 
 // Process each GIF file in the directory
 fs.readdir(inputDirectory, async (err, files) => {
@@ -49,26 +43,10 @@ fs.readdir(inputDirectory, async (err, files) => {
         }
     }
 
-    // Generate output based on encoding parameter
-    if (encoding === 'both') {
-        // Generate both raw and RLE versions
-        const rawContent = generateOutputFileContent(allGreyscaleArrays);
-        const rleContent = generateRLEOutputFileContent(allGreyscaleArrays);
-
-        fs.writeFileSync(outputFileRaw, rawContent);
-        console.log(`Raw output file generated: ${outputFileRaw}`);
-
-        fs.writeFileSync(outputFileRLE, rleContent);
-        console.log(`RLE output file generated: ${outputFileRLE}`);
-    } else if (encoding === 'rle') {
-        const rleContent = generateRLEOutputFileContent(allGreyscaleArrays);
-        fs.writeFileSync(outputFileRLE, rleContent);
-        console.log(`RLE output file generated: ${outputFileRLE}`);
-    } else {
-        const rawContent = generateOutputFileContent(allGreyscaleArrays);
-        fs.writeFileSync(outputFileRaw, rawContent);
-        console.log(`Raw output file generated: ${outputFileRaw}`);
-    }
+    // Generate output file
+    const content = generateOutputFileContent(allGreyscaleArrays);
+    fs.writeFileSync(outputFile, content);
+    console.log(`Output file generated: ${outputFile}`);
 });
 
 async function processGif(inputPath) {
@@ -87,39 +65,6 @@ async function processGif(inputPath) {
                 resolve(greyscaleArray);
             });
     });
-}
-
-function rleEncode(data) {
-    const rle = [];
-    let i = 0;
-    while (i < data.length) {
-        let count = 1;
-        while (i + count < data.length && data[i] === data[i + count] && count < 255) {
-            count++;
-        }
-        rle.push(count, data[i]);
-        i += count;
-    }
-    return rle;
-}
-
-function generateRLEOutputFileContent(greyscaleArrays) {
-    const lines = ['// Generated RLE output'];
-    for (const { data, index } of greyscaleArrays) {
-        const sectionName = `${bitmapName}${index}`;
-        const rleData = rleEncode(data);
-        const sectionLines = [
-            `static const uint8_t PROGMEM ${sectionName}[${rleData.length}] = {`
-        ];
-        for (let i = 0; i < rleData.length; i += 16) {
-            const chunk = rleData.slice(i, i + 16);
-            const line = chunk.map(value => `0x${value.toString(16).padStart(2, '0')}`).join(', ');
-            sectionLines.push(`    ${line},`);
-        }
-        sectionLines.push(`};`);
-        lines.push(...sectionLines, '');
-    }
-    return lines.join('\n');
 }
 
 function generateOutputFileContent(greyscaleArrays) {
