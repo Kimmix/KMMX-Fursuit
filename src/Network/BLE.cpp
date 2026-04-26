@@ -4,6 +4,36 @@
 
 BLEManager* BLEManager::instance = nullptr;
 
+// Define static callback instances (initialized with function pointers)
+ServerCallbacks BLEManager::serverCallbacks;
+CharacteristicCallbacks BLEManager::displayBrightnessCallbacks(BLEManager::onDisplayBrightnessWrite);
+CharacteristicCallbacks BLEManager::eyeStateCallbacks(BLEManager::onEyeStateWrite);
+CharacteristicCallbacks BLEManager::mouthStateCallbacks(BLEManager::onMouthStateWrite);
+CharacteristicCallbacks BLEManager::visemeCallbacks(BLEManager::onVisemeStateWrite);
+CharacteristicCallbacks BLEManager::hornBrightnessCallbacks(BLEManager::onHornBrightnessWrite);
+CharacteristicCallbacks BLEManager::cheekBrightnessCallbacks(BLEManager::onCheekBrightnessWrite);
+CharacteristicCallbacks BLEManager::cheekBgColorCallbacks(BLEManager::onCheekBgColorWrite);
+CharacteristicCallbacks BLEManager::cheekFadeColorCallbacks(BLEManager::onCheekFadeColorWrite);
+CharacteristicCallbacks BLEManager::displayColorModeCallbacks(BLEManager::onDisplayColorModeWrite);
+CharacteristicCallbacks BLEManager::displayEffectColor1Callbacks(BLEManager::onDisplayEffectColor1Write);
+CharacteristicCallbacks BLEManager::displayEffectColor2Callbacks(BLEManager::onDisplayEffectColor2Write);
+CharacteristicCallbacks BLEManager::displayEffectOption1Callbacks(BLEManager::onDisplayEffectOption1Write);
+CharacteristicCallbacks BLEManager::displayEffectOption2Callbacks(BLEManager::onDisplayEffectOption2Write);
+CharacteristicCallbacks BLEManager::displayEffectOption3Callbacks(BLEManager::onDisplayEffectOption3Write);
+CharacteristicCallbacks BLEManager::rebootCallbacks(BLEManager::onRebootWrite);
+
+// ServerCallbacks implementations
+void ServerCallbacks::onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) {
+    Serial.println(F("[ServerCallbacks] onConnect triggered"));
+    BLEManager::onConnect();
+}
+
+void ServerCallbacks::onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) {
+    Serial.print(F("[ServerCallbacks] onDisconnect triggered, reason: "));
+    Serial.println(reason);
+    BLEManager::onDisconnect();
+}
+
 BLEManager& BLEManager::getInstance(KMMXController& ctrl) {
     if (!instance) {
         instance = new BLEManager(ctrl);
@@ -43,7 +73,8 @@ void BLEManager::setup() {
 
     // Create BLE Server
     pServer = NimBLEDevice::createServer();
-    pServer->setCallbacks(new ServerCallbacks(onConnect, onDisconnect));
+    pServer->setCallbacks(&serverCallbacks);
+    pServer->advertiseOnDisconnect(true);  // Automatically restart advertising on disconnect
 
     // Create BLE Service
     pService = pServer->createService(BLE_SERVICE_UUID);
@@ -160,29 +191,50 @@ void BLEManager::setup() {
     uint8_t direction = controller.getDisplayEffectDirectionInverted();
     displayEffectOption3Characteristic->setValue(&direction, 1);
 
-    // Set callbacks for each characteristic
-    displayBrightnessCharacteristic->setCallbacks(new CharacteristicCallbacks(onDisplayBrightnessWrite));
-    eyeStateCharacteristic->setCallbacks(new CharacteristicCallbacks(onEyeStateWrite));
-    mouthStateCharacteristic->setCallbacks(new CharacteristicCallbacks(onMouthStateWrite));
-    visemeCharacteristic->setCallbacks(new CharacteristicCallbacks(onVisemeStateWrite));
-    hornBrightnessCharacteristic->setCallbacks(new CharacteristicCallbacks(onHornBrightnessWrite));
-    cheekBrightnessCharacteristic->setCallbacks(new CharacteristicCallbacks(onCheekBrightnessWrite));
-    cheekBgColorCharacteristic->setCallbacks(new CharacteristicCallbacks(onCheekBgColorWrite));
-    cheekFadeColorCharacteristic->setCallbacks(new CharacteristicCallbacks(onCheekFadeColorWrite));
-    displayColorModeCharacteristic->setCallbacks(new CharacteristicCallbacks(onDisplayColorModeWrite));
-    displayEffectColor1Characteristic->setCallbacks(new CharacteristicCallbacks(onDisplayEffectColor1Write));
-    displayEffectColor2Characteristic->setCallbacks(new CharacteristicCallbacks(onDisplayEffectColor2Write));
-    displayEffectOption1Characteristic->setCallbacks(new CharacteristicCallbacks(onDisplayEffectOption1Write));
-    displayEffectOption2Characteristic->setCallbacks(new CharacteristicCallbacks(onDisplayEffectOption2Write));
-    displayEffectOption3Characteristic->setCallbacks(new CharacteristicCallbacks(onDisplayEffectOption3Write));
-    rebootCharacteristic->setCallbacks(new CharacteristicCallbacks(onRebootWrite));
+    // Set callbacks for each characteristic (using static instances - no memory leaks!)
+    displayBrightnessCharacteristic->setCallbacks(&displayBrightnessCallbacks);
+    eyeStateCharacteristic->setCallbacks(&eyeStateCallbacks);
+    mouthStateCharacteristic->setCallbacks(&mouthStateCallbacks);
+    visemeCharacteristic->setCallbacks(&visemeCallbacks);
+    hornBrightnessCharacteristic->setCallbacks(&hornBrightnessCallbacks);
+    cheekBrightnessCharacteristic->setCallbacks(&cheekBrightnessCallbacks);
+    cheekBgColorCharacteristic->setCallbacks(&cheekBgColorCallbacks);
+    cheekFadeColorCharacteristic->setCallbacks(&cheekFadeColorCallbacks);
+    displayColorModeCharacteristic->setCallbacks(&displayColorModeCallbacks);
+    displayEffectColor1Characteristic->setCallbacks(&displayEffectColor1Callbacks);
+    displayEffectColor2Characteristic->setCallbacks(&displayEffectColor2Callbacks);
+    displayEffectOption1Characteristic->setCallbacks(&displayEffectOption1Callbacks);
+    displayEffectOption2Characteristic->setCallbacks(&displayEffectOption2Callbacks);
+    displayEffectOption3Characteristic->setCallbacks(&displayEffectOption3Callbacks);
+    rebootCharacteristic->setCallbacks(&rebootCallbacks);
 
-    // Start the service
-    pService->start();
+    // Start the server (this automatically starts all services)
+    pServer->start();
 
     // Configure advertising
     NimBLEAdvertising* pAdvertising = NimBLEDevice::getAdvertising();
-    pAdvertising->addServiceUUID(BLE_SERVICE_UUID);
+
+    // Create advertising data with manufacturer info and appearance
+    NimBLEAdvertisementData advData;
+    advData.setFlags(BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP);  // General discoverable, BR/EDR not supported
+    advData.setCompleteServices(BLEUUID(BLE_SERVICE_UUID));  // Service UUID
+    advData.setAppearance(0x03C0);  // Generic Display appearance
+
+    // Add manufacturer data (0xFFFF = Custom/Test Company ID)
+    // Format: [Company ID Low, Company ID High, ...custom data...]
+    uint8_t mfgData[] = {
+        0xFF, 0xFF,           // Company ID (0xFFFF = custom)
+        'K', 'M', 'M', 'X',   // KMMX identifier
+        0x01, 0x00            // Version 1.0
+    };
+    advData.setManufacturerData(std::string((char*)mfgData, sizeof(mfgData)));
+
+    // Create scan response data with device name
+    NimBLEAdvertisementData scanResponseData;
+    scanResponseData.setName(BLE_DEVICE_NAME);
+
+    pAdvertising->setAdvertisementData(advData);
+    pAdvertising->setScanResponseData(scanResponseData);
     pAdvertising->setMinInterval(0x20);  // 20ms intervals (0x20 * 0.625ms = 20ms)
     pAdvertising->setMaxInterval(0x40);  // 40ms intervals (0x40 * 0.625ms = 40ms)
 
@@ -194,24 +246,19 @@ void BLEManager::setup() {
     }
 }
 
-void BLEManager::poll() {
-    // NimBLE handles callbacks automatically, no polling needed
-}
-
 bool BLEManager::isConnected() const {
     return pServer && pServer->getConnectedCount() > 0;
 }
 
 void BLEManager::onConnect() {
-    Serial.println(F("Connected event"));
+    Serial.println(F("[BLEManager] Connected event"));
     digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void BLEManager::onDisconnect() {
-    Serial.println(F("Disconnected event"));
+    Serial.println(F("[BLEManager] Disconnected event"));
     digitalWrite(LED_BUILTIN, LOW);
-    // Restart advertising after disconnect
-    NimBLEDevice::getAdvertising()->start();
+    // Note: Advertising automatically restarts thanks to advertiseOnDisconnect(true)
 }
 
 void BLEManager::onDisplayBrightnessWrite(const uint8_t* data, size_t length) {

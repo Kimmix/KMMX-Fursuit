@@ -35,9 +35,15 @@
 // Enable RLE bitmap support
 #define USE_RLE_BITMAPS 0
 
-// BLE settings
+// BLE settings - can be overridden by platformio.ini build flags
+#ifndef BLE_DEVICE_NAME
 #define BLE_DEVICE_NAME "KMMX"
+#endif
+
+#ifndef BLE_LOCAL_NAME
 #define BLE_LOCAL_NAME "KMMX-BLE"
+#endif
+
 #define BLE_SERVICE_UUID "c1449275-bf34-40ab-979d-e34a1fdbb129"
 #define BLE_DISPLAY_BRIGHTNESS_CHARACTERISTIC_UUID "9fdfd124-966b-44f7-8331-778c4d1512fc"
 #define BLE_EYE_STATE_CHARACTERISTIC_UUID "49a36bb2-1c66-4e5c-8ff3-28e55a64beb3"

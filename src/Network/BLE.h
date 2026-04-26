@@ -2,6 +2,9 @@
 #include <NimBLEDevice.h>
 #include "KMMXController/KMMXController.h"
 
+// Forward declaration
+class BLEManager;
+
 // Callback classes for NimBLE characteristics
 class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
    public:
@@ -18,28 +21,18 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
 
 class ServerCallbacks : public NimBLEServerCallbacks {
    public:
-    ServerCallbacks(void (*onConnectCallback)(), void (*onDisconnectCallback)())
-        : onConnectCb(onConnectCallback), onDisconnectCb(onDisconnectCallback) {}
-
-    void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) {
-        if (onConnectCb) onConnectCb();
-    }
-
-    void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) {
-        if (onDisconnectCb) onDisconnectCb();
-    }
-
-   private:
-    void (*onConnectCb)();
-    void (*onDisconnectCb)();
+    void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo);
+    void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason);  // Fixed: added 'int reason'
 };
 
 class BLEManager {
    public:
     static BLEManager& getInstance(KMMXController& controller);
     void setup();
-    void poll();
     bool isConnected() const;
+
+    // Allow ServerCallbacks to access private methods
+    friend class ServerCallbacks;
 
    private:
     BLEManager(KMMXController& controller);
@@ -64,6 +57,24 @@ class BLEManager {
     NimBLECharacteristic* rebootCharacteristic;
 
     static BLEManager* instance;
+
+    // Static callback instances (no heap allocation, no memory leaks)
+    static ServerCallbacks serverCallbacks;
+    static CharacteristicCallbacks displayBrightnessCallbacks;
+    static CharacteristicCallbacks eyeStateCallbacks;
+    static CharacteristicCallbacks mouthStateCallbacks;
+    static CharacteristicCallbacks visemeCallbacks;
+    static CharacteristicCallbacks hornBrightnessCallbacks;
+    static CharacteristicCallbacks cheekBrightnessCallbacks;
+    static CharacteristicCallbacks cheekBgColorCallbacks;
+    static CharacteristicCallbacks cheekFadeColorCallbacks;
+    static CharacteristicCallbacks displayColorModeCallbacks;
+    static CharacteristicCallbacks displayEffectColor1Callbacks;
+    static CharacteristicCallbacks displayEffectColor2Callbacks;
+    static CharacteristicCallbacks displayEffectOption1Callbacks;
+    static CharacteristicCallbacks displayEffectOption2Callbacks;
+    static CharacteristicCallbacks displayEffectOption3Callbacks;
+    static CharacteristicCallbacks rebootCallbacks;
 
     // Callback handlers
     static void onConnect();

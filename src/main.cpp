@@ -15,7 +15,6 @@ void setup() {
 }
 
 void loop() {
-    bleManager.poll();
     controller.update();
     // showFPS();
 }
