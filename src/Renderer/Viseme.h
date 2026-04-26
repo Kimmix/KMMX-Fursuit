@@ -22,6 +22,7 @@ class Viseme {
     float getNoiseThreshold();
     void setNoiseThreshold(float value);
     VisemeType getCurrentViseme() const { return previousViseme; }
+    uint16_t getLoudness() const { return currentLoudness; }
 
    private:
     I2SMicrophone mic;
