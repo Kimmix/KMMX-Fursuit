@@ -2,7 +2,6 @@
 #include <Arduino.h>
 #include "config.h"
 
-
 BLEManager* BLEManager::instance = nullptr;
 
 BLEManager& BLEManager::getInstance(KMMXController& ctrl) {
@@ -13,304 +12,358 @@ BLEManager& BLEManager::getInstance(KMMXController& ctrl) {
 }
 
 BLEManager::BLEManager(KMMXController& ctrl) : controller(ctrl),
-                                           protoService(BLE_SERVICE_UUID),
-                                           displayBrightnessCharacteristic(BLE_DISPLAY_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           eyeStateCharacteristic(BLE_EYE_STATE_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           mouthStateCharacteristic(BLE_MOUTH_STATE_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           visemeCharacteristic(BLE_VISEME_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           hornBrightnessCharacteristic(BLE_HORN_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           cheekBrightnessCharacteristic(BLE_CHEEK_BRIGHTNESS_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           cheekBgColorCharacteristic(BLE_CHEEK_BG_COLOR_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
-                                           cheekFadeColorCharacteristic(BLE_CHEEK_FADE_COLOR_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
-                                           displayColorModeCharacteristic(BLE_DISPLAY_COLOR_MODE_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           displayEffectColor1Characteristic(BLE_DISPLAY_EFFECT_COLOR1_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
-                                           displayEffectColor2Characteristic(BLE_DISPLAY_EFFECT_COLOR2_CHARACTERISTIC_UUID, BLERead | BLEWrite, 3),
-                                           displayEffectOption1Characteristic(BLE_DISPLAY_EFFECT_OPTION1_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           displayEffectOption2Characteristic(BLE_DISPLAY_EFFECT_OPTION2_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           displayEffectOption3Characteristic(BLE_DISPLAY_EFFECT_OPTION3_CHARACTERISTIC_UUID, BLERead | BLEWrite),
-                                           rebootCharacteristic(BLE_REBOOT_CHARACTERISTIC_UUID, BLEWrite) {
+                                               pServer(nullptr),
+                                               pService(nullptr),
+                                               displayBrightnessCharacteristic(nullptr),
+                                               eyeStateCharacteristic(nullptr),
+                                               mouthStateCharacteristic(nullptr),
+                                               visemeCharacteristic(nullptr),
+                                               hornBrightnessCharacteristic(nullptr),
+                                               cheekBrightnessCharacteristic(nullptr),
+                                               cheekBgColorCharacteristic(nullptr),
+                                               cheekFadeColorCharacteristic(nullptr),
+                                               displayColorModeCharacteristic(nullptr),
+                                               displayEffectColor1Characteristic(nullptr),
+                                               displayEffectColor2Characteristic(nullptr),
+                                               displayEffectOption1Characteristic(nullptr),
+                                               displayEffectOption2Characteristic(nullptr),
+                                               displayEffectOption3Characteristic(nullptr),
+                                               rebootCharacteristic(nullptr) {
 }
 
 void BLEManager::setup() {
     Serial.println(F("Booting BLE..."));
     pinMode(LED_BUILTIN, OUTPUT);
-    if (!BLE.begin()) {
-        Serial.println(F("--------- Failed to initialize BLE! ---------"));
-        return;
-    }
-    BLE.setDeviceName(BLE_DEVICE_NAME);
-    BLE.setLocalName(BLE_LOCAL_NAME);
 
-    // Define the BLE protoService and characteristic
-    BLE.setAdvertisedService(protoService);
-    protoService.addCharacteristic(displayBrightnessCharacteristic);
-    protoService.addCharacteristic(eyeStateCharacteristic);
-    protoService.addCharacteristic(mouthStateCharacteristic);
-    protoService.addCharacteristic(visemeCharacteristic);
-    protoService.addCharacteristic(hornBrightnessCharacteristic);
-    protoService.addCharacteristic(cheekBrightnessCharacteristic);
-    protoService.addCharacteristic(cheekBgColorCharacteristic);
-    protoService.addCharacteristic(cheekFadeColorCharacteristic);
-    protoService.addCharacteristic(displayColorModeCharacteristic);
-    protoService.addCharacteristic(displayEffectColor1Characteristic);
-    protoService.addCharacteristic(displayEffectColor2Characteristic);
-    protoService.addCharacteristic(displayEffectOption1Characteristic);
-    protoService.addCharacteristic(displayEffectOption2Characteristic);
-    protoService.addCharacteristic(displayEffectOption3Characteristic);
-    protoService.addCharacteristic(rebootCharacteristic);
+    // Initialize NimBLE with device name
+    NimBLEDevice::init(BLE_DEVICE_NAME);
+
+    // Set power level for better range (optional)
+    NimBLEDevice::setPower(ESP_PWR_LVL_P9);  // +9dBm
+
+    // Create BLE Server
+    pServer = NimBLEDevice::createServer();
+    pServer->setCallbacks(new ServerCallbacks(onConnect, onDisconnect));
+
+    // Create BLE Service
+    pService = pServer->createService(BLE_SERVICE_UUID);
+
+    // Create characteristics with Read & Write properties
+    displayBrightnessCharacteristic = pService->createCharacteristic(
+        BLE_DISPLAY_BRIGHTNESS_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    eyeStateCharacteristic = pService->createCharacteristic(
+        BLE_EYE_STATE_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    mouthStateCharacteristic = pService->createCharacteristic(
+        BLE_MOUTH_STATE_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    visemeCharacteristic = pService->createCharacteristic(
+        BLE_VISEME_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    hornBrightnessCharacteristic = pService->createCharacteristic(
+        BLE_HORN_BRIGHTNESS_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    cheekBrightnessCharacteristic = pService->createCharacteristic(
+        BLE_CHEEK_BRIGHTNESS_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    cheekBgColorCharacteristic = pService->createCharacteristic(
+        BLE_CHEEK_BG_COLOR_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    cheekFadeColorCharacteristic = pService->createCharacteristic(
+        BLE_CHEEK_FADE_COLOR_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    displayColorModeCharacteristic = pService->createCharacteristic(
+        BLE_DISPLAY_COLOR_MODE_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    displayEffectColor1Characteristic = pService->createCharacteristic(
+        BLE_DISPLAY_EFFECT_COLOR1_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    displayEffectColor2Characteristic = pService->createCharacteristic(
+        BLE_DISPLAY_EFFECT_COLOR2_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    displayEffectOption1Characteristic = pService->createCharacteristic(
+        BLE_DISPLAY_EFFECT_OPTION1_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    displayEffectOption2Characteristic = pService->createCharacteristic(
+        BLE_DISPLAY_EFFECT_OPTION2_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    displayEffectOption3Characteristic = pService->createCharacteristic(
+        BLE_DISPLAY_EFFECT_OPTION3_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    rebootCharacteristic = pService->createCharacteristic(
+        BLE_REBOOT_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::WRITE);
 
     // Set default values for each characteristic
-    displayBrightnessCharacteristic.setValue(controller.getDisplayBrightness());
-    eyeStateCharacteristic.setValue(0x00);
-    mouthStateCharacteristic.setValue(0x00);
-    visemeCharacteristic.setValue(controller.getViseme());
-    hornBrightnessCharacteristic.setValue(controller.getHornBrightness());
-    cheekBrightnessCharacteristic.setValue(controller.getCheekBrightness());
+    uint8_t brightnessValue = controller.getDisplayBrightness();
+    displayBrightnessCharacteristic->setValue(&brightnessValue, 1);
+
+    uint8_t eyeValue = 0x00;
+    eyeStateCharacteristic->setValue(&eyeValue, 1);
+
+    uint8_t mouthValue = 0x00;
+    mouthStateCharacteristic->setValue(&mouthValue, 1);
+
+    uint8_t visemeValue = controller.getViseme();
+    visemeCharacteristic->setValue(&visemeValue, 1);
+
+    uint8_t hornValue = controller.getHornBrightness();
+    hornBrightnessCharacteristic->setValue(&hornValue, 1);
+
+    uint8_t cheekValue = controller.getCheekBrightness();
+    cheekBrightnessCharacteristic->setValue(&cheekValue, 1);
 
     // Set default color values (RGB format)
     uint32_t bgColor = controller.getCheekBackgroundColor();
     uint8_t bgColorData[3] = {(uint8_t)(bgColor >> 16), (uint8_t)(bgColor >> 8), (uint8_t)bgColor};
-    cheekBgColorCharacteristic.setValue(bgColorData, 3);
+    cheekBgColorCharacteristic->setValue(bgColorData, 3);
 
     uint32_t fadeColor = controller.getCheekFadeColor();
     uint8_t fadeColorData[3] = {(uint8_t)(fadeColor >> 16), (uint8_t)(fadeColor >> 8), (uint8_t)fadeColor};
-    cheekFadeColorCharacteristic.setValue(fadeColorData, 3);
+    cheekFadeColorCharacteristic->setValue(fadeColorData, 3);
 
-    // Set display color mode and effect color values
-    displayColorModeCharacteristic.setValue(controller.getDisplayColorMode());
+    // Set display color mode
+    uint8_t colorMode = controller.getDisplayColorMode();
+    displayColorModeCharacteristic->setValue(&colorMode, 1);
 
+    // Set effect color values
     uint8_t color1R, color1G, color1B, color2R, color2G, color2B;
     controller.getDisplayGradientTopColor(color1R, color1G, color1B);
     controller.getDisplayGradientBottomColor(color2R, color2G, color2B);
     uint8_t color1Data[3] = {color1R, color1G, color1B};
     uint8_t color2Data[3] = {color2R, color2G, color2B};
-    displayEffectColor1Characteristic.setValue(color1Data, 3);
-    displayEffectColor2Characteristic.setValue(color2Data, 3);
+    displayEffectColor1Characteristic->setValue(color1Data, 3);
+    displayEffectColor2Characteristic->setValue(color2Data, 3);
 
-    // Set effect option values (Option1 = thickness, Option2 = speed, Option3 = direction for modes 4 & 5)
-    displayEffectOption1Characteristic.setValue(controller.getDisplayEffectThickness());
-    displayEffectOption2Characteristic.setValue(controller.getDisplayEffectSpeed());
-    displayEffectOption3Characteristic.setValue(controller.getDisplayEffectDirectionInverted());
+    // Set effect option values
+    uint8_t thickness = controller.getDisplayEffectThickness();
+    displayEffectOption1Characteristic->setValue(&thickness, 1);
 
-    BLE.addService(protoService);
-    BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
-    BLE.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
+    uint8_t speed = controller.getDisplayEffectSpeed();
+    displayEffectOption2Characteristic->setValue(&speed, 1);
 
-    // Assign event handlers for characteristic
-    displayBrightnessCharacteristic.setEventHandler(BLEWritten, displayBrightnessWritten);
-    eyeStateCharacteristic.setEventHandler(BLEWritten, eyeStateWritten);
-    mouthStateCharacteristic.setEventHandler(BLEWritten, mouthStateWritten);
-    visemeCharacteristic.setEventHandler(BLEWritten, visemeStateWritten);
-    hornBrightnessCharacteristic.setEventHandler(BLEWritten, hornBrightnessWritten);
-    cheekBrightnessCharacteristic.setEventHandler(BLEWritten, cheekBrightnessWritten);
-    cheekBgColorCharacteristic.setEventHandler(BLEWritten, cheekBgColorWritten);
-    cheekFadeColorCharacteristic.setEventHandler(BLEWritten, cheekFadeColorWritten);
-    displayColorModeCharacteristic.setEventHandler(BLEWritten, displayColorModeWritten);
-    displayEffectColor1Characteristic.setEventHandler(BLEWritten, displayEffectColor1Written);
-    displayEffectColor2Characteristic.setEventHandler(BLEWritten, displayEffectColor2Written);
-    displayEffectOption1Characteristic.setEventHandler(BLEWritten, displayEffectOption1Written);
-    displayEffectOption2Characteristic.setEventHandler(BLEWritten, displayEffectOption2Written);
-    displayEffectOption3Characteristic.setEventHandler(BLEWritten, displayEffectOption3Written);
-    rebootCharacteristic.setEventHandler(BLEWritten, rebootWritten);
+    uint8_t direction = controller.getDisplayEffectDirectionInverted();
+    displayEffectOption3Characteristic->setValue(&direction, 1);
 
-    // Start advertising the BLE pService
-    BLE.advertise();
-    Serial.println(F("Bluetooth® device active, waiting for connections..."));
+    // Set callbacks for each characteristic
+    displayBrightnessCharacteristic->setCallbacks(new CharacteristicCallbacks(onDisplayBrightnessWrite));
+    eyeStateCharacteristic->setCallbacks(new CharacteristicCallbacks(onEyeStateWrite));
+    mouthStateCharacteristic->setCallbacks(new CharacteristicCallbacks(onMouthStateWrite));
+    visemeCharacteristic->setCallbacks(new CharacteristicCallbacks(onVisemeStateWrite));
+    hornBrightnessCharacteristic->setCallbacks(new CharacteristicCallbacks(onHornBrightnessWrite));
+    cheekBrightnessCharacteristic->setCallbacks(new CharacteristicCallbacks(onCheekBrightnessWrite));
+    cheekBgColorCharacteristic->setCallbacks(new CharacteristicCallbacks(onCheekBgColorWrite));
+    cheekFadeColorCharacteristic->setCallbacks(new CharacteristicCallbacks(onCheekFadeColorWrite));
+    displayColorModeCharacteristic->setCallbacks(new CharacteristicCallbacks(onDisplayColorModeWrite));
+    displayEffectColor1Characteristic->setCallbacks(new CharacteristicCallbacks(onDisplayEffectColor1Write));
+    displayEffectColor2Characteristic->setCallbacks(new CharacteristicCallbacks(onDisplayEffectColor2Write));
+    displayEffectOption1Characteristic->setCallbacks(new CharacteristicCallbacks(onDisplayEffectOption1Write));
+    displayEffectOption2Characteristic->setCallbacks(new CharacteristicCallbacks(onDisplayEffectOption2Write));
+    displayEffectOption3Characteristic->setCallbacks(new CharacteristicCallbacks(onDisplayEffectOption3Write));
+    rebootCharacteristic->setCallbacks(new CharacteristicCallbacks(onRebootWrite));
+
+    // Start the service
+    pService->start();
+
+    // Configure advertising
+    NimBLEAdvertising* pAdvertising = NimBLEDevice::getAdvertising();
+    pAdvertising->addServiceUUID(BLE_SERVICE_UUID);
+    pAdvertising->setMinInterval(0x20);  // 20ms intervals (0x20 * 0.625ms = 20ms)
+    pAdvertising->setMaxInterval(0x40);  // 40ms intervals (0x40 * 0.625ms = 40ms)
+
+    // Start advertising
+    if (pAdvertising->start()) {
+        Serial.println(F("Bluetooth® device active, waiting for connections..."));
+    } else {
+        Serial.println(F("Failed to start advertising!"));
+    }
 }
 
 void BLEManager::poll() {
-    BLE.poll();
+    // NimBLE handles callbacks automatically, no polling needed
 }
 
 bool BLEManager::isConnected() const {
-    return BLE.connected();
+    return pServer && pServer->getConnectedCount() > 0;
 }
 
-void BLEManager::blePeripheralConnectHandler(BLEDevice central) {
-    Serial.print(F("Connected event, central: "));
-    Serial.println(central.address());
+void BLEManager::onConnect() {
+    Serial.println(F("Connected event"));
     digitalWrite(LED_BUILTIN, HIGH);
 }
 
-void BLEManager::blePeripheralDisconnectHandler(BLEDevice central) {
-    Serial.print(F("Disconnected event, central: "));
-    Serial.println(central.address());
+void BLEManager::onDisconnect() {
+    Serial.println(F("Disconnected event"));
     digitalWrite(LED_BUILTIN, LOW);
+    // Restart advertising after disconnect
+    NimBLEDevice::getAdvertising()->start();
 }
 
-void BLEManager::displayBrightnessWritten(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
+void BLEManager::onDisplayBrightnessWrite(const uint8_t* data, size_t length) {
+    if (instance && length >= 1) {
         Serial.print(F("[BLE] Display Brightness: "));
         Serial.println(*data);
         instance->controller.setDisplayBrightness(static_cast<int>(*data));
     }
 }
 
-void BLEManager::eyeStateWritten(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
+void BLEManager::onEyeStateWrite(const uint8_t* data, size_t length) {
+    if (instance && length >= 1) {
         Serial.print(F("[BLE] Eye State: "));
         Serial.println(*data);
         instance->controller.setEye(static_cast<int>(*data));
     }
 }
 
-void BLEManager::mouthStateWritten(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
+void BLEManager::onMouthStateWrite(const uint8_t* data, size_t length) {
+    if (instance && length >= 1) {
         Serial.print(F("[BLE] Mouth State: "));
         Serial.println(*data);
         instance->controller.setMouth(static_cast<int>(*data));
     }
 }
 
-void BLEManager::visemeStateWritten(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
+void BLEManager::onVisemeStateWrite(const uint8_t* data, size_t length) {
+    if (instance && length >= 1) {
         Serial.print(F("[BLE] Viseme: "));
         Serial.println(*data);
         instance->controller.setViseme(static_cast<int>(*data));
     }
 }
 
-void BLEManager::hornBrightnessWritten(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
+void BLEManager::onHornBrightnessWrite(const uint8_t* data, size_t length) {
+    if (instance && length >= 1) {
         Serial.print(F("[BLE] Horn Brightness: "));
         Serial.println(*data);
         instance->controller.setHornBrightness(static_cast<int>(*data));
     }
 }
 
-void BLEManager::cheekBrightnessWritten(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
+void BLEManager::onCheekBrightnessWrite(const uint8_t* data, size_t length) {
+    if (instance && length >= 1) {
         Serial.print(F("[BLE] Cheek Brightness: "));
         Serial.println(*data);
         instance->controller.setCheekBrightness(static_cast<int>(*data));
     }
 }
 
-void BLEManager::cheekBgColorWritten(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
-        if (characteristic.valueLength() >= 3) {
-            Serial.print(F("[BLE] Cheek BG Color: R="));
-            Serial.print(data[0]);
-            Serial.print(F(" G="));
-            Serial.print(data[1]);
-            Serial.print(F(" B="));
-            Serial.println(data[2]);
-            instance->controller.setCheekBackgroundColor(data[0], data[1], data[2]);
-        }
+void BLEManager::onCheekBgColorWrite(const uint8_t* data, size_t length) {
+    if (instance && length >= 3) {
+        Serial.print(F("[BLE] Cheek BG Color: R="));
+        Serial.print(data[0]);
+        Serial.print(F(" G="));
+        Serial.print(data[1]);
+        Serial.print(F(" B="));
+        Serial.println(data[2]);
+        instance->controller.setCheekBackgroundColor(data[0], data[1], data[2]);
     }
 }
 
-void BLEManager::cheekFadeColorWritten(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
-        if (characteristic.valueLength() >= 3) {
-            Serial.print(F("[BLE] Cheek Fade Color: R="));
-            Serial.print(data[0]);
-            Serial.print(F(" G="));
-            Serial.print(data[1]);
-            Serial.print(F(" B="));
-            Serial.println(data[2]);
-            instance->controller.setCheekFadeColor(data[0], data[1], data[2]);
-        }
+void BLEManager::onCheekFadeColorWrite(const uint8_t* data, size_t length) {
+    if (instance && length >= 3) {
+        Serial.print(F("[BLE] Cheek Fade Color: R="));
+        Serial.print(data[0]);
+        Serial.print(F(" G="));
+        Serial.print(data[1]);
+        Serial.print(F(" B="));
+        Serial.println(data[2]);
+        instance->controller.setCheekFadeColor(data[0], data[1], data[2]);
     }
 }
 
-void BLEManager::displayColorModeWritten(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
+void BLEManager::onDisplayColorModeWrite(const uint8_t* data, size_t length) {
+    if (instance && length >= 1) {
         Serial.print(F("[BLE] Display Color Mode: "));
         Serial.println(*data);
         instance->controller.setDisplayColorMode(static_cast<uint8_t>(*data));
     }
 }
 
-void BLEManager::displayEffectColor1Written(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
-        if (characteristic.valueLength() >= 3) {
-            uint8_t r, g, b, color2R, color2G, color2B;
-            r = data[0];
-            g = data[1];
-            b = data[2];
-            Serial.print(F("[BLE] Display Effect Color 1: R="));
-            Serial.print(r);
-            Serial.print(F(" G="));
-            Serial.print(g);
-            Serial.print(F(" B="));
-            Serial.println(b);
-            // Get current color 2 to preserve it
-            instance->controller.getDisplayGradientBottomColor(color2R, color2G, color2B);
-            instance->controller.setDisplayGradientColors(r, g, b, color2R, color2G, color2B);
+void BLEManager::onDisplayEffectColor1Write(const uint8_t* data, size_t length) {
+    if (instance && length >= 3) {
+        uint8_t r, g, b, color2R, color2G, color2B;
+        r = data[0];
+        g = data[1];
+        b = data[2];
+        Serial.print(F("[BLE] Display Effect Color 1: R="));
+        Serial.print(r);
+        Serial.print(F(" G="));
+        Serial.print(g);
+        Serial.print(F(" B="));
+        Serial.println(b);
+        // Get current color 2 to preserve it
+        instance->controller.getDisplayGradientBottomColor(color2R, color2G, color2B);
+        instance->controller.setDisplayGradientColors(r, g, b, color2R, color2G, color2B);
 
-            // Also set the dual spiral and dual circle color (shared color for mode 4 & 5)
-            instance->controller.setDisplayDualSpiralColor(r, g, b);
-            instance->controller.setDisplayDualCircleColor(r, g, b);
-        }
+        // Also set the dual spiral and dual circle color (shared color for mode 4 & 5)
+        instance->controller.setDisplayDualSpiralColor(r, g, b);
+        instance->controller.setDisplayDualCircleColor(r, g, b);
     }
 }
 
-void BLEManager::displayEffectColor2Written(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
-        if (characteristic.valueLength() >= 3) {
-            uint8_t r, g, b, color1R, color1G, color1B;
-            r = data[0];
-            g = data[1];
-            b = data[2];
-            Serial.print(F("[BLE] Display Effect Color 2: R="));
-            Serial.print(r);
-            Serial.print(F(" G="));
-            Serial.print(g);
-            Serial.print(F(" B="));
-            Serial.println(b);
-            // Get current color 1 to preserve it
-            instance->controller.getDisplayGradientTopColor(color1R, color1G, color1B);
-            instance->controller.setDisplayGradientColors(color1R, color1G, color1B, r, g, b);
+void BLEManager::onDisplayEffectColor2Write(const uint8_t* data, size_t length) {
+    if (instance && length >= 3) {
+        uint8_t r, g, b, color1R, color1G, color1B;
+        r = data[0];
+        g = data[1];
+        b = data[2];
+        Serial.print(F("[BLE] Display Effect Color 2: R="));
+        Serial.print(r);
+        Serial.print(F(" G="));
+        Serial.print(g);
+        Serial.print(F(" B="));
+        Serial.println(b);
+        // Get current color 1 to preserve it
+        instance->controller.getDisplayGradientTopColor(color1R, color1G, color1B);
+        instance->controller.setDisplayGradientColors(color1R, color1G, color1B, r, g, b);
 
-            // Also set the dual spiral and dual circle color to match color 1
-            instance->controller.setDisplayDualSpiralColor(color1R, color1G, color1B);
-            instance->controller.setDisplayDualCircleColor(color1R, color1G, color1B);
-        }
+        // Also set the dual spiral and dual circle color to match color 1
+        instance->controller.setDisplayDualSpiralColor(color1R, color1G, color1B);
+        instance->controller.setDisplayDualCircleColor(color1R, color1G, color1B);
     }
 }
 
-void BLEManager::displayEffectOption1Written(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
+void BLEManager::onDisplayEffectOption1Write(const uint8_t* data, size_t length) {
+    if (instance && length >= 1) {
         Serial.print(F("[BLE] Display Effect Option 1 (Thickness): "));
         Serial.println(*data);
         instance->controller.setDisplayEffectThickness(*data);
     }
 }
 
-void BLEManager::displayEffectOption2Written(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
+void BLEManager::onDisplayEffectOption2Write(const uint8_t* data, size_t length) {
+    if (instance && length >= 1) {
         Serial.print(F("[BLE] Display Effect Option 2 (Speed): "));
         Serial.println(*data);
         instance->controller.setDisplayEffectSpeed(*data);
     }
 }
 
-void BLEManager::displayEffectOption3Written(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
+void BLEManager::onDisplayEffectOption3Write(const uint8_t* data, size_t length) {
+    if (instance && length >= 1) {
         Serial.print(F("[BLE] Display Effect Option 3 (Direction Inverted): "));
         Serial.println(*data);
         instance->controller.setDisplayEffectDirectionInverted(*data);
     }
 }
 
-void BLEManager::rebootWritten(BLEDevice central, BLECharacteristic characteristic) {
-    if (instance) {
-        const uint8_t* data = characteristic.value();
+void BLEManager::onRebootWrite(const uint8_t* data, size_t length) {
+    if (instance && length >= 1) {
         // Any non-zero value triggers a reboot
         if (*data != 0) {
             Serial.println(F("Reboot requested via BLE"));

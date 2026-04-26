@@ -102,7 +102,7 @@ This project is designed to run on an ESP32-based custom board (specifically the
 2. Open the project in PlatformIO or Arduino IDE
 
 3. Install the required dependencies (listed in platformio.ini):
-   - ArduinoBLE
+   - h2zero/NimBLE-Arduino
    - Adafruit GFX Library
    - Adafruit MPR121
    - arduinoFFT

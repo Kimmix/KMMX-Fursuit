@@ -49,5 +49,9 @@
         "streambuf": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp"
+    },
+    "sonarlint.connectedMode.project": {
+        "connectionId": "kimmix",
+        "projectKey": "Kimmix_KMMX-Fursuit"
     }
 }
