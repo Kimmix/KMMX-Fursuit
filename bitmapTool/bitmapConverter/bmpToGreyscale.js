@@ -1,6 +1,6 @@
-const sharp = require('sharp');
-const fs = require('fs');
-const path = require('path');
+import sharp from 'sharp';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // Get bitmapName from command line arguments, with fallback
 const bitmapName = process.argv[2] || 'defaultBitmap';
