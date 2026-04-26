@@ -31,6 +31,9 @@ void KMMXController::renderTask(void* parameter) {
     int refreshRate = ctrl->display.getRefreshRate();
     int frameDelayMs = 1000 / refreshRate;
 
+    // Initialize FPS counter with target rate
+    ctrl->fpsCounter.setTargetFPS(refreshRate);
+
     while (true) {
         // Flip buffer to display the previously rendered frame
         ctrl->display.flipDMABuffer();
@@ -45,5 +48,8 @@ void KMMXController::renderTask(void* parameter) {
         ctrl->mouthState.update();
         ctrl->eyeState.update();
         ctrl->fxState.update();
+
+        // Update FPS counter
+        ctrl->fpsCounter.update();
     }
 }

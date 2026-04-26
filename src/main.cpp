@@ -16,5 +16,4 @@ void setup() {
 
 void loop() {
     controller.update();
-    // showFPS();
 }

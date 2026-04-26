@@ -87,14 +87,6 @@ int smoothAccelerometerMovement(float rawValue, float& smoothedValue,
                                int maxLevel = 19, bool isNegativeDirection = false);
 
 /**
- * @brief Tracks and displays FPS in Serial output.
- *
- * Call this function once per frame to track frame rate.
- * Prints FPS to Serial every second.
- */
-void showFPS();
-
-/**
  * @brief Generic median filter using insertion sort.
  *
  * Applies median filter to an array of values for noise rejection.

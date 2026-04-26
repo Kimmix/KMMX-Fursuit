@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "Utils/Utils.h"
+#include "Utils/FPSCounter.h"
 
 #include "FacialStates/EyeState/EyeState.h"
 #include "FacialStates/MouthState/MouthState.h"
@@ -54,6 +55,10 @@ class KMMXController {
     uint8_t getDisplayEffectDirectionInverted();
     void reboot();
 
+    // FPS counter access
+    float getFPS() const;
+    int getTargetFPS() const;
+
    private:
     // Devices
     Hub75DMA display;
@@ -75,6 +80,9 @@ class KMMXController {
     Boop boop;
     int16_t pixelPos = 0;
 
+    // Performance tracking
+    FPSCounter fpsCounter;
+
     void renderFace();
     void handleBoop();
     void updateOLED();
@@ -83,6 +91,7 @@ class KMMXController {
     void drawOLEDBluetooth();
     void drawOLEDAccelerometer(const SensorData& sensors);
     void drawOLEDStateNames();
+    void drawOLEDFPS();
     void resetIdleTime(KMMXController *controller);
     void resetIdleTime();
     void enterSleep(KMMXController *controller);

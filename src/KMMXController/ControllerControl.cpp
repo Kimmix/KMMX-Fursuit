@@ -1,5 +1,14 @@
 #include "KMMXController.h"
 
+// FPS Counter Access
+float KMMXController::getFPS() const {
+    return fpsCounter.getFPS();
+}
+
+int KMMXController::getTargetFPS() const {
+    return fpsCounter.getTargetFPS();
+}
+
 // Brightness Control
 int KMMXController::getDisplayBrightness() {
     return display.getBrightnessValue();

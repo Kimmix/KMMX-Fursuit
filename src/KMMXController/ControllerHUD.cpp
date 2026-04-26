@@ -50,6 +50,10 @@ namespace OLEDLayout {
     constexpr int EYE_STATE_Y = 8;
     constexpr int MOUTH_STATE_Y = 18;
 
+    // FPS counter (top right, below states)
+    constexpr int FPS_X = 68;
+    constexpr int FPS_Y = 28;
+
     // Sensor value ranges
     constexpr int SENSOR_MIN = 0;
     constexpr int SENSOR_MAX = 1023;
@@ -134,6 +138,7 @@ void KMMXController::updateOLED() {
     drawOLEDBluetooth();
     drawOLEDAccelerometer(sensors);
     drawOLEDStateNames();
+    drawOLEDFPS();
 
     oledDisplay.update();
 }
@@ -260,4 +265,17 @@ void KMMXController::drawOLEDStateNames() {
     oledDisplay.drawText(STATE_VALUE_X, EYE_STATE_Y, eyeStateName);
     oledDisplay.drawText(STATE_LABEL_X, MOUTH_STATE_Y, "M:");
     oledDisplay.drawText(STATE_VALUE_X, MOUTH_STATE_Y, mouthStateName);
+}
+
+void KMMXController::drawOLEDFPS() {
+    using namespace OLEDLayout;
+
+    float currentFPS = getFPS();
+
+    oledDisplay.setFont(u8g2_font_5x8_tr);
+
+    // Format: "FPS:240"
+    char fpsText[16];
+    snprintf(fpsText, sizeof(fpsText), "FPS:%d", (int)currentFPS);
+    oledDisplay.drawText(FPS_X, FPS_Y, fpsText);
 }
