@@ -1,8 +1,10 @@
 #include "Boop.h"
+#include "Utils/Utils.h"  // Use optimized utility functions
 
 float Boop::calculateBoopSpeed() {
     unsigned long elapsedTime = millis() - boopStartTime;
-    float speed = map(elapsedTime, 100, boopMaxDuration, 0, 100);
+    // Use optimized mapFloat for better performance
+    float speed = mapFloat(elapsedTime, 100, boopMaxDuration, 0, 100);
     return speed / 100;
 }
 

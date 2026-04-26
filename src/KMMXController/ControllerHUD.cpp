@@ -1,5 +1,6 @@
 #include "KMMXController.h"
 #include "Network/BLE.h"
+#include "Utils/Utils.h"  // Use optimized utility functions
 
 extern BLEManager& bleManager;
 
@@ -163,16 +164,14 @@ void KMMXController::drawOLEDSensorBars(const SensorData& sensors) {
 
     oledDisplay.setFont(u8g2_font_5x8_tr);
 
-    // Proximity bar
-    int proxLevel = map(sensors.proximity, SENSOR_MIN, SENSOR_MAX, 0, BAR_WIDTH);
-    proxLevel = constrain(proxLevel, 0, BAR_WIDTH);
+    // Proximity bar (optimized: fastMap already clamps, no need for separate constrain)
+    int proxLevel = fastMap<int>(sensors.proximity, SENSOR_MIN, SENSOR_MAX, 0, BAR_WIDTH);
 
     oledDisplay.drawText(BAR_LABEL_X, PROX_LABEL_Y, "P:");
     drawHorizontalBar(oledDisplay, BAR_START_X, PROX_BAR_Y, BAR_WIDTH, BAR_HEIGHT, proxLevel);
 
-    // VU meter bar
-    int vuLevel = map(sensors.proximity, SENSOR_MIN, SENSOR_MAX, 0, BAR_WIDTH);
-    vuLevel = constrain(vuLevel, 0, BAR_WIDTH);
+    // VU meter bar (optimized: fastMap already clamps)
+    int vuLevel = fastMap<int>(sensors.proximity, SENSOR_MIN, SENSOR_MAX, 0, BAR_WIDTH);
 
     oledDisplay.drawText(BAR_LABEL_X, VU_LABEL_Y, "VU");
     drawHorizontalBar(oledDisplay, BAR_START_X, VU_BAR_Y, BAR_WIDTH, BAR_HEIGHT, vuLevel);
@@ -223,9 +222,9 @@ void KMMXController::drawOLEDAccelerometer(const SensorData& sensors) {
     int crosshairX = ACCEL_CENTER_X + (int)(sensors.accelX * ACCEL_RANGE / GRAVITY);
     int crosshairY = ACCEL_CENTER_Y - (int)(sensors.accelZ * ACCEL_RANGE / GRAVITY);
 
-    // Clamp to screen bounds
-    crosshairX = constrain(crosshairX, ACCEL_MIN_X, ACCEL_MAX_X);
-    crosshairY = constrain(crosshairY, ACCEL_MIN_Y, ACCEL_MAX_Y);
+    // Clamp to screen bounds (optimized fastClamp)
+    crosshairX = fastClamp<int>(crosshairX, ACCEL_MIN_X, ACCEL_MAX_X);
+    crosshairY = fastClamp<int>(crosshairY, ACCEL_MIN_Y, ACCEL_MAX_Y);
 
     // Draw crosshair box
     int boxSize = (ACCEL_RANGE + 1) * 2;

@@ -1,4 +1,5 @@
 #include "HornLED.h"
+#include "Utils/Utils.h"  // Use optimized utility functions
 
 HornLED::HornLED() {
     ledcSetup(hornPwmChannel, hornFrequency, hornResolution);
@@ -6,7 +7,7 @@ HornLED::HornLED() {
     // Initialize brightness
     currentBrightness = hornInitBrightness;
     targetBrightness = hornInitBrightness;
-    pwmValue = map(currentBrightness, 0, 100, hornMinBrightness, hornMaxBrightness);
+    pwmValue = fastMap<int>(currentBrightness, 0, 100, hornMinBrightness, hornMaxBrightness);
     ledcWrite(hornPwmChannel, pwmValue);
 }
 
@@ -15,8 +16,8 @@ int HornLED::getBrightness() const {
 }
 
 void HornLED::setBrightness(int value, int speed) {
-    targetBrightness = constrain(value, 0, 100);  // Clamp to valid range
-    fadeSpeed = max(1, speed);                    // Ensure fade speed is at least 1
+    targetBrightness = fastClamp<int>(value, 0, 100);  // Clamp to valid range (optimized)
+    fadeSpeed = max(1, speed);                         // Ensure fade speed is at least 1
 }
 
 void HornLED::update() {
@@ -38,8 +39,8 @@ void HornLED::update() {
             }
         }
 
-        // Map brightness to the target PWM value
-        float targetPwm = map(currentBrightness, 0, 100, hornMinBrightness, hornMaxBrightness);
+        // Map brightness to the target PWM value (optimized fastMap)
+        float targetPwm = fastMap<float>(currentBrightness, 0, 100, hornMinBrightness, hornMaxBrightness);
 
         // Gradually adjust the actual PWM value
         if (abs(pwmValue - targetPwm) > 0.5) {  // Only update if there's a noticeable difference
