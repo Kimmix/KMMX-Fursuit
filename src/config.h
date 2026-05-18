@@ -155,9 +155,10 @@ const float pettingDeltaTimeMax = 1.0f;             // Maximum delta time in sec
 const bool enableTapDetection = true;
 const float tapSpikeThreshold = 0.5f;               // m/s² threshold for detecting a light tap (higher than petting)
 const uint16_t tapCooldown = 100;                   // Minimum time between taps (ms)
-const uint16_t tapGlitchDuration = 400;             // Duration of glitch effect (ms)
-const int tapGlitchIntensity = 50;                  // Intensity of glitch effect (0-100)
-const uint16_t tapGlitchUpdateInterval = 30;       // How often glitch pattern changes (ms)
+const uint16_t tapGlitchDuration = 600;             // Duration of glitch effect (ms)
+const int tapGlitchIntensity = 30;                  // Intensity of glitch effect (0-100)
+const uint16_t tapGlitchUpdateInterval = 100;        // How often glitch pattern changes (ms)
+const int tapGlitchFullScreenChance = 15;           // Chance (0-100) for full-screen glitch instead of localized
 
 // Sample Rate and Samples
 const float i2sSampleRate = 8000.0f;

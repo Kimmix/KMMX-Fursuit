@@ -29,6 +29,7 @@ class Hub75DMA {
         int glitchRow = -1;
         int glitchShift = 0;
         int cachedRandomShift = 0;  // Cached random shift for current frame
+        int cachedProximity = 2;  // Cached proximity range for glitch row
         unsigned long lastUpdate = 0;
     } glitchState;
 
@@ -40,13 +41,14 @@ class Hub75DMA {
 
         int offset = 0;
 
-        // Apply shift to rows near the glitch row
-        if (abs(row - glitchState.glitchRow) < random(3)) {
+        // Check if this is a full-screen glitch (cachedProximity = 999)
+        // or if row is near the glitch row
+        if (glitchState.cachedProximity >= 999 ||
+            abs(row - glitchState.glitchRow) < glitchState.cachedProximity) {
             offset = glitchState.glitchShift;
+            // Add cached random shift only to affected rows
+            offset += glitchState.cachedRandomShift;
         }
-
-        // Use cached random shift (updated only in updateGlitch, not every frame)
-        offset += glitchState.cachedRandomShift;
 
         return offset;
     }

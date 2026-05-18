@@ -202,6 +202,13 @@ void Hub75DMA::triggerGlitch(unsigned long duration, int intensity) {
     glitchState.glitchRow = random(0, panelHeight);
     glitchState.glitchShift = random(-20, 20);
     glitchState.cachedRandomShift = 0;
+
+    // Chance for full-screen glitch or localized glitch
+    if (random(100) < tapGlitchFullScreenChance) {
+        glitchState.cachedProximity = 999;  // Full-screen glitch
+    } else {
+        glitchState.cachedProximity = random(1, 4);  // Localized (1-3 rows)
+    }
 }
 
 void Hub75DMA::updateGlitch() {
@@ -217,6 +224,7 @@ void Hub75DMA::updateGlitch() {
         glitchState.glitchRow = -1;
         glitchState.glitchShift = 0;
         glitchState.cachedRandomShift = 0;
+        glitchState.cachedProximity = 2;  // Reset to default
         return;
     }
 
@@ -225,6 +233,13 @@ void Hub75DMA::updateGlitch() {
         glitchState.lastUpdate = currentTime;
         glitchState.glitchRow = random(0, panelHeight);
         glitchState.glitchShift = random(-15, 15) * (glitchState.intensity / 50);
+
+        // Chance for full-screen glitch or localized glitch
+        if (random(100) < tapGlitchFullScreenChance) {
+            glitchState.cachedProximity = 999;  // Full-screen glitch
+        } else {
+            glitchState.cachedProximity = random(1, 4);  // Localized (1-3 rows)
+        }
 
         // Calculate random shift once per update interval (not every frame at 200fps)
         if (random(100) < (glitchState.intensity / 10)) {
