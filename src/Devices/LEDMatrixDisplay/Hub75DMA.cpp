@@ -201,6 +201,7 @@ void Hub75DMA::triggerGlitch(unsigned long duration, int intensity) {
     glitchState.lastUpdate = millis();
     glitchState.glitchRow = random(0, panelHeight);
     glitchState.glitchShift = random(-20, 20);
+    glitchState.cachedRandomShift = 0;
 }
 
 void Hub75DMA::updateGlitch() {
@@ -215,14 +216,22 @@ void Hub75DMA::updateGlitch() {
         glitchState.active = false;
         glitchState.glitchRow = -1;
         glitchState.glitchShift = 0;
+        glitchState.cachedRandomShift = 0;
         return;
     }
 
     // Update glitch parameters periodically during the effect
-    if (currentTime - glitchState.lastUpdate >= 150) {  // Update every 150ms
+    if (currentTime - glitchState.lastUpdate >= tapGlitchUpdateInterval) {
         glitchState.lastUpdate = currentTime;
         glitchState.glitchRow = random(0, panelHeight);
         glitchState.glitchShift = random(-15, 15) * (glitchState.intensity / 50);
+
+        // Calculate random shift once per update interval (not every frame at 200fps)
+        if (random(100) < (glitchState.intensity / 10)) {
+            glitchState.cachedRandomShift = random(-5, 5);
+        } else {
+            glitchState.cachedRandomShift = 0;
+        }
     }
 }
 

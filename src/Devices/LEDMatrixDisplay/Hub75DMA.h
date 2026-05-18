@@ -28,8 +28,28 @@ class Hub75DMA {
         int intensity = 50;  // Glitch intensity (0-100)
         int glitchRow = -1;
         int glitchShift = 0;
+        int cachedRandomShift = 0;  // Cached random shift for current frame
         unsigned long lastUpdate = 0;
     } glitchState;
+
+    // Helper method to calculate glitch offset for a given row
+    inline int getGlitchOffset(int row) const {
+        if (!glitchState.active) {
+            return 0;
+        }
+
+        int offset = 0;
+
+        // Apply shift to rows near the glitch row
+        if (abs(row - glitchState.glitchRow) < random(3)) {
+            offset = glitchState.glitchShift;
+        }
+
+        // Use cached random shift (updated only in updateGlitch, not every frame)
+        offset += glitchState.cachedRandomShift;
+
+        return offset;
+    }
 
     // Helper functions to generate colors and patterns
     /**
