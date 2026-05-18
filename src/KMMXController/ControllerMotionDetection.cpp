@@ -213,6 +213,11 @@ void KMMXController::checkMotionFeatures(KMMXController *controller) {
             controller->detectPetting(current);
         }
     }
+
+    // Tap detection (always runs when enabled - triggers glitch effect)
+    if (enableTapDetection) {
+        controller->detectTap(current);
+    }
 }
 
 /**
@@ -483,5 +488,45 @@ void KMMXController::triggerPettingResponse() {
 
     if (enableMotionDebug) {
         Serial.println("[PETTING] Petting response! (SMILE)");
+    }
+}
+
+/**
+ * Tap Detection - Detects light taps for glitch effects
+ * Uses accelerometer magnitude spikes to detect quick taps
+ */
+void KMMXController::detectTap(const SensorData& current) {
+    unsigned long currentTime = millis();
+
+    // Calculate magnitude change (derivative)
+    float magnitudeChange = fabsf(current.accelMagnitude - tapDetector.lastMagnitude);
+    tapDetector.lastMagnitude = current.accelMagnitude;
+
+    // Detect spike: sudden increase in acceleration magnitude
+    bool tapDetected = (magnitudeChange >= tapSpikeThreshold);
+
+    // Check tap cooldown to prevent double-counting
+    if (tapDetected && hasDebounceExpired(tapDetector.lastTapTime, tapCooldown)) {
+        // Valid tap detected! Trigger glitch effect
+        tapDetector.lastTapTime = currentTime;
+
+        if (enableMotionDebug) {
+            Serial.printf("[TAP] Tap detected! Change: %.2f m/s² (threshold: %.2f)\n",
+                          magnitudeChange, tapSpikeThreshold);
+        }
+
+        triggerTapResponse();
+    }
+}
+
+/**
+ * Trigger tap response - glitch effect on display
+ */
+void KMMXController::triggerTapResponse() {
+    display.triggerGlitch(tapGlitchDuration, tapGlitchIntensity);
+
+    if (enableMotionDebug) {
+        Serial.printf("[TAP] Glitch effect triggered! (duration: %dms, intensity: %d)\n",
+                      tapGlitchDuration, tapGlitchIntensity);
     }
 }

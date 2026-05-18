@@ -46,16 +46,40 @@ void Hub75DMA::drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight
         const uint8_t* rowPtr = bitmap + i * imageWidth;  // Hoist row offset calculation
         const int mirrorBaseX = -offsetX + panelWidth;
 
+        // Apply glitch effect if active
+        int rowShift = 0;
+        bool applyRandomShift = false;
+
+        if (glitchState.active) {
+            // Apply shift to rows near the glitch row
+            if (abs(offsetYPlusI - glitchState.glitchRow) < 3) {
+                rowShift = glitchState.glitchShift;
+            }
+            // Random occasional row shifts based on intensity
+            if (random(100) < (glitchState.intensity / 10)) {
+                applyRandomShift = true;
+                rowShift += random(-5, 5);
+            }
+        }
+
         for (int j = 0; j < imageWidth; j++) {
             const uint8_t pixel = pgm_read_byte(rowPtr + j);
             if (pixel > minimumPixelBrightness) {
                 uint8_t r, g, b;
-                const int colLeft = offsetX + j;
-                const int colRight = mirrorBaseX + (panelWidth - 1 - j);
-                getColorMap(pixel, offsetYPlusI, colLeft, r, g, b);
-                matrix->drawPixelRGB888(colLeft, offsetYPlusI, r, g, b);
-                getColorMap(pixel, offsetYPlusI, colRight, r, g, b);
-                matrix->drawPixelRGB888(colRight, offsetYPlusI, r, g, b);
+                const int colLeft = offsetX + j + rowShift;
+                const int colRight = mirrorBaseX + (panelWidth - 1 - j) + rowShift;
+
+                // Draw left side with bounds checking
+                if (colLeft >= 0 && colLeft < panelWidth * 2) {
+                    getColorMap(pixel, offsetYPlusI, colLeft, r, g, b);
+                    matrix->drawPixelRGB888(colLeft, offsetYPlusI, r, g, b);
+                }
+
+                // Draw right side with bounds checking
+                if (colRight >= 0 && colRight < panelWidth * 2) {
+                    getColorMap(pixel, offsetYPlusI, colRight, r, g, b);
+                    matrix->drawPixelRGB888(colRight, offsetYPlusI, r, g, b);
+                }
             }
         }
     }
@@ -68,21 +92,39 @@ void Hub75DMA::drawBitmap(const uint8_t* bitmapL, const uint8_t* bitmapR, int im
         const uint8_t* rowPtrR = bitmapR + i * imageWidth;
         const int mirrorBaseX = -offsetX + panelWidth;
 
+        // Apply glitch effect if active
+        int rowShift = 0;
+
+        if (glitchState.active) {
+            // Apply shift to rows near the glitch row
+            if (abs(offsetYPlusI - glitchState.glitchRow) < 3) {
+                rowShift = glitchState.glitchShift;
+            }
+            // Random occasional row shifts based on intensity
+            if (random(100) < (glitchState.intensity / 10)) {
+                rowShift += random(-5, 5);
+            }
+        }
+
         for (int j = 0; j < imageWidth; j++) {
             const uint8_t pixelL = pgm_read_byte(rowPtrL + j);
             const uint8_t pixelR = pgm_read_byte(rowPtrR + j);
 
             if (pixelL > minimumPixelBrightness) {
                 uint8_t r, g, b;
-                const int colLeft = offsetX + j;
-                getColorMap(pixelL, offsetYPlusI, colLeft, r, g, b);
-                matrix->drawPixelRGB888(colLeft, offsetYPlusI, r, g, b);
+                const int colLeft = offsetX + j + rowShift;
+                if (colLeft >= 0 && colLeft < panelWidth * 2) {
+                    getColorMap(pixelL, offsetYPlusI, colLeft, r, g, b);
+                    matrix->drawPixelRGB888(colLeft, offsetYPlusI, r, g, b);
+                }
             }
             if (pixelR > minimumPixelBrightness) {
                 uint8_t r, g, b;
-                const int colRight = mirrorBaseX + (panelWidth - 1 - j);
-                getColorMap(pixelR, offsetYPlusI, colRight, r, g, b);
-                matrix->drawPixelRGB888(colRight, offsetYPlusI, r, g, b);
+                const int colRight = mirrorBaseX + (panelWidth - 1 - j) + rowShift;
+                if (colRight >= 0 && colRight < panelWidth * 2) {
+                    getColorMap(pixelR, offsetYPlusI, colRight, r, g, b);
+                    matrix->drawPixelRGB888(colRight, offsetYPlusI, r, g, b);
+                }
             }
         }
     }

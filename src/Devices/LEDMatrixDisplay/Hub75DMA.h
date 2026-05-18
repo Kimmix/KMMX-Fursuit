@@ -20,6 +20,17 @@ class Hub75DMA {
     const uint8_t* lastEyeBitmap = nullptr;
     const uint8_t* lastMouthBitmap = nullptr;
 
+    // Glitch effect state
+    struct GlitchState {
+        bool active = false;
+        unsigned long startTime = 0;
+        unsigned long duration = 250;  // Default glitch duration (ms)
+        int intensity = 50;  // Glitch intensity (0-100)
+        int glitchRow = -1;
+        int glitchShift = 0;
+        unsigned long lastUpdate = 0;
+    } glitchState;
+
     // Helper functions to generate colors and patterns
     /**
      * @brief Generates a color based on the lightness, row, and column.
@@ -285,6 +296,25 @@ class Hub75DMA {
      * @return Direction inverted (0 = normal, 1 = inverted)
      */
     uint8_t getEffectDirectionInverted() const;
+
+    // Glitch effect control
+    /**
+     * @brief Triggers a glitch effect on the display.
+     * @param duration Duration of the glitch effect in milliseconds (default: 250ms)
+     * @param intensity Intensity of the glitch (0-100, default: 50)
+     */
+    void triggerGlitch(unsigned long duration = 250, int intensity = 50);
+
+    /**
+     * @brief Updates the glitch effect state (called each frame).
+     */
+    void updateGlitch();
+
+    /**
+     * @brief Checks if glitch effect is currently active.
+     * @return true if glitch is active, false otherwise
+     */
+    bool isGlitchActive() const;
 
     // Drawing functions for various bitmaps
     /**

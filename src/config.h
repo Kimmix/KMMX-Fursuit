@@ -151,6 +151,13 @@ const float pettingHappinessDecayRate = 15.0f;      // Happiness decay per secon
 const float pettingHappinessEndThreshold = 20.0f;   // Happiness level below which response ends (allows natural fade-out)
 const float pettingDeltaTimeMax = 1.0f;             // Maximum delta time in seconds to accept (sanity check for time jumps)
 
+// Tap Detection - Detects light taps for glitch effects
+const bool enableTapDetection = true;
+const float tapSpikeThreshold = 1.5f;               // m/s² threshold for detecting a light tap (higher than petting)
+const uint16_t tapCooldown = 400;                   // Minimum time between taps (ms)
+const uint16_t tapGlitchDuration = 500;             // Duration of glitch effect (ms)
+const int tapGlitchIntensity = 30;                  // Intensity of glitch effect (0-100)
+
 // Sample Rate and Samples
 const float i2sSampleRate = 8000.0f;
 const uint16_t i2sSamples = 256;
