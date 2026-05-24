@@ -153,7 +153,7 @@ const float pettingDeltaTimeMax = 2.0f;             // Maximum delta time in sec
 
 // Tap Detection - Detects light taps for glitch effects
 const bool enableTapDetection = true;
-const float tapSpikeThreshold = 2.0f;               // m/s² threshold for detecting a light tap (higher than petting)
+const float tapSpikeThreshold = 1.0f;               // m/s² threshold for detecting a light tap (higher than petting)
 const uint16_t tapCooldown = 100;                   // Minimum time between taps (ms)
 // Tap glitch effect scaling based on tap magnitude
 const uint16_t tapGlitchMinDuration = 300;          // Minimum duration of glitch effect (ms) for light taps
