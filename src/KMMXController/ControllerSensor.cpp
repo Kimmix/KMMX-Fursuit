@@ -23,7 +23,7 @@ void KMMXController::setupSensors() {
     printSensorStatus();
 
     // Ensure eye state starts at IDLE (prevents lingering states from previous sessions)
-    eyeState.setState(EyeStateEnum::IDLE, true, 0);  // Persistent, no timeout (initial state)
+    eyeState.setState(EyeStateEnum::IDLE, true, 0);      // Persistent, no timeout (initial state)
     mouthState.setState(MouthStateEnum::IDLE, true, 0);  // Persistent, no timeout (initial state)
 
     // Set motion detection start time (current time + startup delay)
@@ -41,64 +41,46 @@ void KMMXController::setupSensors() {
     Serial.printf("Motion detection will start in %d ms\n", motionDetectionStartupDelay);
 }
 
-void KMMXController::readSensorTask(void *parameter) {
-    KMMXController *ctrl = static_cast<KMMXController *>(parameter);
+void KMMXController::readSensorTask(void* parameter) {
+    KMMXController* ctrl = static_cast<KMMXController*>(parameter);
     TickType_t xLastWakeTime = xTaskGetTickCount();
     constexpr TickType_t xFrequency = pdMS_TO_TICKS(sensorUpdateInterval);
 
     while (true) {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
-        // Write to inactive buffer (double-buffer pattern)
         uint8_t writeBuffer = 1 - ctrl->activeBuffer;
+        SensorData& data = ctrl->sensorBuffer[writeBuffer];
 
-        // Read accelerometer data (safe even if sensor failed to initialize)
+        // Read accelerometer (handles uninitialized state internally)
         sensors_event_t* event = ctrl->accelerometer.getSensorEvent();
+        data.accelX = event->acceleration.x;
+        data.accelY = event->acceleration.y;
+        data.accelZ = event->acceleration.z;
 
-        // Update sensor data in inactive buffer
-        ctrl->sensorBuffer[writeBuffer].accelX = event->acceleration.x;
-        ctrl->sensorBuffer[writeBuffer].accelY = event->acceleration.y;
-        ctrl->sensorBuffer[writeBuffer].accelZ = event->acceleration.z;
-
-        // Calculate acceleration magnitude using ESP-DSP optimized functions
-        // Create vector for dot product calculation
-        float accelVec[3] = {
-            ctrl->sensorBuffer[writeBuffer].accelX,
-            ctrl->sensorBuffer[writeBuffer].accelY,
-            ctrl->sensorBuffer[writeBuffer].accelZ
-        };
-
-        // Use ESP-DSP dot product (hardware-accelerated on ESP32-S3)
-        // magnitude = sqrt(x*x + y*y + z*z) = sqrt(dotprod(vec, vec))
+        // Calculate magnitude using ESP-DSP (hardware-accelerated)
+        float accelVec[3] = {data.accelX, data.accelY, data.accelZ};
         float dotProduct;
         dsps_dotprod_f32(accelVec, accelVec, &dotProduct, 3);
-        ctrl->sensorBuffer[writeBuffer].accelMagnitude = sqrtf(dotProduct);
+        data.accelMagnitude = sqrtf(dotProduct);
 
-        // Read proximity sensor (safe even if sensor failed to initialize)
-        if (ctrl->proximitySensor != nullptr) {
-            ctrl->proximitySensor->read(&ctrl->sensorBuffer[writeBuffer].proximity);
-        } else {
-            ctrl->sensorBuffer[writeBuffer].proximity = 0;  // No sensor available
-        }
+        // Read proximity (handles nullptr internally)
+        data.proximity = ctrl->proximitySensor ? (ctrl->proximitySensor->read(&data.proximity), data.proximity) : 0;
 
-        // Atomic swap - readers now use the new buffer
+        // Atomic buffer swap
+        ctrl->prevSensorData = ctrl->sensorBuffer[ctrl->activeBuffer];
         ctrl->activeBuffer = writeBuffer;
 
-        // Store previous values for idle detection
-        ctrl->prevSensorData = ctrl->sensorBuffer[1 - writeBuffer];
-
-        // Only run motion detection if accelerometer initialized successfully
+        // Motion detection (only if accelerometer initialized)
         if (ctrl->accelerometerInitialized) {
-            // Check idle/sleep state
             ctrl->checkIdleAndSleep(ctrl, millis());
-
-            // Check motion detection features (shake, tilt, bounce, spin, petting)
             ctrl->checkMotionFeatures(ctrl);
         }
 
-        // Update facial states with new sensor data
-        ctrl->mouthState.setSensorData(ctrl->sensorBuffer[ctrl->activeBuffer]);
-        ctrl->eyeState.setSensorData(ctrl->sensorBuffer[ctrl->activeBuffer]);
+        // Update facial states
+        const SensorData& current = ctrl->sensorBuffer[ctrl->activeBuffer];
+        ctrl->mouthState.setSensorData(current);
+        ctrl->eyeState.setSensorData(current);
     }
 }
 
@@ -107,94 +89,58 @@ const SensorData& KMMXController::getSensorData() const {
 }
 
 // ===========================
-// Sensor Initialization Helpers
+// Sensor Initialization
 // ===========================
 
-/**
- * Initialize accelerometer sensor.
- * @return true if sensor initialized successfully, false otherwise
- */
 bool KMMXController::initializeAccelerometer() {
-    Serial.println("=== Initializing Accelerometer (LIS3DH) ===");
+    Serial.println("=== Accelerometer (LIS3DH) ===");
     bool success = accelerometer.setUp();
-
-    if (success) {
-        Serial.println("✓ Accelerometer initialized successfully");
-    } else {
-        Serial.println("✗ Accelerometer not found - motion detection disabled");
-    }
-
+    Serial.println(success ? "✓ OK" : "✗ DISABLED - motion detection off");
     return success;
 }
 
-/**
- * Auto-detect and initialize proximity sensor (VL6180X or APDS9930).
- * Tries sensors in priority order until one succeeds.
- * @return true if any sensor initialized successfully, false if all failed
- */
 bool KMMXController::initializeProximitySensor() {
-    Serial.println("=== Initializing Proximity Sensor ===");
+    Serial.println("=== Proximity Sensor ===");
 
-    // Try VL6180X first (priority sensor - more accurate)
-    Serial.println("Attempting VL6180X...");
+    // Try VL6180X first (more accurate)
     std::unique_ptr<VL6180XSensor> vl6180x(new VL6180XSensor());
     if (vl6180x->setup()) {
         proximitySensor = std::move(vl6180x);
-        Serial.println("✓ VL6180X initialized successfully");
+        Serial.println("✓ VL6180X OK");
         return true;
     }
 
-    // VL6180X failed, try APDS9930
-    Serial.println("VL6180X not found, trying APDS9930...");
+    // Fallback to APDS9930
     std::unique_ptr<APDS9930Sensor> apds(new APDS9930Sensor());
     if (apds->setup()) {
         proximitySensor = std::move(apds);
-        Serial.println("✓ APDS9930 initialized successfully");
+        Serial.println("✓ APDS9930 OK");
         return true;
     }
 
-    // Both sensors failed
-    proximitySensor = nullptr;
-    Serial.println("✗ No proximity sensor detected - boop detection disabled");
+    Serial.println("✗ DISABLED - boop detection off");
     return false;
 }
 
-/**
- * Initialize OLED display.
- * @return true if display initialized successfully, false otherwise
- */
 bool KMMXController::initializeOLED() {
-    Serial.println("=== Initializing OLED Display (SSD1306) ===");
+    Serial.println("=== OLED Display (SSD1306) ===");
     bool success = oledDisplay.setup();
-
-    if (success) {
-        Serial.println("✓ OLED display initialized successfully");
-    } else {
-        Serial.println("✗ OLED display not found - HUD disabled");
-    }
-
+    Serial.println(success ? "✓ OK" : "✗ DISABLED - HUD off");
     return success;
 }
 
-/**
- * Print initialization status summary for all sensors.
- */
 void KMMXController::printSensorStatus() {
-    Serial.println("\n=== Sensor Initialization Summary ===");
-    Serial.printf("Accelerometer (LIS3DH): %s\n", accelerometerInitialized ? "✓ OK" : "✗ DISABLED");
-    Serial.printf("Proximity Sensor:       %s\n", boopInitialized ? "✓ OK" : "✗ DISABLED");
-    Serial.printf("OLED Display (SSD1306): %s\n", oledInitialized ? "✓ OK" : "✗ DISABLED");
+    const char* sensors[] = {"Accelerometer", "Proximity", "OLED"};
+    const bool states[] = {accelerometerInitialized, boopInitialized, oledInitialized};
+    int disabled = 0;
 
-    // Count disabled sensors
-    int disabledCount = 0;
-    if (!accelerometerInitialized) disabledCount++;
-    if (!boopInitialized) disabledCount++;
-    if (!oledInitialized) disabledCount++;
-
-    if (disabledCount > 0) {
-        Serial.printf("\n⚠ %d sensor(s) disabled - system will continue with reduced functionality\n", disabledCount);
-    } else {
-        Serial.println("\n✓ All sensors operational");
+    Serial.println("\n=== Sensor Summary ===");
+    for (int i = 0; i < 3; i++) {
+        Serial.printf("%s: %s\n", sensors[i], states[i] ? "✓" : "✗");
+        if (!states[i]) disabled++;
     }
-    Serial.println("=====================================\n");
+
+    Serial.println(disabled == 0 ? "\n✓ All sensors operational" : disabled == 3 ? "\n⚠ All sensors disabled"
+                                                                                 : "\n⚠ Reduced functionality");
+    Serial.println("======================\n");
 }
