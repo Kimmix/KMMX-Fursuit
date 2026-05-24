@@ -192,3 +192,64 @@ void Hub75DMA::getColorWave(const uint8_t brightness, const int row, const int c
     g = constrain(static_cast<uint8_t>(color1), 0, 255);
     b = constrain(static_cast<uint8_t>(color1 + color2), 0, 255);
 }
+
+void Hub75DMA::triggerGlitch(unsigned long duration, int intensity) {
+    glitchState.active = true;
+    glitchState.startTime = millis();
+    glitchState.duration = duration;
+    glitchState.intensity = constrain(intensity, 0, 100);
+    glitchState.lastUpdate = millis();
+    glitchState.glitchRow = random(0, panelHeight);
+    glitchState.glitchShift = random(-20, 20);
+    glitchState.cachedRandomShift = 0;
+
+    // Chance for full-screen glitch or localized glitch
+    if (random(100) < tapGlitchFullScreenChance) {
+        glitchState.cachedProximity = 999;  // Full-screen glitch
+    } else {
+        glitchState.cachedProximity = random(1, 4);  // Localized (1-3 rows)
+    }
+}
+
+void Hub75DMA::updateGlitch() {
+    if (!glitchState.active) {
+        return;
+    }
+
+    unsigned long currentTime = millis();
+
+    // Check if glitch duration has expired
+    if (currentTime - glitchState.startTime >= glitchState.duration) {
+        glitchState.active = false;
+        glitchState.glitchRow = -1;
+        glitchState.glitchShift = 0;
+        glitchState.cachedRandomShift = 0;
+        glitchState.cachedProximity = 2;  // Reset to default
+        return;
+    }
+
+    // Update glitch parameters periodically during the effect
+    if (currentTime - glitchState.lastUpdate >= tapGlitchUpdateInterval) {
+        glitchState.lastUpdate = currentTime;
+        glitchState.glitchRow = random(0, panelHeight);
+        glitchState.glitchShift = random(-15, 15) * (glitchState.intensity / 50);
+
+        // Chance for full-screen glitch or localized glitch
+        if (random(100) < tapGlitchFullScreenChance) {
+            glitchState.cachedProximity = 999;  // Full-screen glitch
+        } else {
+            glitchState.cachedProximity = random(1, 4);  // Localized (1-3 rows)
+        }
+
+        // Calculate random shift once per update interval (not every frame at 200fps)
+        if (random(100) < (glitchState.intensity / 10)) {
+            glitchState.cachedRandomShift = random(-5, 5);
+        } else {
+            glitchState.cachedRandomShift = 0;
+        }
+    }
+}
+
+bool Hub75DMA::isGlitchActive() const {
+    return glitchState.active;
+}

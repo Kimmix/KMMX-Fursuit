@@ -131,7 +131,7 @@ const uint16_t tiltDebounceTime = 300;          // Cooldown between tilt changes
 const uint16_t tiltDirectionChangeCooldown = 3000;  // Cooldown when switching from left/right to forward/back (ms) - prevents rapid direction changes
 
 // Upside Down Detection - Detects when the character is held upside down
-const bool enableUpsideDownDetection = false;
+const bool enableUpsideDownDetection = true;
 const float upsideDownThreshold = -7.0f;            // m/s² threshold for Y-axis (negative = upside down)
 const uint16_t upsideDownSustainTime = 1500;        // Time to hold upside down before triggering (ms)
 const uint16_t upsideDownDebounceTime = 500;        // Cooldown between state changes (ms)
@@ -145,11 +145,25 @@ const float pettingSpikeThreshold = 0.8f;           // m/s² threshold for detec
 const uint16_t pettingSpikeCooldown = 300;          // Minimum time between individual spikes (ms) - prevents double-counting
 
 // Dynamic happiness system parameters
-const float pettingHappinessPerPat = 30.0f;         // Happiness added per pat (0-100 scale)
+const float pettingHappinessPerPat = 20.0f;         // Happiness added per pat (0-100 scale)
 const float pettingHappinessTrigger = 80.0f;        // Happiness level to trigger SMILE response (0-100)
 const float pettingHappinessDecayRate = 15.0f;      // Happiness decay per second when not petting
 const float pettingHappinessEndThreshold = 20.0f;   // Happiness level below which response ends (allows natural fade-out)
-const float pettingDeltaTimeMax = 1.0f;             // Maximum delta time in seconds to accept (sanity check for time jumps)
+const float pettingDeltaTimeMax = 2.0f;             // Maximum delta time in seconds to accept (sanity check for time jumps)
+
+// Tap Detection - Detects light taps for glitch effects
+const bool enableTapDetection = true;
+const float tapSpikeThreshold = 1.0f;               // m/s² threshold for detecting a light tap (higher than petting)
+const uint16_t tapCooldown = 100;                   // Minimum time between taps (ms)
+// Tap glitch effect scaling based on tap magnitude
+const uint16_t tapGlitchMinDuration = 300;          // Minimum duration of glitch effect (ms) for light taps
+const uint16_t tapGlitchMaxDuration = 1200;         // Maximum duration of glitch effect (ms) for hard taps
+const int tapGlitchMinIntensity = 10;                // Minimum intensity of glitch effect (0-100) for light taps
+const int tapGlitchMaxIntensity = 60;               // Maximum intensity of glitch effect (0-100) for hard taps
+const float tapMagnitudeMin = 1.0f;                 // Minimum tap magnitude for scaling (m/s²)
+const float tapMagnitudeMax = 5.0f;                 // Maximum tap magnitude for scaling (m/s²)
+const uint16_t tapGlitchUpdateInterval = 75;        // How often glitch pattern changes (ms)
+const int tapGlitchFullScreenChance = 15;           // Chance (0-100) for full-screen glitch instead of localized
 
 // Sample Rate and Samples
 const float i2sSampleRate = 8000.0f;

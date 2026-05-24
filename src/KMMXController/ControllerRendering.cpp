@@ -44,6 +44,7 @@ void KMMXController::renderTask(void* parameter) {
         // Now render the next frame to the back buffer
         ctrl->display.clearScreen();
         ctrl->display.updateColorEffectsFrame();  // Update cached time once per frame
+        ctrl->display.updateGlitch();  // Update glitch effect state
         ctrl->display.drawNose(noseNew);
         ctrl->mouthState.update();
         ctrl->eyeState.update();

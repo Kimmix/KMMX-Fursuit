@@ -105,9 +105,11 @@ class KMMXController {
     void detectTilt(const SensorData& current);
     void detectUpsideDown(const SensorData& current);
     void detectPetting(const SensorData& current);
+    void detectTap(const SensorData& current);
     void triggerTiltResponse(float angle, bool isLeftRight);
     void triggerUpsideDownResponse();
     void triggerPettingResponse();  // Removed unused 'sustained' parameter
+    void triggerTapResponse(float tapMagnitude);
 
     // Motion detection helper methods
     inline bool hasDebounceExpired(unsigned long lastTime, uint16_t debounceTime) const;
@@ -173,4 +175,9 @@ class KMMXController {
         EyeStateEnum previousEyeState = EyeStateEnum::IDLE;
         MouthStateEnum previousMouthState = MouthStateEnum::IDLE;
     } pettingDetector;
+
+    struct TapDetector {
+        unsigned long lastTapTime = 0;      // Time of last detected tap (for cooldown)
+        float lastMagnitude = 0.0f;         // Previous magnitude reading (for spike detection)
+    } tapDetector;
 };
