@@ -3,8 +3,9 @@
 #include <APDS9930.h>
 #include "config.h"
 #include "esp_dsp.h"  // ESP-DSP for hardware-accelerated operations
+#include "IProximitySensor.h"
 
-class APDS9930Sensor {
+class APDS9930Sensor : public IProximitySensor {
    private:
     APDS9930 apds = APDS9930();
     bool sensorInitialized = false;
@@ -31,7 +32,7 @@ class APDS9930Sensor {
     void addProximityToBuffer(uint16_t value);
 
    public:
-    bool setup();
-    void read(uint16_t *proximityData);
-    bool isInitialized() const { return sensorInitialized; }
+    bool setup() override;
+    void read(uint16_t *proximityData) override;
+    bool isInitialized() const override { return sensorInitialized; }
 };
