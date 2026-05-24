@@ -32,9 +32,19 @@ namespace OLEDLayout {
     constexpr int BAR_LABEL_X = 38;
     constexpr int BAR_START_X = 48;
     constexpr int BAR_WIDTH = 80;
+    constexpr int PROX_BAR_WIDTH = 30;  // Equal width for both bars
+    constexpr int TAP_BAR_WIDTH = 30;   // Equal width for both bars
     constexpr int BAR_HEIGHT = 6;
-    constexpr int PROX_BAR_Y = 37;
-    constexpr int PROX_LABEL_Y = 43;
+    // Tap bar on the left
+    constexpr int TAP_LABEL_X = 38;     // Tap label X position (left-most)
+    constexpr int TAP_BAR_X = 48;       // Tap bar X position (10px after label for proper spacing)
+    constexpr int TAP_BAR_Y = 37;
+    constexpr int TAP_LABEL_Y = 43;
+    // Proximity bar on the right (after tap bar)
+    constexpr int PROX_LABEL_X = 83;    // Proximity label X position (5px gap after tap bar ends at 78)
+    constexpr int PROX_BAR_X = 93;      // Proximity bar X position (10px after "P:" label)
+    constexpr int PROX_BAR_Y = 37;      // Same Y as tap bar
+    constexpr int PROX_LABEL_Y = 43;    // Same Y as tap label
     constexpr int VU_BAR_Y = 46;
     constexpr int VU_LABEL_Y = 52;
     constexpr int VISEME_Y = 60;
@@ -113,8 +123,15 @@ namespace StateNames {
 namespace {
     void drawHorizontalBar(SSD1306& display, int x, int y, int width, int height, int level) {
         display.drawFrame(x, y, width, height);
-        if (level > 0) {
-            display.drawBox(x + 1, y + 1, level - 2, height - 2);
+        // Only draw fill if level is large enough to avoid negative/zero width artifacts
+        // Need at least 3 pixels (1px border + 1px fill + 1px border)
+        if (level >= 3) {
+            int fillWidth = level - 2;
+            int fillHeight = height - 2;
+            // Extra safety check to prevent display artifacts
+            if (fillWidth > 0 && fillHeight > 0) {
+                display.drawBox(x + 1, y + 1, fillWidth, fillHeight);
+            }
         }
     }
 }
@@ -223,15 +240,50 @@ void KMMXController::drawOLEDSensorBars(const SensorData& sensors) {
 
     oledDisplay.setFont(u8g2_font_5x8_tr);
 
-    // Proximity bar
-    oledDisplay.drawText(BAR_LABEL_X, PROX_LABEL_Y, "P:");
+    // Tap magnitude bar (always visible, equal width, on the LEFT)
+    oledDisplay.drawText(TAP_LABEL_X, TAP_LABEL_Y, "T:");
+
+    // Calculate decaying tap magnitude with exponential curve
+    int tapLevel = 0;
+    if (tapDetector.lastTapMagnitude > 0) {
+        constexpr unsigned long DECAY_DURATION = 1000;  // Decay duration in milliseconds
+        constexpr float MIN_DISPLAY_THRESHOLD = 0.5f;   // Minimum magnitude to display
+        constexpr int MIN_PIXELS_TO_RENDER = 3;         // Minimum pixels needed for visible fill
+
+        unsigned long timeSinceTap = millis() - tapDetector.lastTapDisplayTime;
+
+        // Apply exponential decay: magnitude × (1 - t/duration)²
+        float currentMagnitude = tapDetector.lastTapMagnitude;
+        if (timeSinceTap < DECAY_DURATION) {
+            float t = float(timeSinceTap) / float(DECAY_DURATION);
+            currentMagnitude *= (1.0f - t) * (1.0f - t);
+        } else {
+            currentMagnitude = 0.0f;
+        }
+
+        // Map magnitude to bar width if above threshold
+        if (currentMagnitude >= MIN_DISPLAY_THRESHOLD) {
+            int magnitudeInt = constrain((int)(currentMagnitude * 10), 10, 50);
+            tapLevel = fastMap<int>(magnitudeInt, 10, 50, 0, TAP_BAR_WIDTH);
+            tapLevel = constrain(tapLevel, 0, TAP_BAR_WIDTH);
+
+            // Prevent flash artifacts by skipping very small values
+            if (tapLevel < MIN_PIXELS_TO_RENDER) {
+                tapLevel = 0;
+            }
+        }
+    }
+    drawHorizontalBar(oledDisplay, TAP_BAR_X, TAP_BAR_Y, TAP_BAR_WIDTH, BAR_HEIGHT, tapLevel);
+
+    // Proximity bar (equal width, on the RIGHT)
+    oledDisplay.drawText(PROX_LABEL_X, PROX_LABEL_Y, "P:");
     if (boopInitialized) {
         // Proximity sensor initialized - show bar
-        int proxLevel = fastMap<int>(sensors.proximity, SENSOR_MIN, SENSOR_MAX, 0, BAR_WIDTH);
-        drawHorizontalBar(oledDisplay, BAR_START_X, PROX_BAR_Y, BAR_WIDTH, BAR_HEIGHT, proxLevel);
+        int proxLevel = fastMap<int>(sensors.proximity, SENSOR_MIN, SENSOR_MAX, 0, PROX_BAR_WIDTH);
+        drawHorizontalBar(oledDisplay, PROX_BAR_X, PROX_BAR_Y, PROX_BAR_WIDTH, BAR_HEIGHT, proxLevel);
     } else {
         // Proximity sensor not initialized - show "n/a"
-        oledDisplay.drawText(BAR_START_X, PROX_LABEL_Y, "n/a");
+        oledDisplay.drawText(PROX_BAR_X, PROX_LABEL_Y, "n/a");
     }
 
     // VU meter bar (uses loudness from viseme/microphone)

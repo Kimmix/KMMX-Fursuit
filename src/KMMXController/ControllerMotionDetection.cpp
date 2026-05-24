@@ -529,6 +529,10 @@ void KMMXController::triggerTapResponse(float tapMagnitude) {
     // Scale intensity based on tap strength
     int intensity = tapGlitchMinIntensity + (int)(tapStrength * (tapGlitchMaxIntensity - tapGlitchMinIntensity));
 
+    // Store tap magnitude for HUD display
+    tapDetector.lastTapMagnitude = tapMagnitude;
+    tapDetector.lastTapDisplayTime = millis();
+
     // Trigger glitch with intensity only (duration calculated internally)
     display.triggerGlitch(intensity);
 

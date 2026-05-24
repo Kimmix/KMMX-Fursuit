@@ -184,5 +184,7 @@ class KMMXController {
     struct TapDetector {
         unsigned long lastTapTime = 0;      // Time of last detected tap (for cooldown)
         float lastMagnitude = 0.0f;         // Previous magnitude reading (for spike detection)
+        float lastTapMagnitude = 0.0f;      // Last detected tap magnitude (for HUD display)
+        unsigned long lastTapDisplayTime = 0; // Time of last tap (for fade-out effect on HUD)
     } tapDetector;
 };
