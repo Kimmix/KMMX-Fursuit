@@ -198,39 +198,56 @@ void Hub75DMA::triggerGlitch(int intensity) {
     glitchState.startTime = millis();
     glitchState.lastUpdate = millis();
     glitchState.baseIntensity = constrain(intensity, 0, 100);
-    glitchState.currentIntensity = 1.0f;  // Start at full intensity
+    glitchState.currentIntensity = 1.0f;
 
-    // Normalize intensity to range [0.0, 1.0] and cache power curves
+    // Pre-calculate intensity power curves for efficiency
     float normalizedIntensity = glitchState.baseIntensity / 100.0f;
     float intensitySquared = normalizedIntensity * normalizedIntensity;
     float intensityQuad = intensitySquared * intensitySquared;
 
-    // Calculate effect duration using quadratic scaling
+    // Calculate effect duration with quadratic scaling
     glitchState.duration = tapGlitchMinDuration +
                           (unsigned long)(intensitySquared * (tapGlitchMaxDuration - tapGlitchMinDuration));
 
-    // Determine glitch coverage (full-screen vs localized)
-    if ((esp_random() % 100) < tapGlitchFullScreenChance) {
-        glitchState.cachedProximity = 999;  // Full-screen
+    // Determine glitch coverage area with intensity-based scaling
+    // Higher intensity = more likely to be full-screen AND wider localized radius
+    int fullScreenChance = tapGlitchFullScreenChance + (int)(30 * intensitySquared);
+
+    if ((esp_random() % 100) < fullScreenChance) {
+        glitchState.glitchRadius = 999;  // Full-screen mode
     } else {
-        glitchState.cachedProximity = (esp_random() % 3) + 1;  // Localized: 1-3 rows
+        // Scale radius from 1 row (low intensity) to 5 rows (high intensity)
+        const int maxRadiusRange = 5;
+        int maxRadius = 1 + (int)(maxRadiusRange * intensitySquared);
+        glitchState.glitchRadius = 1 + (esp_random() % maxRadius);
     }
 
-    // Initialize multiple glitch rows for more chaotic effect
-    int activeRows = (glitchState.baseIntensity > 50) ? 3 : 2;  // More rows at higher intensity
+    // Calculate active glitch rows with cubic scaling
+    const int maxRowScaling = GlitchState::MAX_GLITCH_ROWS - 1;
+    int activeRows = 1 + (int)(intensitySquared * normalizedIntensity * maxRowScaling);
+    activeRows = constrain(activeRows, 1, GlitchState::MAX_GLITCH_ROWS);
+
+    // Initialize glitch rows
     for (int i = 0; i < GlitchState::MAX_GLITCH_ROWS; i++) {
         if (i < activeRows) {
             glitchState.glitchRow[i] = esp_random() % panelHeight;
 
-            // Each row gets independent shift amount
-            int maxShift = (int)(20 * intensityQuad);
+            // Horizontal shift with quartic scaling
+            const int maxHorizontalShift = 20;
+            int maxShift = (int)(maxHorizontalShift * intensityQuad);
             glitchState.glitchShift[i] = (esp_random() % (maxShift * 2 + 1)) - maxShift;
 
-            // Subtle vertical jitter (±1-2 pixels)
-            int maxJitter = (glitchState.baseIntensity > 70) ? 2 : 1;
-            glitchState.verticalJitter[i] = (esp_random() % (maxJitter * 2 + 1)) - maxJitter;
+            // Vertical jitter with quadratic scaling
+            const int maxVerticalJitter = 2;
+            int maxJitter = (int)(maxVerticalJitter * intensitySquared);
+            if (maxJitter > 0) {
+                glitchState.verticalJitter[i] = (esp_random() % (maxJitter * 2 + 1)) - maxJitter;
+            } else {
+                glitchState.verticalJitter[i] = 0;
+            }
         } else {
-            glitchState.glitchRow[i] = -1;  // Inactive
+            // Deactivate unused rows
+            glitchState.glitchRow[i] = -1;
             glitchState.glitchShift[i] = 0;
             glitchState.verticalJitter[i] = 0;
         }
@@ -245,14 +262,13 @@ void Hub75DMA::updateGlitch() {
     unsigned long currentTime = millis();
     unsigned long elapsed = currentTime - glitchState.startTime;
 
-    // Check if glitch effect has expired
+    // Check if glitch duration expired
     if (elapsed >= glitchState.duration) {
-        // Reset glitch state to inactive
         glitchState.active = false;
         glitchState.currentIntensity = 1.0f;
-        glitchState.cachedProximity = 2;
+        glitchState.glitchRadius = 2;
 
-        // Clear all glitch rows
+        // Reset all glitch rows
         for (int i = 0; i < GlitchState::MAX_GLITCH_ROWS; i++) {
             glitchState.glitchRow[i] = -1;
             glitchState.glitchShift[i] = 0;
@@ -262,47 +278,63 @@ void Hub75DMA::updateGlitch() {
         return;
     }
 
-    // Calculate fade-out intensity for smooth ending (last 20% of duration)
-    float fadeStartRatio = 0.8f;
+    // Apply smooth fade-out during final portion of duration
+    const float fadeStartRatio = 0.8f;
     if (elapsed > glitchState.duration * fadeStartRatio) {
-        float fadeProgress = (elapsed - glitchState.duration * fadeStartRatio) / (glitchState.duration * (1.0f - fadeStartRatio));
-        glitchState.currentIntensity = 1.0f - fadeProgress;  // Linear fade from 1.0 to 0.0
+        float fadeProgress = (elapsed - glitchState.duration * fadeStartRatio) /
+                            (glitchState.duration * (1.0f - fadeStartRatio));
+        glitchState.currentIntensity = 1.0f - fadeProgress;
     } else {
-        glitchState.currentIntensity = 1.0f;  // Full intensity
+        glitchState.currentIntensity = 1.0f;
     }
 
-    // Periodically randomize glitch parameters for dynamic effect
+    // Periodically randomize glitch parameters
     if (currentTime - glitchState.lastUpdate >= tapGlitchUpdateInterval) {
         glitchState.lastUpdate = currentTime;
 
-        // Calculate effective intensity with fade-out
+        // Calculate effective intensity with fade-out applied
         float normalizedIntensity = (glitchState.baseIntensity / 100.0f) * glitchState.currentIntensity;
-        float intensityQuad = normalizedIntensity * normalizedIntensity * normalizedIntensity * normalizedIntensity;
+        float intensitySquared = normalizedIntensity * normalizedIntensity;
+        float intensityQuad = intensitySquared * intensitySquared;
 
-        // Update all active glitch rows
-        int activeRows = (glitchState.baseIntensity > 50) ? 3 : 2;
+        // Calculate active glitch rows with cubic scaling
+        const int maxRowScaling = GlitchState::MAX_GLITCH_ROWS - 1;
+        int activeRows = 1 + (int)(intensitySquared * normalizedIntensity * maxRowScaling);
+        activeRows = constrain(activeRows, 1, GlitchState::MAX_GLITCH_ROWS);
+
+        // Update glitch rows
         for (int i = 0; i < GlitchState::MAX_GLITCH_ROWS; i++) {
             if (i < activeRows) {
-                // Randomize row position
                 glitchState.glitchRow[i] = esp_random() % panelHeight;
 
-                // Update horizontal shift with quartic scaling
-                int maxShift = (int)(45 * intensityQuad);
+                // Horizontal shift with quartic scaling
+                const int maxHorizontalShift = 45;
+                int maxShift = (int)(maxHorizontalShift * intensityQuad);
                 glitchState.glitchShift[i] = (esp_random() % (maxShift * 2 + 1)) - maxShift;
 
-                // Update vertical jitter
-                int maxJitter = (glitchState.baseIntensity > 70) ? 2 : 1;
-                glitchState.verticalJitter[i] = (esp_random() % (maxJitter * 2 + 1)) - maxJitter;
+                // Vertical jitter with quadratic scaling
+                const int maxVerticalJitter = 2;
+                int maxJitter = (int)(maxVerticalJitter * intensitySquared);
+                if (maxJitter > 0) {
+                    glitchState.verticalJitter[i] = (esp_random() % (maxJitter * 2 + 1)) - maxJitter;
+                } else {
+                    glitchState.verticalJitter[i] = 0;
+                }
             } else {
                 glitchState.glitchRow[i] = -1;
             }
         }
 
-        // Randomize glitch coverage
-        if ((esp_random() % 100) < tapGlitchFullScreenChance) {
-            glitchState.cachedProximity = 999;  // Full-screen
+        // Randomize glitch coverage area with intensity-based scaling
+        int fullScreenChance = tapGlitchFullScreenChance + (int)(30 * intensitySquared);
+
+        if ((esp_random() % 100) < fullScreenChance) {
+            glitchState.glitchRadius = 999;  // Full-screen mode
         } else {
-            glitchState.cachedProximity = (esp_random() % 3) + 1;  // Localized
+            // Scale radius from 1 row (low intensity) to 5 rows (high intensity)
+            const int maxRadiusRange = 5;
+            int maxRadius = 1 + (int)(maxRadiusRange * intensitySquared);
+            glitchState.glitchRadius = 1 + (esp_random() % maxRadius);
         }
     }
 }
