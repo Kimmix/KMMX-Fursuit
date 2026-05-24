@@ -28,8 +28,9 @@ class Hub75DMA {
         unsigned long lastUpdate = 0;     // Last time glitch params were randomized (ms)
         unsigned long duration = 250;     // How long glitch lasts (ms)
         int baseIntensity = 50;           // Original glitch strength (0-100)
-        float currentIntensity = 1.0f;    // Current intensity with fade-out (0.0-1.0)
-        uint8_t activeRowCount = 0;       // Number of active glitch rows (0-8)
+        float currentIntensity = 1.0f;    // Current intensity with fade-out and ramp-up (0.0-1.0)
+        uint8_t activeRowCount = 0;       // Number of active glitch rows (current frame)
+        uint8_t maxRowLimit = 8;          // Maximum allowed rows for this glitch instance (1-8, intensity-based)
 
         // Multi-row glitch support (up to 8 independent glitch rows)
         static const int MAX_GLITCH_ROWS = 8;

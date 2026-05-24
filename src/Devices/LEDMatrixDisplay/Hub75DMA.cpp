@@ -208,10 +208,10 @@ void Hub75DMA::updateGlitchParams(const IntensityCache& cache, bool isInitialTri
         glitchState.glitchRadius = 1 + (esp_random() % maxRadius);
     }
 
-    // Calculate active glitch rows with cubic scaling
-    const int maxRowScaling = GlitchState::MAX_GLITCH_ROWS - 1;
+    // Calculate active glitch rows with cubic scaling, respecting maxRowLimit
+    const int maxRowScaling = glitchState.maxRowLimit - 1;
     int activeRows = 1 + (int)(cache.cubed * maxRowScaling);
-    glitchState.activeRowCount = constrain(activeRows, 1, GlitchState::MAX_GLITCH_ROWS);
+    glitchState.activeRowCount = constrain(activeRows, 1, glitchState.maxRowLimit);
 
     // Shift constants (different for initial trigger vs updates)
     const int maxHorizontalShift = isInitialTrigger ? 20 : 45;
@@ -241,7 +241,7 @@ void Hub75DMA::triggerGlitch(int intensity) {
     glitchState.startTime = millis();
     glitchState.lastUpdate = millis();
     glitchState.baseIntensity = constrain(intensity, 0, 100);
-    glitchState.currentIntensity = 1.0f;
+    glitchState.currentIntensity = 0.0f;  // Start at 0 for ramp-up effect
 
     // Calculate intensity power curves once
     calculateIntensityCurves(glitchState.baseIntensity, intensityCache);
@@ -249,6 +249,11 @@ void Hub75DMA::triggerGlitch(int intensity) {
     // Calculate effect duration with quadratic scaling
     glitchState.duration = tapGlitchMinDuration +
                           (unsigned long)(intensityCache.squared * (tapGlitchMaxDuration - tapGlitchMinDuration));
+
+    // Set maximum row limit based on intensity (linear scaling from 1-8 rows)
+    // Low intensity (0-12.5%) = 1 row, High intensity (87.5-100%) = 8 rows
+    glitchState.maxRowLimit = tapGlitchMinRows + (uint8_t)(intensityCache.normalized * (tapGlitchMaxRows - tapGlitchMinRows));
+    glitchState.maxRowLimit = constrain(glitchState.maxRowLimit, tapGlitchMinRows, tapGlitchMaxRows);
 
     // Initialize glitch parameters
     updateGlitchParams(intensityCache, true);
@@ -265,32 +270,40 @@ void Hub75DMA::updateGlitch() {
         glitchState.active = false;
         glitchState.isFullScreen = false;
         glitchState.currentIntensity = 1.0f;
-        glitchState.activeRowCount = 0;
-        glitchState.glitchRadius = 2;
+        glitchState.maxRowLimit = tapGlitchMaxRows;
 
         // Only reset active rows (optimization: no need to clear all)
         for (uint8_t i = 0; i < glitchState.activeRowCount; i++) {
             glitchState.glitchRow[i] = -1;
         }
+        glitchState.activeRowCount = 0;
+        glitchState.glitchRadius = 2;
         return;
     }
 
+    // Apply smooth ramp-up at start (reduces jarring effect)
+    if (elapsed < tapGlitchRampDuration) {
+        float rampProgress = (float)elapsed / tapGlitchRampDuration;
+        glitchState.currentIntensity = rampProgress;  // Smooth 0.0 -> 1.0
+    }
     // Apply smooth fade-out during final portion of duration
-    const float fadeStartRatio = 0.8f;
-    float fadeThreshold = glitchState.duration * fadeStartRatio;
+    else {
+        const float fadeStartRatio = 0.8f;
+        float fadeThreshold = glitchState.duration * fadeStartRatio;
 
-    if (elapsed > fadeThreshold) {
-        float fadeProgress = (elapsed - fadeThreshold) / (glitchState.duration - fadeThreshold);
-        glitchState.currentIntensity = 1.0f - fadeProgress;
-    } else {
-        glitchState.currentIntensity = 1.0f;
+        if (elapsed > fadeThreshold) {
+            float fadeProgress = (elapsed - fadeThreshold) / (glitchState.duration - fadeThreshold);
+            glitchState.currentIntensity = 1.0f - fadeProgress;
+        } else {
+            glitchState.currentIntensity = 1.0f;
+        }
     }
 
     // Periodically randomize glitch parameters
     if (currentTime - glitchState.lastUpdate >= tapGlitchUpdateInterval) {
         glitchState.lastUpdate = currentTime;
 
-        // Calculate effective intensity with fade-out applied and cache power curves
+        // Calculate effective intensity with ramp/fade applied and cache power curves
         float effectiveIntensity = glitchState.baseIntensity * glitchState.currentIntensity;
         IntensityCache cache;
         calculateIntensityCurves(effectiveIntensity, cache);
