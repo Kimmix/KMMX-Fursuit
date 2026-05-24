@@ -1,12 +1,12 @@
 <div align="left">
 
 # ✨ KMMX-Fursuit Controller ✨
-
-<img src="doc\ControllerV4.3.png" alt="Kimmix Controller V4.3">
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Platform: ESP32](https://img.shields.io/badge/Platform-ESP32-blue.svg)](https://www.espressif.com/en/products/socs/esp32)
 [![IDE: PlatformIO](https://img.shields.io/badge/IDE-PlatformIO-orange.svg)](https://platformio.org/)
+
+### Controller V2 Preview
+<img src="doc\ControllerV2.png" alt="Kimmix Controller V2">
 
 </div>
 
