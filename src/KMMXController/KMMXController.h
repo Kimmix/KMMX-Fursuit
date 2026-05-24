@@ -144,8 +144,6 @@ class KMMXController {
     bool boopInitialized = false, inBoopRange = false, isBooping = false, isContinuousBoop = false, isAngry = false;
     unsigned short prevHornBright = hornInitBrightness;
     float boopSpeed = 0.0f;
-    unsigned long motionDetectionStartTime = 0;  // Time when motion detection should start (after startup delay)
-
     // Motion detection state structures
     struct TiltDetector {
         float tiltAngleX = 0.0f;  // Forward/back tilt

@@ -1,4 +1,5 @@
 #include "Hub75DMA.h"
+#include "KMMXController/MotionDetectionConfig.h"
 
 Hub75DMA::Hub75DMA() {
     HUB75_I2S_CFG::i2s_pins _pins = {R1, G1, BL1, R2, G2, BL2, CH_A, CH_B, CH_C, CH_D, CH_E, LAT, OE, CLK};

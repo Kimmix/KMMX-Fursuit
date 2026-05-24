@@ -1,7 +1,8 @@
 #include "KMMXController.h"
+#include "MotionDetectionConfig.h"
 #include <cmath>
 
-void KMMXController::resetIdleTime(KMMXController *controller) {
+void KMMXController::resetIdleTime(KMMXController* controller) {
     controller->eyeState.playPrevState();
     controller->mouthState.playPrevState();  // Restore previous state, not just reset animation
     controller->mouthState.setSlowAnimation(false);
@@ -10,7 +11,7 @@ void KMMXController::resetIdleTime(KMMXController *controller) {
     controller->isSleeping = false;
     controller->hornLED.setBrightness(controller->prevHornBright, 5);
 
-    if (enableIdleDebug) {
+    if (enableMotionDebug) {
         Serial.println("[IDLE] Reset - Motion detected, returning to active state");
     }
 }
@@ -26,24 +27,24 @@ void KMMXController::resetIdleTime() {
     isSleeping = false;
     hornLED.setBrightness(prevHornBright, 5);
 
-    if (enableIdleDebug) {
+    if (enableMotionDebug) {
         Serial.println("[IDLE] Reset - Motion detected, returning to active state");
     }
 }
 
-void KMMXController::enterSleep(KMMXController *controller) {
+void KMMXController::enterSleep(KMMXController* controller) {
     controller->prevHornBright = controller->hornLED.getBrightness();
     controller->hornLED.setBrightness(5);
     controller->eyeState.setState(EyeStateEnum::SLEEP, false, 0);  // Temporary, no timeout (manual control)
     controller->mouthState.setSlowAnimation(true);
     controller->isSleeping = true;
 
-    if (enableIdleDebug) {
+    if (enableMotionDebug) {
         Serial.println("[IDLE] Entering sleep mode");
     }
 }
 
-void KMMXController::checkIdleAndSleep(KMMXController *controller, unsigned long currentTime) {
+void KMMXController::checkIdleAndSleep(KMMXController* controller, unsigned long currentTime) {
     // Only check idle/sleep when in IDLE or SLEEP eye states
     if (controller->eyeState.getState() != EyeStateEnum::IDLE &&
         controller->eyeState.getState() != EyeStateEnum::SLEEP) {
@@ -57,10 +58,6 @@ void KMMXController::checkIdleAndSleep(KMMXController *controller, unsigned long
         controller->baselineAccel = current;
         controller->baselineInitialized = true;
         controller->stillTime = currentTime;
-
-        if (enableIdleDebug) {
-            Serial.printf("[IDLE] Baseline initialized: mag=%.2f m/s²\n", current.accelMagnitude);
-        }
         return;
     }
 
@@ -73,34 +70,9 @@ void KMMXController::checkIdleAndSleep(KMMXController *controller, unsigned long
     // Check for motion
     bool motionDetected = (magnitudeDelta > currentThreshold);
 
-    // Debug output with proper rate limiting (once per second)
-    static unsigned long lastDebugTime = 0;
-    if (enableIdleDebug && (currentTime - lastDebugTime >= 1000)) {
-        lastDebugTime = currentTime;
-        Serial.printf("[IDLE] Mag: %.2f | Baseline: %.2f | Delta: %.2f | Threshold: %.2f | Motion: %s | Counter: %d\n",
-                      current.accelMagnitude,
-                      controller->baselineAccel.accelMagnitude,
-                      magnitudeDelta,
-                      currentThreshold,
-                      motionDetected ? "YES" : "NO",
-                      controller->motionCounter);
-    }
-
     if (motionDetected) {
         // Motion detected - increment hysteresis counter
         controller->motionCounter++;
-
-        if (enableIdleDebug) {
-            Serial.printf("[IDLE] ⚡ MOTION! Mag: %.2f | Baseline: %.2f | Delta: %.2f | Threshold: %.2f | Counter: %d/%d | Sleeping: %s\n",
-                          current.accelMagnitude,
-                          controller->baselineAccel.accelMagnitude,
-                          magnitudeDelta,
-                          currentThreshold,
-                          controller->motionCounter,
-                          motionHysteresisCount,
-                          controller->isSleeping ? "YES" : "NO");
-        }
-
         // If sleeping, require sustained motion to wake up (hysteresis)
         if (controller->isSleeping) {
             if (controller->motionCounter >= motionHysteresisCount) {
@@ -124,27 +96,11 @@ void KMMXController::checkIdleAndSleep(KMMXController *controller, unsigned long
             if (decayCounter >= motionCounterDecayRate && controller->motionCounter > 0) {
                 controller->motionCounter--;
                 decayCounter = 0;
-                if (enableIdleDebug && controller->motionCounter > 0) {
-                    Serial.printf("[IDLE] 🔻 Counter decayed to %d/%d\n",
-                                  controller->motionCounter, motionHysteresisCount);
-                }
             }
         } else {
             // When awake, instant reset
             controller->motionCounter = 0;
         }
-
-        // Update baseline after being still for configured delay (prevents drift during motion)
-        // if (controller->stillTime > 0 &&
-        //     (currentTime - controller->stillTime >= baselineUpdateDelay) &&
-        //     (currentTime - controller->stillTime < baselineUpdateDelay + 100)) {  // Only update once in this window
-        //     controller->baselineAccel = current;
-        //     if (enableIdleDebug) {
-        //         Serial.printf("[IDLE] Baseline updated to %.2f m/s² (still for %.1fs)\n",
-        //                       current.accelMagnitude,
-        //                       baselineUpdateDelay / 1000.0);
-        //     }
-        // }
 
         // Check if should enter sleep
         if (controller->stillTime == 0) {

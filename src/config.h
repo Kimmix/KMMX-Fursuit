@@ -2,18 +2,36 @@
 
 #include <stdint.h>
 
-// ESP32S3 Custom board PINS
-// I2C
+// ============================================================================
+// KMMX Fursuit Controller - Hardware Configuration
+// ============================================================================
+// This file contains the primary hardware configuration including pin
+// assignments, display geometry, and user-adjustable preferences.
+//
+// Component-specific configurations have been moved to their respective
+// module headers for better organization:
+// - BLE UUIDs:              src/Network/BLE_UUIDs.h
+// - Motion Detection:       src/KMMXController/MotionDetectionConfig.h
+// - GooglyEye Physics:      src/Renderer/GooglyEyeConfig.h
+// - Viseme/Audio:           src/Renderer/VisemeConfig.h
+// ============================================================================
+
+// ============================================================================
+// SECTION 1: Hardware Pin Assignments (ESP32-S3)
+// ============================================================================
+
+// --- I2C Pins ---
 #define S3_SDA 9
 #define S3_SCL 3
-#define RANDOM_PIN 2  // Use any usused ADC pin for true random
-// I2S
-#define I2S_WS 10
-#define I2S_SD 12
-#define I2S_SCK 11
-// I2S Processor
-#define I2S_PORT I2S_NUM_0
-// HUB75 pin (Avoid and QSPI pins)
+#define RANDOM_PIN 2                // Unused ADC pin for true random number generation
+
+// --- I2S Audio Pins ---
+#define I2S_WS 10                   // Word Select (LRCLK)
+#define I2S_SD 12                   // Serial Data
+#define I2S_SCK 11                  // Serial Clock (BCLK)
+#define I2S_PORT I2S_NUM_0          // I2S peripheral number
+
+// --- HUB75 LED Matrix Pins (avoid QSPI pins) ---
 #define R1 4
 #define G1 5
 #define BL1 6
@@ -24,15 +42,22 @@
 #define CH_B 8
 #define CH_C 19
 #define CH_D 20
-#define CH_E 17  // assign to any available pin if using two panels or 64x64 panels with 1/32 scan
+#define CH_E 17                     // Required for two panels or 64x64 panels with 1/32 scan
 #define CLK 41
 #define LAT 40
 #define OE 39
-// Other
-#define LED_PWM_PIN 21  // Horn LED
-#define RGB_STATUS_PIN 45  // RGB onboard pin
 
-// BLE settings - can be overridden by platformio.ini build flags
+// --- Other Pins ---
+#define LED_PWM_PIN 21              // Horn LED (PWM controlled)
+#define RGB_STATUS_PIN 45           // RGB status LED (onboard)
+#define ARGB_PIN 14                 // Side ARGB LED strip (WS2812)
+
+// ============================================================================
+// SECTION 2: BLE Device Names (can be overridden by platformio.ini)
+// ============================================================================
+// Note: BLE UUIDs have been moved to src/Network/BLE_UUIDs.h
+// ============================================================================
+
 #ifndef BLE_DEVICE_NAME
 #define BLE_DEVICE_NAME "KMMX"
 #endif
@@ -41,158 +66,98 @@
 #define BLE_LOCAL_NAME "KMMX-BLE"
 #endif
 
-#define BLE_SERVICE_UUID "c1449275-bf34-40ab-979d-e34a1fdbb129"
-#define BLE_DISPLAY_BRIGHTNESS_CHARACTERISTIC_UUID "9fdfd124-966b-44f7-8331-778c4d1512fc"
-#define BLE_EYE_STATE_CHARACTERISTIC_UUID "49a36bb2-1c66-4e5c-8ff3-28e55a64beb3"
-#define BLE_MOUTH_STATE_CHARACTERISTIC_UUID "f6a7b8c9-d0e1-4f5a-b1c2-3d4e5f6a7b8c"
-#define BLE_VISEME_CHARACTERISTIC_UUID "493d06f3-0fa0-4a90-88f1-ebaed0da9b80"
-#define BLE_HORN_BRIGHTNESS_CHARACTERISTIC_UUID "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
-#define BLE_CHEEK_BRIGHTNESS_CHARACTERISTIC_UUID "b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e"
-#define BLE_CHEEK_BG_COLOR_CHARACTERISTIC_UUID "c3d4e5f6-a7b8-4c5d-9e0f-1a2b3c4d5e6f"
-#define BLE_CHEEK_FADE_COLOR_CHARACTERISTIC_UUID "d4e5f6a7-b8c9-4d5e-9f0a-1b2c3d4e5f6a"
-#define BLE_DISPLAY_COLOR_MODE_CHARACTERISTIC_UUID "f5a6b7c8-d9e0-4f5a-b0c1-2d3e4f5a6b7c"
-#define BLE_DISPLAY_EFFECT_COLOR1_CHARACTERISTIC_UUID "a6b7c8d9-e0f1-4a5b-c1d2-3e4f5a6b7c8d"
-#define BLE_DISPLAY_EFFECT_COLOR2_CHARACTERISTIC_UUID "b7c8d9e0-f1a2-4b5c-d2e3-4f5a6b7c8d9e"
-#define BLE_DISPLAY_EFFECT_OPTION1_CHARACTERISTIC_UUID "c7d8e9f0-a1b2-4c5d-e2f3-4a5b6c7d8e9f"
-#define BLE_DISPLAY_EFFECT_OPTION2_CHARACTERISTIC_UUID "e7f8a9b0-c1d2-4e5f-a2b3-4c5d6e7f8a9b"
-#define BLE_DISPLAY_EFFECT_OPTION3_CHARACTERISTIC_UUID "f7a8b9c0-d1e2-4f5a-b2c3-4d5e6f7a8b9c"
-#define BLE_REBOOT_CHARACTERISTIC_UUID "e5f6a7b8-c9d0-4e5f-a0b1-2c3d4e5f6a7b"
+// ============================================================================
+// SECTION 3: Display Geometry and Configuration
+// ============================================================================
 
-// HUB75 Config
-const uint8_t panelResX = 64;
-const uint8_t panelResY = 32;
-const uint8_t panelsNumber = 2;
-const uint8_t screenWidth = panelResX * panelsNumber;
-const uint8_t screenHeight = panelResY;
-const uint8_t panelInitBrightness = 255;
-const uint16_t minRefreshRate = 240;
-const bool doubleBuffer = true;
+// --- HUB75 LED Matrix Configuration ---
+const uint8_t panelResX = 64;                   // Single panel width in pixels
+const uint8_t panelResY = 32;                   // Single panel height in pixels
+const uint8_t panelsNumber = 2;                 // Number of panels chained together
 
-// SideLED configuration
-#define ARGB_PIN 14     // Side ARGB Strip
-const uint8_t argbCount = 24;                                                   // Number of LEDs
-const uint8_t sideLEDBrightness = 255;                                          // LED brightness
-const uint16_t sideLEDAnimateInterval = 400;                                    // Animation interval in milliseconds
-const uint32_t sideColor1RGB = 0xFF446C;                                        // #FF446C Reddish Pink (RGB hex)
-const uint32_t sideColor2RGB = 0xF9826C;                                        // #F9826C Coral (RGB hex)
-const uint16_t sideLEDFadeInterval = 500;                                       // Fade interval in milliseconds
-const uint16_t sideLEDPositionChangeDelay = 2000;                               // Position change delay in milliseconds
+// Calculated screen dimensions (automatically derived)
+const uint8_t screenWidth = panelResX * panelsNumber;   // Total screen width = 128 pixels
+const uint8_t screenHeight = panelResY;                 // Total screen height = 32 pixels
 
-// HornLED PWM configuration
-const uint8_t hornInitBrightness = 15;
-const uint8_t hornPwmChannel = 0;
-const uint16_t hornFrequency = 20000;
-const uint8_t hornResolution = 8;
-const uint8_t hornMinBrightness = 2;    // Minimum range for PWM
-const uint8_t hornMaxBrightness = 200;   // Maximum range for PWM (255 can cause high heat!!)
+// Display settings
+const uint8_t panelInitBrightness = 255;        // Initial brightness (0-255)
+const uint16_t minRefreshRate = 240;            // Minimum refresh rate in Hz
+const bool doubleBuffer = true;                 // Enable double buffering for smoother animations
+const uint8_t minimumPixelBrightness = 40;      // Minimum pixel brightness threshold for drawing
 
-// Controller etc. configuration
-const uint8_t sensorUpdateInterval = 20;       // Sensor update interval in ms (50Hz for better responsiveness)
-const uint8_t minimumPixelBrightness = 40;     // Minimum pixel brightness to draw on screen
+// --- Facial Feature Geometry (position and size in pixels) ---
+// Nose
 const uint8_t noseWidth = 8;
 const uint8_t noseHeight = 5;
 const uint8_t noseOffsetX = 56;
 const uint8_t noseOffsetY = 7;
+
+// Eyes
 const uint8_t eyeWidth = 32;
 const uint8_t eyeHeight = 18;
 const uint8_t eyeOffsetX = 15;
 const uint8_t eyeOffsetY = 0;
+
+// Mouth
 const uint8_t mouthWidth = 50;
 const uint8_t mouthHeight = 14;
 const uint8_t mouthOffsetX = 14;
 const uint8_t mouthOffsetY = 18;
 
-// Boop configuration
-const uint16_t boopMinThreshold = 100;         // Minimum proximity distance to activate
-const uint16_t boopMaxThreshold = 900;         // Maximum range of proximity
-const uint16_t boopMaxDuration = 2000;         // Total duration for calculate speed of boop
-
-// Idle configuration
-const uint32_t idleTimeout = 300000;            // Time till sleep in ms (300 seconds)
-const uint16_t baselineUpdateDelay = 2000;     // Time to wait before updating baseline when still (2 seconds)
-const float idleAccThreshold = 1.5f;           // Magnitude change threshold to detect motion (m/s²)
-const float sleepingAccThreshold = 0.7f;       // Magnitude change threshold to wake up
-const uint8_t motionHysteresisCount = 3;       // Number of motion detections needed to wake up
-const uint8_t motionCounterDecayRate = 10;     // Samples between counter decay (10 = ~200ms at 50Hz)
-const float gravityMagnitude = 9.81f;          // Earth's gravity for reference (m/s²)
-const bool enableIdleDebug = false;            // Enable debug logging for idle detection
-
-// Motion Detection Configuration
-// Global debug flag for all motion detection features
-const bool enableMotionDebug = true;            // Enable detailed debug logging for all motion detection (shows continuous amplitude/intensity values)
-const uint16_t motionDetectionStartupDelay = 5000; // Delay before motion detection starts (ms) - increased to account for BLE init - prevents false triggers during sensor initialization
-
-// Tilt Detection - Detects sustained head tilt for curious/confused expressions
-const bool enableTiltDetection = false;
-const float tiltThreshold = 4.0f;               // m/s² threshold for tilt detection (reduced for easier triggering)
-const float tiltNeutralThreshold = 3.0f;        // m/s² threshold to return to neutral (increased for easier return)
-const uint16_t tiltSustainTime = 500;           // Time to hold tilt before triggering (ms)
-const uint16_t tiltDebounceTime = 300;          // Cooldown between tilt changes (ms)
-const uint16_t tiltDirectionChangeCooldown = 3000;  // Cooldown when switching from left/right to forward/back (ms) - prevents rapid direction changes
-
-// Upside Down Detection - Detects when the character is held upside down
-const bool enableUpsideDownDetection = true;
-const float upsideDownThreshold = -7.0f;            // m/s² threshold for Y-axis (negative = upside down)
-const uint16_t upsideDownSustainTime = 1500;        // Time to hold upside down before triggering (ms)
-const uint16_t upsideDownDebounceTime = 500;        // Cooldown between state changes (ms)
-
-// Petting Detection - Detects quick pats/taps (spike-based) for contentment
-const bool enablePettingDetection = true;
-const bool enablePettingCooldownAfterTilt = true;   // Enable cooldown after tilt to prevent immediate petting
-const uint16_t pettingCooldownAfterTilt = 1000;     // Cooldown duration after tilt ends (ms)
-
-const float pettingSpikeThreshold = 0.8f;           // m/s² threshold for detecting a gentle pat/tap spike
-const uint16_t pettingSpikeCooldown = 300;          // Minimum time between individual spikes (ms) - prevents double-counting
-
-// Dynamic happiness system parameters
-const float pettingHappinessPerPat = 20.0f;         // Happiness added per pat (0-100 scale)
-const float pettingHappinessTrigger = 80.0f;        // Happiness level to trigger SMILE response (0-100)
-const float pettingHappinessDecayRate = 15.0f;      // Happiness decay per second when not petting
-const float pettingHappinessEndThreshold = 20.0f;   // Happiness level below which response ends (allows natural fade-out)
-const float pettingDeltaTimeMax = 2.0f;             // Maximum delta time in seconds to accept (sanity check for time jumps)
-
-// Tap Detection - Detects light taps for glitch effects
-const bool enableTapDetection = true;
-const float tapSpikeThreshold = 1.0f;               // m/s² threshold for detecting a light tap (higher than petting)
-const uint16_t tapCooldown = 100;                   // Minimum time between taps (ms)
-// Tap glitch effect scaling based on tap magnitude
-const uint16_t tapGlitchMinDuration = 300;          // Minimum duration of glitch effect (ms) for light taps
-const uint16_t tapGlitchMaxDuration = 1200;         // Maximum duration of glitch effect (ms) for hard taps
-const int tapGlitchMinIntensity = 10;                // Minimum intensity of glitch effect (0-100) for light taps
-const int tapGlitchMaxIntensity = 60;               // Maximum intensity of glitch effect (0-100) for hard taps
-const float tapMagnitudeMin = 1.0f;                 // Minimum tap magnitude for scaling (m/s²)
-const float tapMagnitudeMax = 5.0f;                 // Maximum tap magnitude for scaling (m/s²)
-const uint16_t tapGlitchUpdateInterval = 75;        // How often glitch pattern changes (ms)
-const int tapGlitchFullScreenChance = 15;           // Chance (0-100) for full-screen glitch instead of localized
-
-// Sample Rate and Samples
-const float i2sSampleRate = 8000.0f;
-const uint16_t i2sSamples = 256;
-
-// Viseme configuration
-const uint16_t visemeAhFreqMin = 700;          // Start freq of AH viseme
-const uint16_t visemeAhFreqMax = 1500;         // End freq of AH viseme
-const uint16_t visemeEeFreqMin = 1000;         // Start freq of EE viseme
-const uint16_t visemeEeFreqMax = 3000;         // End freq of EE viseme
-const uint16_t visemeOhFreqMin = 400;          // Start freq of OH viseme
-const uint16_t visemeOhFreqMax = 1100;         // End freq of OH viseme
-const uint16_t visemeOoFreqMin = 250;          // Start freq of OO viseme
-const uint16_t visemeOoFreqMax = 900;          // End freq of OO viseme
-const uint16_t visemeThFreqMin = 2800;         // Start freq of TH viseme
-const uint16_t visemeThFreqMax = 4000;         // End freq of TH viseme
-const float visemeNoiseThreshold = 400.0f;     // Minimum noise threshold for viseme to activate
-const float visemeSmoothingAlpha = 0.2f;       // Smoothing factor between 0 and 1
-const float visemeDecayRate = 0.0003f;         // Adjusted decay rate (units per millisecond)
-
-// GooglyEye configuration
-const float googlyAccelScale = 1.0f;           // Accel scale; no science, just looks good
-const float googlyElasticity = 0.95f;          // Edge-bounce coefficient (MUST be <1.0!)
-const float googlyDrag = 0.997f;               // Dampens motion slightly
-const float googlyEyeRadius = 3.0f;            // Radius of eye, floating-point pixel units
-const float googlyPupilSize = 16.0f;
-const float googlyPupilRadius = googlyPupilSize / 2.0f;             // Radius of pupil, same units
-const float googlyInnerRadius = googlyEyeRadius - googlyPupilRadius;  // Radius of pupil motion
-const uint8_t googlyPupilWidth = 6;
-const uint8_t googlyPupilHeight = 6;
+// GooglyEye pupil position (depends on eyeOffsetX from above)
+// Note: Physics constants are in src/Renderer/GooglyEyeConfig.h
 const uint8_t googlyPupilOffsetX = eyeOffsetX + 8;
-const uint8_t googlyPupilOffsetY = 5;
+
+// ============================================================================
+// SECTION 4: LED Configuration and User Preferences
+// ============================================================================
+
+// --- Side LED Strip (WS2812) ---
+const uint8_t argbCount = 24;                   // Number of LEDs in the side strip
+const uint8_t sideLEDBrightness = 255;          // LED brightness (0-255)
+const uint16_t sideLEDAnimateInterval = 400;    // Animation interval (ms)
+const uint32_t sideColor1RGB = 0xFF446C;        // Primary color: #FF446C Reddish Pink
+const uint32_t sideColor2RGB = 0xF9826C;        // Secondary color: #F9826C Coral
+const uint16_t sideLEDFadeInterval = 500;       // Fade transition time (ms)
+const uint16_t sideLEDPositionChangeDelay = 2000; // Delay between position changes (ms)
+
+// --- Horn LED (PWM) ---
+const uint8_t hornInitBrightness = 15;          // Initial brightness (0-255)
+const uint8_t hornPwmChannel = 0;               // PWM channel number
+const uint16_t hornFrequency = 20000;           // PWM frequency in Hz
+const uint8_t hornResolution = 8;               // PWM resolution in bits
+const uint8_t hornMinBrightness = 2;            // Minimum safe brightness
+const uint8_t hornMaxBrightness = 200;          // Maximum safe brightness (255 can cause overheating!)
+
+// ============================================================================
+// SECTION 5: Sensor and Interaction Configuration
+// ============================================================================
+
+// --- Sensor Update Rate ---
+const uint8_t sensorUpdateInterval = 20;        // Sensor update interval in ms (50Hz)
+
+// --- Proximity/Boop Detection ---
+const uint16_t boopMinThreshold = 100;          // Minimum proximity distance to activate boop
+const uint16_t boopMaxThreshold = 900;          // Maximum proximity detection range
+const uint16_t boopMaxDuration = 2000;          // Maximum duration for calculating boop speed (ms)
+
+// ============================================================================
+// COMPONENT-SPECIFIC CONFIGURATIONS
+// ============================================================================
+// The following configurations have been moved to their respective module
+// headers for better organization and maintainability:
+//
+// - Motion Detection (Tilt, Petting, Tap, Idle, Upside-Down):
+//   → src/KMMXController/MotionDetectionConfig.h
+//
+// - GooglyEye Physics (acceleration, drag, elasticity):
+//   → src/Renderer/GooglyEyeConfig.h
+//
+// - Viseme/Audio Processing (FFT, frequency ranges, I2S settings):
+//   → src/Renderer/VisemeConfig.h
+//
+// - BLE Service and Characteristic UUIDs:
+//   → src/Network/BLE_UUIDs.h
+//
+// Include the appropriate header files in your module implementations.
+// ============================================================================

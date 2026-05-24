@@ -1,0 +1,39 @@
+#pragma once
+
+// ============================================================================
+// BLE Service and Characteristic UUIDs
+// ============================================================================
+// These UUIDs define the BLE GATT service and characteristics for remote
+// control of the KMMX fursuit controller via Bluetooth Low Energy.
+// 
+// Each UUID is a 128-bit identifier that uniquely identifies a service or
+// characteristic in the GATT profile. These are custom UUIDs generated for
+// this project and should not be changed unless you also update the client
+// application.
+// ============================================================================
+
+// Main GATT Service UUID
+#define BLE_SERVICE_UUID "c1449275-bf34-40ab-979d-e34a1fdbb129"
+
+// Display Control Characteristics
+#define BLE_DISPLAY_BRIGHTNESS_CHARACTERISTIC_UUID "9fdfd124-966b-44f7-8331-778c4d1512fc"
+#define BLE_DISPLAY_COLOR_MODE_CHARACTERISTIC_UUID "f5a6b7c8-d9e0-4f5a-b0c1-2d3e4f5a6b7c"
+#define BLE_DISPLAY_EFFECT_COLOR1_CHARACTERISTIC_UUID "a6b7c8d9-e0f1-4a5b-c1d2-3e4f5a6b7c8d"
+#define BLE_DISPLAY_EFFECT_COLOR2_CHARACTERISTIC_UUID "b7c8d9e0-f1a2-4b5c-d2e3-4f5a6b7c8d9e"
+#define BLE_DISPLAY_EFFECT_OPTION1_CHARACTERISTIC_UUID "c7d8e9f0-a1b2-4c5d-e2f3-4a5b6c7d8e9f"
+#define BLE_DISPLAY_EFFECT_OPTION2_CHARACTERISTIC_UUID "e7f8a9b0-c1d2-4e5f-a2b3-4c5d6e7f8a9b"
+#define BLE_DISPLAY_EFFECT_OPTION3_CHARACTERISTIC_UUID "f7a8b9c0-d1e2-4f5a-b2c3-4d5e6f7a8b9c"
+
+// Facial Expression Characteristics
+#define BLE_EYE_STATE_CHARACTERISTIC_UUID "49a36bb2-1c66-4e5c-8ff3-28e55a64beb3"
+#define BLE_MOUTH_STATE_CHARACTERISTIC_UUID "f6a7b8c9-d0e1-4f5a-b1c2-3d4e5f6a7b8c"
+#define BLE_VISEME_CHARACTERISTIC_UUID "493d06f3-0fa0-4a90-88f1-ebaed0da9b80"
+
+// LED Brightness Characteristics
+#define BLE_HORN_BRIGHTNESS_CHARACTERISTIC_UUID "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
+#define BLE_CHEEK_BRIGHTNESS_CHARACTERISTIC_UUID "b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e"
+#define BLE_CHEEK_BG_COLOR_CHARACTERISTIC_UUID "c3d4e5f6-a7b8-4c5d-9e0f-1a2b3c4d5e6f"
+#define BLE_CHEEK_FADE_COLOR_CHARACTERISTIC_UUID "d4e5f6a7-b8c9-4d5e-9f0a-1b2c3d4e5f6a"
+
+// System Control Characteristics
+#define BLE_REBOOT_CHARACTERISTIC_UUID "e5f6a7b8-c9d0-4e5f-a0b1-2c3d4e5f6a7b"

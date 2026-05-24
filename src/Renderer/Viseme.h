@@ -3,7 +3,7 @@
 #include <map>
 #include <arduinoFFT.h>
 #include "Utils/Utils.h"
-#include "config.h"
+#include "VisemeConfig.h"
 #include "Devices/Microphone/I2SMicrophone.h"
 #include "Bitmaps/Bitmaps.h"
 

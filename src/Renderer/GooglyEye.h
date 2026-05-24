@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "config.h"
+#include "GooglyEyeConfig.h"
 
 class GooglyEye {
 public:

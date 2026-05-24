@@ -1,4 +1,5 @@
 #include "KMMXController.h"
+#include "MotionDetectionConfig.h"
 #include <cmath>
 
 /**
@@ -165,11 +166,6 @@ void KMMXController::handleTiltTracking(unsigned long currentTime, bool isNeutra
  * Checks all motion features in priority order
  */
 void KMMXController::checkMotionFeatures(KMMXController* controller) {
-    // Skip motion detection during startup delay (prevents false triggers during sensor initialization)
-    if (millis() < controller->motionDetectionStartTime) {
-        return;
-    }
-
     // Log when motion detection becomes active (once)
     static bool motionDetectionStarted = false;
     if (!motionDetectionStarted && enableMotionDebug) {

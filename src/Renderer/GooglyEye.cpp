@@ -1,4 +1,5 @@
 #include "GooglyEye.h"
+#include "GooglyEyeConfig.h"
 #include <Arduino.h>
 
 void GooglyEye::update(float inputX, float inputY) {

@@ -1,6 +1,7 @@
 #include "BLE.h"
 #include <Arduino.h>
 #include "config.h"
+#include "BLE_UUIDs.h"
 
 BLEManager* BLEManager::instance = nullptr;
 

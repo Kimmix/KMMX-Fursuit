@@ -1,4 +1,5 @@
 #include "Viseme.h"
+#include "VisemeConfig.h"
 #include <vector>
 
 void Viseme::initMic() {

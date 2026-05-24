@@ -26,9 +26,6 @@ void KMMXController::setupSensors() {
     eyeState.setState(EyeStateEnum::IDLE, true, 0);      // Persistent, no timeout (initial state)
     mouthState.setState(MouthStateEnum::IDLE, true, 0);  // Persistent, no timeout (initial state)
 
-    // Set motion detection start time (current time + startup delay)
-    motionDetectionStartTime = millis() + motionDetectionStartupDelay;
-
     // Create sensor reading task on Core 1 (separate from rendering for better performance)
     // This prevents slow I2C sensors (like VL6180X) from blocking the render task
     xTaskCreatePinnedToCore(readSensorTask, "SensorTask", 4096, this, 2, &sensorTaskHandle, 1);
@@ -38,7 +35,6 @@ void KMMXController::setupSensors() {
     xTaskCreatePinnedToCore(renderTask, "RenderTask", 4096, this, 1, &renderTaskHandle, 0);
 
     Serial.println("=== Task Initialization Complete ===");
-    Serial.printf("Motion detection will start in %d ms\n", motionDetectionStartupDelay);
 }
 
 void KMMXController::readSensorTask(void* parameter) {

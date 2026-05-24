@@ -1,5 +1,6 @@
 #include "Hub75DMA.h"
 #include "config.h"
+#include "Renderer/GooglyEyeConfig.h"
 
 void Hub75DMA::drawFullscreen(const uint8_t* bitmap) {
     drawBitmap(bitmap, panelWidth, panelHeight, 0, 0);
