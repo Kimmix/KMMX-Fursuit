@@ -193,14 +193,27 @@ void Hub75DMA::getColorWave(const uint8_t brightness, const int row, const int c
     b = constrain(static_cast<uint8_t>(color1 + color2), 0, 255);
 }
 
-void Hub75DMA::triggerGlitch(unsigned long duration, int intensity) {
+void Hub75DMA::triggerGlitch(int intensity) {
     glitchState.active = true;
     glitchState.startTime = millis();
-    glitchState.duration = duration;
     glitchState.intensity = constrain(intensity, 0, 100);
+
+    // Calculate duration based on intensity using exponential curve
+    // Formula: duration = minDuration + (maxDuration - minDuration) * (intensity/100)^2
+    // This makes higher intensities last significantly longer
+    float normalizedIntensity = glitchState.intensity / 100.0f;
+    float intensitySquared = normalizedIntensity * normalizedIntensity;
+    glitchState.duration = tapGlitchMinDuration +
+                          (unsigned long)(intensitySquared * (tapGlitchMaxDuration - tapGlitchMinDuration));
+
     glitchState.lastUpdate = millis();
     glitchState.glitchRow = random(0, panelHeight);
-    glitchState.glitchShift = random(-20, 20);
+
+    // Initial glitch shift using exponential scaling
+    // Formula: shift = baseShift * (intensity/100)^2
+    float shiftScale = intensitySquared * intensitySquared;  // ^4 for even more dramatic scaling
+    int maxShift = (int)(20 * shiftScale);
+    glitchState.glitchShift = random(-maxShift, maxShift);
     glitchState.cachedRandomShift = 0;
 
     // Chance for full-screen glitch or localized glitch
@@ -232,7 +245,14 @@ void Hub75DMA::updateGlitch() {
     if (currentTime - glitchState.lastUpdate >= tapGlitchUpdateInterval) {
         glitchState.lastUpdate = currentTime;
         glitchState.glitchRow = random(0, panelHeight);
-        glitchState.glitchShift = random(-15, 15) * (glitchState.intensity / 50);
+
+        // Use exponential scaling for glitch shift
+        // Formula: shift = baseShift * (intensity/100)^4
+        // This creates dramatically more intense shifts at higher values
+        float normalizedIntensity = glitchState.intensity / 100.0f;
+        float intensityQuad = normalizedIntensity * normalizedIntensity * normalizedIntensity * normalizedIntensity;
+        int maxShift = (int)(15 * intensityQuad * 3);  // Scale up to 45 pixels at max intensity
+        glitchState.glitchShift = random(-maxShift, maxShift);
 
         // Chance for full-screen glitch or localized glitch
         if (random(100) < tapGlitchFullScreenChance) {
@@ -242,8 +262,11 @@ void Hub75DMA::updateGlitch() {
         }
 
         // Calculate random shift once per update interval (not every frame at 200fps)
-        if (random(100) < (glitchState.intensity / 10)) {
-            glitchState.cachedRandomShift = random(-5, 5);
+        // Use exponential scaling for random shift chance and magnitude
+        int randomShiftChance = (int)(intensityQuad * 100);  // Exponential chance increase
+        if (random(100) < randomShiftChance) {
+            int maxRandomShift = (int)(5 * intensityQuad * 2);  // Scale up to 10 pixels at max intensity
+            glitchState.cachedRandomShift = random(-maxRandomShift, maxRandomShift);
         } else {
             glitchState.cachedRandomShift = 0;
         }

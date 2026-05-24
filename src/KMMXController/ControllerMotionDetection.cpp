@@ -517,7 +517,7 @@ void KMMXController::detectTap(const SensorData& current) {
 
 /**
  * Trigger tap response - glitch effect on display
- * Scales intensity and duration based on tap magnitude
+ * Scales intensity based on tap magnitude (duration is calculated internally by triggerGlitch)
  */
 void KMMXController::triggerTapResponse(float tapMagnitude) {
     // Clamp tap magnitude to defined range
@@ -526,13 +526,13 @@ void KMMXController::triggerTapResponse(float tapMagnitude) {
     // Calculate normalized tap strength (0.0 to 1.0)
     float tapStrength = (clampedMagnitude - tapMagnitudeMin) / (tapMagnitudeMax - tapMagnitudeMin);
 
-    // Scale duration and intensity based on tap strength
-    uint16_t duration = tapGlitchMinDuration + (uint16_t)(tapStrength * (tapGlitchMaxDuration - tapGlitchMinDuration));
+    // Scale intensity based on tap strength
     int intensity = tapGlitchMinIntensity + (int)(tapStrength * (tapGlitchMaxIntensity - tapGlitchMinIntensity));
 
-    display.triggerGlitch(duration, intensity);
+    // Trigger glitch with intensity only (duration calculated internally)
+    display.triggerGlitch(intensity);
 
     if (enableMotionDebug) {
-        Serial.printf("[TAP] Glitch effect triggered! Magnitude: %.2f m/s² | Strength: %.2f | Duration: %dms | Intensity: %d\n", tapMagnitude, tapStrength, duration, intensity);
+        Serial.printf("[TAP] Glitch effect triggered! Magnitude: %.2f m/s² | Strength: %.2f | Intensity: %d\n", tapMagnitude, tapStrength, intensity);
     }
 }

@@ -322,10 +322,10 @@ class Hub75DMA {
     // Glitch effect control
     /**
      * @brief Triggers a glitch effect on the display.
-     * @param duration Duration of the glitch effect in milliseconds (default: 250ms)
+     * Duration is calculated internally based on intensity using an exponential curve.
      * @param intensity Intensity of the glitch (0-100, default: 50)
      */
-    void triggerGlitch(unsigned long duration = 250, int intensity = 50);
+    void triggerGlitch(int intensity = 50);
 
     /**
      * @brief Updates the glitch effect state (called each frame).
