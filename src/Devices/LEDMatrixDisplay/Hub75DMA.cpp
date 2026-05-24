@@ -214,7 +214,7 @@ void Hub75DMA::updateGlitchParams(const IntensityCache& cache, bool isInitialTri
     glitchState.activeRowCount = constrain(activeRows, 1, glitchState.maxRowLimit);
 
     // Shift constants (different for initial trigger vs updates)
-    const int maxHorizontalShift = isInitialTrigger ? 20 : 45;
+    const int maxHorizontalShift = isInitialTrigger ? 40 : 80;
     const int maxVerticalJitter = 2;
 
     // Update active glitch rows
