@@ -49,7 +49,14 @@ void Hub75DMA::drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight
     for (int i = 0; i < imageHeight; i++) {
         const int row = offsetY + i;
         const uint8_t* rowPtr = bitmap + i * imageWidth;
+
+        // Get glitch effects for this row
         const int rowShift = getGlitchOffset(row);
+        const int verticalJitter = getGlitchVerticalJitter(row);
+        const int adjustedRow = row + verticalJitter;
+
+        // Skip if vertical jitter pushes row out of bounds
+        if (adjustedRow < 0 || adjustedRow >= panelHeight) continue;
 
         for (int j = 0; j < imageWidth; j++) {
             const uint8_t pixel = pgm_read_byte(rowPtr + j);
@@ -59,14 +66,16 @@ void Hub75DMA::drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight
             const int colLeft = offsetX + j + rowShift;
             const int colRight = mirrorBaseX + (panelWidth - 1 - j) + rowShift;
 
+            // Draw left side
             if (colLeft >= 0 && colLeft < screenWidth) {
                 getColorMap(pixel, row, colLeft, r, g, b);
-                matrix->drawPixelRGB888(colLeft, row, r, g, b);
+                matrix->drawPixelRGB888(colLeft, adjustedRow, r, g, b);
             }
 
+            // Draw right (mirrored) side
             if (colRight >= 0 && colRight < screenWidth) {
                 getColorMap(pixel, row, colRight, r, g, b);
-                matrix->drawPixelRGB888(colRight, row, r, g, b);
+                matrix->drawPixelRGB888(colRight, adjustedRow, r, g, b);
             }
         }
     }
@@ -80,26 +89,35 @@ void Hub75DMA::drawBitmap(const uint8_t* bitmapL, const uint8_t* bitmapR, int im
         const int row = offsetY + i;
         const uint8_t* rowPtrL = bitmapL + i * imageWidth;
         const uint8_t* rowPtrR = bitmapR + i * imageWidth;
+
+        // Get glitch effects for this row
         const int rowShift = getGlitchOffset(row);
+        const int verticalJitter = getGlitchVerticalJitter(row);
+        const int adjustedRow = row + verticalJitter;
+
+        // Skip if vertical jitter pushes row out of bounds
+        if (adjustedRow < 0 || adjustedRow >= panelHeight) continue;
 
         for (int j = 0; j < imageWidth; j++) {
             const uint8_t pixelL = pgm_read_byte(rowPtrL + j);
             const uint8_t pixelR = pgm_read_byte(rowPtrR + j);
             uint8_t r, g, b;
 
+            // Draw left side
             if (pixelL > minimumPixelBrightness) {
                 const int colLeft = offsetX + j + rowShift;
                 if (colLeft >= 0 && colLeft < screenWidth) {
                     getColorMap(pixelL, row, colLeft, r, g, b);
-                    matrix->drawPixelRGB888(colLeft, row, r, g, b);
+                    matrix->drawPixelRGB888(colLeft, adjustedRow, r, g, b);
                 }
             }
 
+            // Draw right (mirrored) side
             if (pixelR > minimumPixelBrightness) {
                 const int colRight = mirrorBaseX + (panelWidth - 1 - j) + rowShift;
                 if (colRight >= 0 && colRight < screenWidth) {
                     getColorMap(pixelR, row, colRight, r, g, b);
-                    matrix->drawPixelRGB888(colRight, row, r, g, b);
+                    matrix->drawPixelRGB888(colRight, adjustedRow, r, g, b);
                 }
             }
         }

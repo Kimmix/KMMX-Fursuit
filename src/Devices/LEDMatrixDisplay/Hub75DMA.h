@@ -20,37 +20,66 @@ class Hub75DMA {
     const uint8_t* lastEyeBitmap = nullptr;
     const uint8_t* lastMouthBitmap = nullptr;
 
-    // Glitch effect state
+    // Glitch effect state tracking
     struct GlitchState {
-        bool active = false;
-        unsigned long startTime = 0;
-        unsigned long duration = 250;  // Default glitch duration (ms)
-        int intensity = 50;  // Glitch intensity (0-100)
-        int glitchRow = -1;
-        int glitchShift = 0;
-        int cachedRandomShift = 0;  // Cached random shift for current frame
-        int cachedProximity = 2;  // Cached proximity range for glitch row
-        unsigned long lastUpdate = 0;
+        bool active = false;              // Whether glitch is currently active
+        unsigned long startTime = 0;      // When glitch was triggered (ms)
+        unsigned long lastUpdate = 0;     // Last time glitch params were randomized (ms)
+        unsigned long duration = 250;     // How long glitch lasts (ms)
+        int baseIntensity = 50;           // Original glitch strength (0-100)
+        float currentIntensity = 1.0f;    // Current intensity with fade-out (0.0-1.0)
+
+        // Multi-row glitch support (3 independent glitch rows)
+        static const int MAX_GLITCH_ROWS = 3;
+        int glitchRow[MAX_GLITCH_ROWS] = {-1, -1, -1};
+        int glitchShift[MAX_GLITCH_ROWS] = {0, 0, 0};
+        int verticalJitter[MAX_GLITCH_ROWS] = {0, 0, 0};
+
+        int cachedProximity = 2;          // Glitch row range (999 = full-screen)
     } glitchState;
 
-    // Helper method to calculate glitch offset for a given row
+    // Calculate horizontal pixel offset for a given row during glitch
     inline int getGlitchOffset(int row) const {
         if (!glitchState.active) {
             return 0;
         }
 
-        int offset = 0;
+        bool isFullScreen = (glitchState.cachedProximity >= 999);
 
-        // Check if this is a full-screen glitch (cachedProximity = 999)
-        // or if row is near the glitch row
-        if (glitchState.cachedProximity >= 999 ||
-            abs(row - glitchState.glitchRow) < glitchState.cachedProximity) {
-            offset = glitchState.glitchShift;
-            // Add cached random shift only to affected rows
-            offset += glitchState.cachedRandomShift;
+        // Check all active glitch rows
+        for (int i = 0; i < GlitchState::MAX_GLITCH_ROWS; i++) {
+            if (glitchState.glitchRow[i] < 0) continue;  // Skip inactive rows
+
+            bool isNearGlitchRow = (abs(row - glitchState.glitchRow[i]) < glitchState.cachedProximity);
+
+            if (isFullScreen || isNearGlitchRow) {
+                return glitchState.glitchShift[i];
+            }
         }
 
-        return offset;
+        return 0;
+    }
+
+    // Get vertical jitter for a given row during glitch
+    inline int getGlitchVerticalJitter(int row) const {
+        if (!glitchState.active) {
+            return 0;
+        }
+
+        bool isFullScreen = (glitchState.cachedProximity >= 999);
+
+        // Check all active glitch rows for vertical jitter
+        for (int i = 0; i < GlitchState::MAX_GLITCH_ROWS; i++) {
+            if (glitchState.glitchRow[i] < 0) continue;
+
+            bool isNearGlitchRow = (abs(row - glitchState.glitchRow[i]) < glitchState.cachedProximity);
+
+            if (isFullScreen || isNearGlitchRow) {
+                return glitchState.verticalJitter[i];
+            }
+        }
+
+        return 0;
     }
 
     // Helper functions to generate colors and patterns
@@ -321,14 +350,33 @@ class Hub75DMA {
 
     // Glitch effect control
     /**
-     * @brief Triggers a glitch effect on the display.
-     * Duration is calculated internally based on intensity using an exponential curve.
-     * @param intensity Intensity of the glitch (0-100, default: 50)
+     * @brief Triggers a screen glitch effect with intensity-based scaling.
+     *
+     * Creates a multi-layered visual distortion effect featuring:
+     * - Multiple glitch rows (2-3 depending on intensity) for chaotic appearance
+     * - Horizontal pixel shifts with independent offsets per row
+     * - Vertical jitter (±1-2 pixels) for extra visual noise
+     * - Smooth fade-out during the final 20% of duration
+     *
+     * All parameters scale exponentially using quartic curves (intensity^4):
+     * - Duration: 300ms (low) to 1200ms (high)
+     * - Horizontal pixel shift: 0-45 pixels per row
+     * - Coverage: 15% chance of full-screen, otherwise localized to 1-3 rows
+     * - Active glitch rows: 2 (intensity ≤50) or 3 (intensity >50)
+     * - Vertical jitter: ±1 pixel (intensity ≤70) or ±2 pixels (intensity >70)
+     *
+     * @param intensity Glitch strength (0-100, default: 50)
+     *                  0 = minimal effect, 100 = maximum chaos
      */
     void triggerGlitch(int intensity = 50);
 
     /**
-     * @brief Updates the glitch effect state (called each frame).
+     * @brief Updates the glitch effect state each frame.
+     *
+     * Periodically randomizes glitch parameters (every 75ms) for dynamic visual effect.
+     * Handles fade-out transition during final 20% of duration.
+     * Automatically deactivates and resets glitch when duration expires.
+     * Must be called every frame for smooth animation.
      */
     void updateGlitch();
 
