@@ -23,7 +23,6 @@
 // --- I2C Pins ---
 #define S3_SDA 9
 #define S3_SCL 3
-#define RANDOM_PIN 2                // Unused ADC pin for true random number generation
 
 // --- I2S Audio Pins ---
 #define I2S_WS 10                   // Word Select (LRCLK)

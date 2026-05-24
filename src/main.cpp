@@ -9,7 +9,6 @@ BLEManager& bleManager = BLEManager::getInstance(controller);
 
 void setup() {
     Serial.begin(115200);
-    randomSeed(analogRead(RANDOM_PIN));
     controller.setupSensors();
     bleManager.setup();
 }
