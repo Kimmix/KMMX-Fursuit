@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <memory>
 
 #include "config.h"
 #include "Utils/Utils.h"
@@ -22,7 +23,6 @@
 
 class KMMXController {
    public:
-    ~KMMXController();  // Destructor to clean up dynamically allocated sensor
     void setupSensors();
     void update();
     void setEye(int i);
@@ -67,7 +67,7 @@ class KMMXController {
     CheekPanel cheekPanel = CheekPanel(argbCount, ARGB_PIN);
     HornLED hornLED;
     LIS3DH accelerometer;
-    IProximitySensor* proximitySensor = nullptr;  // Polymorphic proximity sensor (VL6180X or APDS9930)
+    std::unique_ptr<IProximitySensor> proximitySensor;  // Auto-detected proximity sensor (VL6180X or APDS9930)
     SSD1306 oledDisplay;
     // Double-buffer for thread-safe sensor access
     SensorData sensorBuffer[2];
@@ -83,6 +83,12 @@ class KMMXController {
 
     // Performance tracking
     FPSCounter fpsCounter;
+
+    // Sensor initialization helpers
+    bool initializeAccelerometer();
+    bool initializeProximitySensor();
+    bool initializeOLED();
+    void printSensorStatus();
 
     void renderFace();
     void handleBoop();

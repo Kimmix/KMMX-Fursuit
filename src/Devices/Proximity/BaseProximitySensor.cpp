@@ -39,17 +39,4 @@ void BaseProximitySensor::initializeBuffer() {
     bufferFilled = false;
     readSkipCounter = 0;
     cachedProximity = 0;
-    lastDebugTime = 0;
-}
-
-/**
- * Check if enough time has passed for debug output.
- */
-bool BaseProximitySensor::shouldPrintDebug() {
-    unsigned long currentTime = millis();
-    if (currentTime - lastDebugTime >= DEBUG_INTERVAL) {
-        lastDebugTime = currentTime;
-        return true;
-    }
-    return false;
 }

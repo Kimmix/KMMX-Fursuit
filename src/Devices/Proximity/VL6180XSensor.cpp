@@ -54,26 +54,16 @@ bool VL6180XSensor::setup() {
     sensor.writeReg(VL6180X::SYSRANGE__MAX_CONVERGENCE_TIME, 30);  // 30ms max (default is 49ms)
 
     // Test if sensor is responding by attempting a single reading
-    uint8_t testReading = sensor.readRangeSingleMillimeters();
+    sensor.readRangeSingleMillimeters();
 
     // Check if we got a timeout (sensor not present)
     if (sensor.timeoutOccurred()) {
         sensorInitialized = false;
-        if (debugEnabled) {
-            Serial.println(F("VL6180X initialization failed - timeout"));
-        }
         return false;
     }
 
     sensorInitialized = true;
-
-    if (debugEnabled) {
-        Serial.println(F("VL6180X initialization complete (throttled mode)"));
-        Serial.printf("Initial range reading: %d mm\n", testReading);
-        Serial.printf("Read frequency: every %d calls\n", READ_SKIP_COUNT);
-    }
-
-    return sensorInitialized;
+    return true;
 }
 
 /**
@@ -108,9 +98,6 @@ void VL6180XSensor::read(uint16_t *proximityData) {
     uint8_t distance = sensor.readRangeSingleMillimeters();
 
     if (sensor.timeoutOccurred()) {
-        if (debugEnabled && shouldPrintDebug()) {
-            Serial.println(F("VL6180X timeout, using cached value"));
-        }
         // Use last valid reading on timeout
         *proximityData = cachedProximity;
         return;
@@ -129,12 +116,4 @@ void VL6180XSensor::read(uint16_t *proximityData) {
     // Cache result for throttled reads
     cachedProximity = filtered;
     *proximityData = filtered;
-
-    // Print debug information if debug is enabled and interval has passed
-    if (debugEnabled && shouldPrintDebug()) {
-        Serial.print(F("VL6180X - Distance: "));
-        Serial.print(distance);
-        Serial.print(F(" mm, Normalized: "));
-        Serial.println(*proximityData);
-    }
 }

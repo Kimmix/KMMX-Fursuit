@@ -13,14 +13,11 @@ SSD1306::~SSD1306() {
 
 bool SSD1306::setup() {
     if (!u8g2) {
-        Serial.println(F("SSD1306 u8g2 object is null"));
         return false;
     }
 
     // Initialize display
     u8g2->begin();
-
-    Serial.println(F("SSD1306 initialization complete"));
 
     // Clear the display
     u8g2->clearBuffer();
@@ -33,34 +30,42 @@ bool SSD1306::setup() {
 }
 
 void SSD1306::clear() {
+    if (!u8g2) return;
     u8g2->clearBuffer();
 }
 
 void SSD1306::update() {
+    if (!u8g2) return;
     u8g2->sendBuffer();
 }
 
 void SSD1306::setContrast(uint8_t contrast) {
+    if (!u8g2) return;
     u8g2->setContrast(contrast);
 }
 
 void SSD1306::setPower(bool on) {
+    if (!u8g2) return;
     u8g2->setPowerSave(!on);  // setPowerSave(0) = on, setPowerSave(1) = off
 }
 
 void SSD1306::drawText(int16_t x, int16_t y, const char* text) {
+    if (!u8g2) return;
     u8g2->drawStr(x, y, text);
 }
 
 void SSD1306::setFont(const uint8_t* font) {
+    if (!u8g2) return;
     u8g2->setFont(font);
 }
 
 void SSD1306::drawBox(int16_t x, int16_t y, int16_t w, int16_t h) {
+    if (!u8g2) return;
     u8g2->drawBox(x, y, w, h);
 }
 
 void SSD1306::drawFrame(int16_t x, int16_t y, int16_t w, int16_t h) {
+    if (!u8g2) return;
     u8g2->drawFrame(x, y, w, h);
 }
 

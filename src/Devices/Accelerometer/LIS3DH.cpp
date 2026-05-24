@@ -4,13 +4,11 @@ LIS3DH::LIS3DH() : lis(Adafruit_LIS3DH()) {}
 
 bool LIS3DH::setUp() {
     sensorInitialized = lis.begin(0x18);
-    if (!sensorInitialized) {
-        Serial.println("Could not initialize LIS3DH");
-        return false;
+    if (sensorInitialized) {
+        lis.setDataRate(LIS3DH_DATARATE_50_HZ);  // 50Hz matches sensor polling rate
+        lis.setRange(LIS3DH_RANGE_2_G);
     }
-    lis.setDataRate(LIS3DH_DATARATE_50_HZ);  // 50Hz matches sensor polling rate
-    lis.setRange(LIS3DH_RANGE_2_G);
-    return true;
+    return sensorInitialized;
 }
 
 void LIS3DH::setDataRate(uint8_t rate) {

@@ -6,8 +6,7 @@ Hub75DMA::Hub75DMA() {
     mxconfig.min_refresh_rate = minRefreshRate;
     mxconfig.double_buff = doubleBuffer;
     matrix = new MatrixPanel_I2S_DMA(mxconfig);
-    if (!matrix->begin())
-        Serial.println(F("****** I2S memory allocation failed ***********"));
+    matrix->begin();  // Initialize matrix
     matrix->setBrightness8(panelBrightness);
     matrix->clearScreen();
 }

@@ -10,7 +10,6 @@
  * - Circular buffer management for sensor readings
  * - Median filtering (5 samples) for noise rejection
  * - Optional read throttling for performance optimization
- * - Debug output timing control
  *
  * Derived classes implement sensor-specific normalization to 0-1023 range.
  */
@@ -18,7 +17,6 @@ class BaseProximitySensor : public IProximitySensor {
 protected:
     // Sensor state
     bool sensorInitialized = false;
-    bool debugEnabled = false;
 
     // Filtering (5-sample median filter, consistent across all sensors)
     static constexpr int AVERAGING_SAMPLES = 5;
@@ -30,10 +28,6 @@ protected:
     uint8_t readSkipCounter = 0;
     uint16_t cachedProximity = 0;
 
-    // Debug output (100ms interval)
-    static constexpr unsigned long DEBUG_INTERVAL = 100;
-    unsigned long lastDebugTime = 0;
-
     /** Add proximity reading to circular buffer */
     void addProximityToBuffer(uint16_t value);
 
@@ -42,9 +36,6 @@ protected:
 
     /** Initialize buffer, counters, and timers to zero */
     void initializeBuffer();
-
-    /** Check if DEBUG_INTERVAL has elapsed for debug output */
-    bool shouldPrintDebug();
 
 public:
     virtual ~BaseProximitySensor() = default;

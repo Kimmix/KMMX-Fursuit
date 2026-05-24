@@ -76,12 +76,6 @@ bool APDS9930Sensor::setup() {
         apds.setLEDDrive(LED_DRIVE_100MA);        // Set LED current to 100mA for better range
         apds.enableProximitySensor(false);        // Enable proximity sensor
         apds.enableLightSensor(false);            // Enable light sensor
-
-        if (debugEnabled) {
-            Serial.println(F("APDS9930 initialization complete"));
-        }
-    } else if (debugEnabled) {
-        Serial.println(F("APDS9930 initialization failed!"));
     }
 
     return sensorInitialized;
@@ -138,9 +132,6 @@ void APDS9930Sensor::read(uint16_t *proximityData) {
             *proximityData = filtered;
         } else {
             // Error reading - use last valid reading from buffer
-            if (debugEnabled && shouldPrintDebug()) {
-                Serial.println(F("APDS9930 error reading sensor"));
-            }
             *proximityData = medianFilter();
         }
     } else {
@@ -160,13 +151,5 @@ void APDS9930Sensor::read(uint16_t *proximityData) {
             // Error reading - use last valid reading from buffer
             *proximityData = medianFilter();
         }
-    }
-
-    // Print debug information if debug is enabled and interval has passed
-    if (debugEnabled && shouldPrintDebug()) {
-        Serial.print(F("APDS9930 - Light: "));
-        Serial.print(lastAmbientLight);
-        Serial.print(F(" lux, Proximity: "));
-        Serial.println(*proximityData);
     }
 }
