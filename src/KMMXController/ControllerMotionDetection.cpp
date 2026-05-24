@@ -21,7 +21,7 @@ inline bool KMMXController::hasDebounceExpired(unsigned long lastTime, uint16_t 
  * Restore previous eye and mouth state (reusable across all detectors)
  */
 void KMMXController::restorePreviousState(EyeStateEnum prevEye, MouthStateEnum prevMouth) {
-    eyeState.setState(prevEye, false, 0);  // Temporary, no timeout (manual control)
+    eyeState.setState(prevEye, false, 0);      // Temporary, no timeout (manual control)
     mouthState.setState(prevMouth, false, 0);  // Temporary, no timeout (manual control)
 }
 
@@ -118,7 +118,7 @@ void KMMXController::handleTiltTracking(unsigned long currentTime, bool isNeutra
     bool trackLeftRight = isTiltedLeftRight && !isTiltedForwardBack;
 
     if (!trackForwardBack && !trackLeftRight) {
-        return; // No significant tilt detected
+        return;  // No significant tilt detected
     }
 
     // Start tracking on first detection
@@ -164,7 +164,7 @@ void KMMXController::handleTiltTracking(unsigned long currentTime, bool isNeutra
  * Main motion detection dispatcher - called from sensor task
  * Checks all motion features in priority order
  */
-void KMMXController::checkMotionFeatures(KMMXController *controller) {
+void KMMXController::checkMotionFeatures(KMMXController* controller) {
     // Skip motion detection during startup delay (prevents false triggers during sensor initialization)
     if (millis() < controller->motionDetectionStartTime) {
         return;
@@ -265,8 +265,8 @@ void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
     if (isLeftRight) {
         // Left/Right tilt - curious/confused
         eyeState.setState(EyeStateEnum::DOUBTED, false, 0);  // Temporary, no timeout (manual control)
-        mouthState.setState(MouthStateEnum::EH, false, 0);  // Temporary, no timeout (manual control)
-        statusLED.setColor(Color::MAGENTA);  // Using MAGENTA instead of PURPLE
+        mouthState.setState(MouthStateEnum::EH, false, 0);   // Temporary, no timeout (manual control)
+        statusLED.setColor(Color::MAGENTA);                  // Using MAGENTA instead of PURPLE
 
         if (enableMotionDebug) {
             Serial.printf("[TILT] Left/Right tilt response! Angle: %.2f\n", angle);
@@ -276,7 +276,7 @@ void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
         if (angle > 0) {
             // Forward tilt (looking down) - unimpressed
             eyeState.setState(EyeStateEnum::UNIMPRESSED, false, 0);  // Temporary, no timeout (manual control)
-            mouthState.setState(MouthStateEnum::IDLE, false, 0);  // Temporary, no timeout (manual control)
+            mouthState.setState(MouthStateEnum::IDLE, false, 0);     // Temporary, no timeout (manual control)
             statusLED.setColor(Color::BLUE);
 
             if (enableMotionDebug) {
@@ -284,7 +284,7 @@ void KMMXController::triggerTiltResponse(float angle, bool isLeftRight) {
             }
         } else {
             // Back tilt (looking up) - curious/surprised
-            eyeState.setState(EyeStateEnum::ROUNDED, false, 0);  // Temporary, no timeout (manual control)
+            eyeState.setState(EyeStateEnum::ROUNDED, false, 0);   // Temporary, no timeout (manual control)
             mouthState.setState(MouthStateEnum::IDLE, false, 0);  // Temporary, no timeout (manual control)
             statusLED.setColor(Color::CYAN);
 
@@ -319,7 +319,7 @@ void KMMXController::detectUpsideDown(const SensorData& current) {
             upsideDownDetector.lastStateChangeTime = currentTime;
 
             restorePreviousState(upsideDownDetector.previousEyeState,
-                               upsideDownDetector.previousMouthState);
+                                 upsideDownDetector.previousMouthState);
 
             if (enableMotionDebug) {
                 Serial.println("[UPSIDE DOWN] Returned to normal orientation");
@@ -370,7 +370,7 @@ void KMMXController::detectUpsideDown(const SensorData& current) {
  * Trigger upside down response - crying
  */
 void KMMXController::triggerUpsideDownResponse() {
-    eyeState.setState(EyeStateEnum::CRY, false, 0);  // Temporary, no timeout (manual control)
+    eyeState.setState(EyeStateEnum::CRY, false, 0);      // Temporary, no timeout (manual control)
     mouthState.setState(MouthStateEnum::WAH, false, 0);  // Temporary, no timeout (manual control)
     statusLED.setColor(Color::BLUE);
 
@@ -481,7 +481,7 @@ void KMMXController::detectPetting(const SensorData& current) {
  */
 void KMMXController::triggerPettingResponse() {
     // Petting response - happy SMILE
-    eyeState.setState(EyeStateEnum::SMILE, false, 0);  // Temporary, no timeout (manual control)
+    eyeState.setState(EyeStateEnum::SMILE, false, 0);     // Temporary, no timeout (manual control)
     mouthState.setState(MouthStateEnum::IDLE, false, 0);  // Temporary, no timeout (manual control)
     cheekPanel.setBrightness(200);
     statusLED.setColor(Color::PINK);
@@ -515,18 +515,28 @@ void KMMXController::detectTap(const SensorData& current) {
                           magnitudeChange, tapSpikeThreshold);
         }
 
-        triggerTapResponse();
+        triggerTapResponse(magnitudeChange);
     }
 }
 
 /**
  * Trigger tap response - glitch effect on display
+ * Scales intensity and duration based on tap magnitude
  */
-void KMMXController::triggerTapResponse() {
-    display.triggerGlitch(tapGlitchDuration, tapGlitchIntensity);
+void KMMXController::triggerTapResponse(float tapMagnitude) {
+    // Clamp tap magnitude to defined range
+    float clampedMagnitude = constrain(tapMagnitude, tapMagnitudeMin, tapMagnitudeMax);
+
+    // Calculate normalized tap strength (0.0 to 1.0)
+    float tapStrength = (clampedMagnitude - tapMagnitudeMin) / (tapMagnitudeMax - tapMagnitudeMin);
+
+    // Scale duration and intensity based on tap strength
+    uint16_t duration = tapGlitchMinDuration + (uint16_t)(tapStrength * (tapGlitchMaxDuration - tapGlitchMinDuration));
+    int intensity = tapGlitchMinIntensity + (int)(tapStrength * (tapGlitchMaxIntensity - tapGlitchMinIntensity));
+
+    display.triggerGlitch(duration, intensity);
 
     if (enableMotionDebug) {
-        Serial.printf("[TAP] Glitch effect triggered! (duration: %dms, intensity: %d)\n",
-                      tapGlitchDuration, tapGlitchIntensity);
+        Serial.printf("[TAP] Glitch effect triggered! Magnitude: %.2f m/s² | Strength: %.2f | Duration: %dms | Intensity: %d\n", tapMagnitude, tapStrength, duration, intensity);
     }
 }

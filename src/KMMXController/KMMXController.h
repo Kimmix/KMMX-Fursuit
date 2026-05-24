@@ -109,7 +109,7 @@ class KMMXController {
     void triggerTiltResponse(float angle, bool isLeftRight);
     void triggerUpsideDownResponse();
     void triggerPettingResponse();  // Removed unused 'sustained' parameter
-    void triggerTapResponse();
+    void triggerTapResponse(float tapMagnitude);
 
     // Motion detection helper methods
     inline bool hasDebounceExpired(unsigned long lastTime, uint16_t debounceTime) const;
