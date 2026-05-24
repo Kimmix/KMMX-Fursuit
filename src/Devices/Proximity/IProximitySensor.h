@@ -5,41 +5,31 @@
 /**
  * Interface for proximity sensors.
  *
- * This interface provides a unified API for different proximity sensor types,
- * allowing for polymorphic use and runtime sensor selection.
+ * Provides a unified API for different proximity sensor types, enabling
+ * polymorphic use and runtime sensor selection.
  *
- * CRITICAL NORMALIZATION CONTRACT:
- * ================================
- * All proximity sensors MUST normalize their output to the 0-1023 range:
- * - 0 = No object detected, too far, or sensor error
+ * NORMALIZATION CONTRACT:
+ * ======================
+ * All sensors MUST output values in the 0-1023 range:
+ * - 0 = No object detected / too far / sensor error
  * - Higher values = Closer proximity
- * - 1023 = Extremely close/touching sensor (triggers ANGRY boop state)
- *
- * Normalization approaches by sensor type:
+ * - 1023 = Extremely close/touching (triggers ANGRY boop state)
  *
  * VL6180X (Time-of-Flight):
- * - Measures distance in millimeters (0-200mm typical range)
- * - Inverts distance: closer = higher value
- * - Maps [50mm, 200mm] -> [1023, 0]
- * - Values < 50mm are clamped to 1023 (too close)
- * - Uses median filtering on normalized values for noise reduction
+ * - Measures distance in mm, inverts to proximity (closer = higher)
+ * - Maps [50mm, 200mm] -> [1023, 0]; values <50mm clamp to 1023
  *
  * APDS9930 (IR Proximity):
- * - Reads raw proximity values (0-50000 typical range)
- * - Applies offset correction and auto-calibration
- * - Maps [PROX_MIN_VALUE, proximity_max] -> [0, 1023]
- * - Auto-adjusts to lighting conditions via dynamic max tracking
- * - Uses median filtering on normalized values for noise reduction
+ * - Applies offset correction and auto-calibration to raw values
+ * - Dynamically adjusts to lighting conditions
  *
- * Both implementations:
- * - Use median filter (5 samples) for outlier rejection
- * - Return cached values when sensors timeout/error
- * - Ensure thread-safe operation for task-based systems
+ * Both implementations use 5-sample median filtering and return cached
+ * values on timeout/error.
  *
- * Boop detection thresholds (from config.h):
- * - boopMinThreshold: 100 (object enters range)
- * - boopMaxThreshold: 900 (full boop trigger)
- * - 1023: Angry state (object too close)
+ * Boop thresholds (config.h):
+ * - boopMinThreshold: Object enters boop range
+ * - boopMaxThreshold: Full boop trigger point
+ * - 1023: Triggers ANGRY state
  */
 class IProximitySensor {
    public:

@@ -4,15 +4,15 @@
 #include "IProximitySensor.h"
 
 /**
- * Base class for proximity sensors with common buffering and filtering logic.
- * 
- * This abstract class provides shared functionality for proximity sensors including:
+ * Base class for proximity sensors with common buffering and filtering.
+ *
+ * Provides shared functionality:
  * - Circular buffer management for sensor readings
- * - Median filtering for noise rejection
- * - Throttling mechanism for performance optimization
+ * - Median filtering (5 samples) for noise rejection
+ * - Optional read throttling for performance optimization
  * - Debug output timing control
- * 
- * Derived classes must implement sensor-specific normalization logic.
+ *
+ * Derived classes implement sensor-specific normalization to 0-1023 range.
  */
 class BaseProximitySensor : public IProximitySensor {
 protected:
@@ -20,47 +20,30 @@ protected:
     bool sensorInitialized = false;
     bool debugEnabled = false;
 
-    // Filtering parameters - using consistent values across all sensors
-    static constexpr int AVERAGING_SAMPLES = 5;    // Number of samples for median filter (must be odd)
-    uint16_t proximityBuffer[AVERAGING_SAMPLES];   // Circular buffer for proximity readings
-    int bufferIndex = 0;                           // Current position in the circular buffer
-    bool bufferFilled = false;                     // Whether the buffer has been filled at least once
+    // Filtering (5-sample median filter, consistent across all sensors)
+    static constexpr int AVERAGING_SAMPLES = 5;
+    uint16_t proximityBuffer[AVERAGING_SAMPLES];
+    int bufferIndex = 0;
+    bool bufferFilled = false;
 
-    // Throttling mechanism for performance optimization
-    uint8_t readSkipCounter = 0;                   // Counter for skipping sensor reads
-    uint16_t cachedProximity = 0;                  // Last valid proximity reading (used when throttling)
+    // Throttling for performance optimization
+    uint8_t readSkipCounter = 0;
+    uint16_t cachedProximity = 0;
 
-    // Debug timing
-    static constexpr unsigned long DEBUG_INTERVAL = 100; // Debug output interval in milliseconds
+    // Debug output (100ms interval)
+    static constexpr unsigned long DEBUG_INTERVAL = 100;
     unsigned long lastDebugTime = 0;
 
-    /**
-     * Add a proximity reading to the circular buffer.
-     * 
-     * @param value The proximity value to add to the buffer
-     */
+    /** Add proximity reading to circular buffer */
     void addProximityToBuffer(uint16_t value);
 
-    /**
-     * Apply median filter to proximity readings for noise rejection.
-     * 
-     * Median filter is more effective than averaging for removing outliers/spikes.
-     * Uses the optimized generic medianFilter from Utils.
-     * 
-     * @return The median proximity value from the buffer
-     */
+    /** Apply median filter for noise rejection (uses Utils::medianFilter) */
     uint16_t medianFilter();
 
-    /**
-     * Initialize the proximity buffer with zeros.
-     */
+    /** Initialize buffer, counters, and timers to zero */
     void initializeBuffer();
 
-    /**
-     * Check if enough time has passed for debug output.
-     * 
-     * @return true if debug output should be printed
-     */
+    /** Check if DEBUG_INTERVAL has elapsed for debug output */
     bool shouldPrintDebug();
 
 public:
@@ -68,7 +51,7 @@ public:
 
     /**
      * Check if the sensor is initialized.
-     * 
+     *
      * @return true if the sensor is initialized
      */
     bool isInitialized() const override { return sensorInitialized; }

@@ -14,7 +14,7 @@ KMMXController::~KMMXController() {
 
 void KMMXController::setupSensors() {
     Wire.begin(S3_SDA, S3_SCL);
-    Wire.setClock(400000);  // Set I2C to 400kHz Fast Mode (default is 100kHz) for faster sensor reads
+    // Wire.setClock(400000);  // Set I2C to 400kHz Fast Mode (default is 100kHz) for faster sensor reads
     statusLED.init();
     cheekPanel.configure(sideColor1RGB, sideColor2RGB, sideLEDFadeInterval, sideLEDPositionChangeDelay);
     cheekPanel.init();
