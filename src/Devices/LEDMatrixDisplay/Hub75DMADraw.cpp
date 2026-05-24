@@ -50,9 +50,9 @@ void Hub75DMA::drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight
         const int row = offsetY + i;
         const uint8_t* rowPtr = bitmap + i * imageWidth;
 
-        // Apply glitch effects
-        const int rowShift = getGlitchOffset(row);
-        const int verticalJitter = getGlitchVerticalJitter(row);
+        // Apply glitch effects (combined getter for efficiency)
+        int rowShift, verticalJitter;
+        getGlitchEffects(row, rowShift, verticalJitter);
         const int adjustedRow = row + verticalJitter;
 
         if (adjustedRow < 0 || adjustedRow >= panelHeight) continue;
@@ -87,9 +87,9 @@ void Hub75DMA::drawBitmap(const uint8_t* bitmapL, const uint8_t* bitmapR, int im
         const uint8_t* rowPtrL = bitmapL + i * imageWidth;
         const uint8_t* rowPtrR = bitmapR + i * imageWidth;
 
-        // Apply glitch effects
-        const int rowShift = getGlitchOffset(row);
-        const int verticalJitter = getGlitchVerticalJitter(row);
+        // Apply glitch effects (combined getter for efficiency)
+        int rowShift, verticalJitter;
+        getGlitchEffects(row, rowShift, verticalJitter);
         const int adjustedRow = row + verticalJitter;
 
         if (adjustedRow < 0 || adjustedRow >= panelHeight) continue;

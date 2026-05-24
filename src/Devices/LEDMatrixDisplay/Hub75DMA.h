@@ -23,11 +23,13 @@ class Hub75DMA {
     // Glitch effect state tracking
     struct GlitchState {
         bool active = false;              // Whether glitch is currently active
+        bool isFullScreen = false;        // Cached full-screen flag
         unsigned long startTime = 0;      // When glitch was triggered (ms)
         unsigned long lastUpdate = 0;     // Last time glitch params were randomized (ms)
         unsigned long duration = 250;     // How long glitch lasts (ms)
         int baseIntensity = 50;           // Original glitch strength (0-100)
         float currentIntensity = 1.0f;    // Current intensity with fade-out (0.0-1.0)
+        uint8_t activeRowCount = 0;       // Number of active glitch rows (0-8)
 
         // Multi-row glitch support (up to 8 independent glitch rows)
         static const int MAX_GLITCH_ROWS = 8;
@@ -35,49 +37,45 @@ class Hub75DMA {
         int glitchShift[MAX_GLITCH_ROWS] = {0, 0, 0, 0, 0, 0, 0, 0};
         int verticalJitter[MAX_GLITCH_ROWS] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-        int glitchRadius = 2;             // How many rows around each glitch row are affected (999 = full-screen)
+        int glitchRadius = 2;             // How many rows around each glitch row are affected
     } glitchState;
 
-    // Get horizontal pixel offset for a row affected by glitch
-    inline int getGlitchOffset(int row) const {
-        if (!glitchState.active) {
-            return 0;
-        }
+    // Intensity calculation cache (updated by updateGlitchParams)
+    struct IntensityCache {
+        float normalized = 0.5f;          // normalizedIntensity
+        float squared = 0.25f;            // intensity^2
+        float cubed = 0.125f;             // intensity^3
+        float quad = 0.0625f;             // intensity^4
+    } intensityCache;
 
-        bool isFullScreen = (glitchState.glitchRadius >= 999);
-
-        for (int i = 0; i < GlitchState::MAX_GLITCH_ROWS; i++) {
-            if (glitchState.glitchRow[i] < 0) continue;
-
-            bool isNearGlitchRow = (abs(row - glitchState.glitchRow[i]) < glitchState.glitchRadius);
-
-            if (isFullScreen || isNearGlitchRow) {
-                return glitchState.glitchShift[i];
-            }
-        }
-
-        return 0;
+    // Helper: Calculate and cache intensity power curves
+    inline void calculateIntensityCurves(float baseIntensity, IntensityCache& cache) {
+        cache.normalized = baseIntensity / 100.0f;
+        cache.squared = cache.normalized * cache.normalized;
+        cache.cubed = cache.squared * cache.normalized;
+        cache.quad = cache.squared * cache.squared;
     }
 
-    // Get vertical jitter for a row affected by glitch
-    inline int getGlitchVerticalJitter(int row) const {
-        if (!glitchState.active) {
-            return 0;
-        }
+    // Helper: Update glitch parameters (shared logic between trigger and update)
+    void updateGlitchParams(const IntensityCache& cache, bool isInitialTrigger);
 
-        bool isFullScreen = (glitchState.glitchRadius >= 999);
+    // Combined getter: Get both horizontal offset and vertical jitter for a row
+    // Returns via reference parameters for efficiency (avoids struct return overhead)
+    inline void getGlitchEffects(int row, int& outHorizontalShift, int& outVerticalJitter) const {
+        outHorizontalShift = 0;
+        outVerticalJitter = 0;
 
-        for (int i = 0; i < GlitchState::MAX_GLITCH_ROWS; i++) {
-            if (glitchState.glitchRow[i] < 0) continue;
+        if (!glitchState.active) return;
 
-            bool isNearGlitchRow = (abs(row - glitchState.glitchRow[i]) < glitchState.glitchRadius);
-
-            if (isFullScreen || isNearGlitchRow) {
-                return glitchState.verticalJitter[i];
+        // Early exit optimization: iterate only over active rows
+        for (uint8_t i = 0; i < glitchState.activeRowCount; i++) {
+            // Full-screen mode or proximity check
+            if (glitchState.isFullScreen || abs(row - glitchState.glitchRow[i]) < glitchState.glitchRadius) {
+                outHorizontalShift = glitchState.glitchShift[i];
+                outVerticalJitter = glitchState.verticalJitter[i];
+                return;
             }
         }
-
-        return 0;
     }
 
     // Helper functions to generate colors and patterns
