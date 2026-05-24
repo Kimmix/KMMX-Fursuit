@@ -25,7 +25,7 @@ uint16_t VL6180XSensor::normalizeDistance(uint8_t distanceMm) {
     }
 
     // Invert the distance (closer = higher value) and map to 0-1023
-    // When distance is VL6180X_MIN_RANGE (5mm), output should be 1023
+    // When distance is VL6180X_MIN_RANGE (50mm), output should be 1023
     // When distance is VL6180X_MAX_RANGE (200mm), output should be 0
     uint16_t invertedDistance = VL6180X_MAX_RANGE - distanceMm;
 
@@ -37,43 +37,11 @@ uint16_t VL6180XSensor::normalizeDistance(uint8_t distanceMm) {
 }
 
 /**
- * Add a distance reading to the averaging buffer.
- */
-void VL6180XSensor::addDistanceToBuffer(uint16_t value) {
-    distanceBuffer[bufferIndex] = value;
-    bufferIndex = (bufferIndex + 1) % AVERAGING_SAMPLES;
-
-    if (bufferIndex == 0) {
-        bufferFilled = true;
-    }
-}
-
-/**
- * Apply median filter to distance readings for better noise rejection.
- * Uses the optimized generic medianFilter from Utils.
- */
-uint16_t VL6180XSensor::medianFilter() {
-    if (!bufferFilled && bufferIndex == 0) {
-        return 0; // No data yet
-    }
-
-    int count = bufferFilled ? AVERAGING_SAMPLES : bufferIndex;
-
-    // Use optimized generic median filter from Utils
-    return ::medianFilter<uint16_t, AVERAGING_SAMPLES>(distanceBuffer, count);
-}
-
-/**
  * Initialize the VL6180X sensor.
  */
 bool VL6180XSensor::setup() {
-    // Initialize buffer for sensor readings
-    for (int i = 0; i < AVERAGING_SAMPLES; i++) {
-        distanceBuffer[i] = 0;
-    }
-    bufferIndex = 0;
-    bufferFilled = false;
-    readSkipCounter = 0;
+    // Initialize buffer for sensor readings (via base class)
+    initializeBuffer();
 
     // Initialize sensor
     sensor.init();
@@ -122,11 +90,8 @@ void VL6180XSensor::read(uint16_t *proximityData) {
         return;
     }
 
-    // Use static variables to track state
-    static unsigned long lastDebugTime = 0;
-    const unsigned long debugInterval = 100; // Debug output every 100ms
-    static uint8_t lastValidDistance = 255;  // Cache last valid distance
-    static uint16_t cachedProximity = 0;     // Cache last proximity value
+    // Use static variable to cache last valid distance for debugging
+    static uint8_t lastValidDistance = 255;
 
     // Throttle sensor reads - only read every READ_SKIP_COUNT calls
     readSkipCounter++;
@@ -143,8 +108,7 @@ void VL6180XSensor::read(uint16_t *proximityData) {
     uint8_t distance = sensor.readRangeSingleMillimeters();
 
     if (sensor.timeoutOccurred()) {
-        if (debugEnabled && (millis() - lastDebugTime > debugInterval)) {
-            lastDebugTime = millis();
+        if (debugEnabled && shouldPrintDebug()) {
             Serial.println(F("VL6180X timeout, using cached value"));
         }
         // Use last valid reading on timeout
@@ -158,17 +122,16 @@ void VL6180XSensor::read(uint16_t *proximityData) {
     // Normalize distance to 0-1023 range
     uint16_t normalized = normalizeDistance(distance);
 
-    // Add to averaging buffer
-    addDistanceToBuffer(normalized);
-
-    // Use median filter for better noise rejection
+    // Add to buffer and apply median filter (via base class)
+    addProximityToBuffer(normalized);
     uint16_t filtered = medianFilter();
+
+    // Cache result for throttled reads
     cachedProximity = filtered;
     *proximityData = filtered;
 
     // Print debug information if debug is enabled and interval has passed
-    if (debugEnabled && (millis() - lastDebugTime > debugInterval)) {
-        lastDebugTime = millis();
+    if (debugEnabled && shouldPrintDebug()) {
         Serial.print(F("VL6180X - Distance: "));
         Serial.print(distance);
         Serial.print(F(" mm, Normalized: "));
