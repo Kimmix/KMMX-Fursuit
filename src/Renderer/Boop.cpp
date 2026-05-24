@@ -1,13 +1,27 @@
 #include "Boop.h"
 #include "Utils/Utils.h"  // Use optimized utility functions
 
+/**
+ * Calculate boop speed from elapsed time (faster approach = higher speed).
+ * Maps time between 100ms and boopMaxDuration to 0.0-1.0 for animation intensity.
+ */
 float Boop::calculateBoopSpeed() {
     unsigned long elapsedTime = millis() - boopStartTime;
-    // Use optimized mapFloat for better performance
     float speed = mapFloat(elapsedTime, 100, boopMaxDuration, 0, 100);
     return speed / 100;
 }
 
+/**
+ * Process sensor value and update boop state machine.
+ *
+ * State transitions (thresholds from config.h):
+ * - IDLE -> BOOP_IN_PROGRESS: boopMinThreshold < value < boopMaxThreshold
+ * - IDLE -> ANGRY: value >= 1023
+ * - BOOP_IN_PROGRESS -> BOOP_CONTINUOUS: value >= boopMaxThreshold
+ * - BOOP_IN_PROGRESS -> IDLE: value < boopMinThreshold
+ * - BOOP_CONTINUOUS -> IDLE: value < boopMaxThreshold
+ * - ANGRY -> IDLE: value < boopMaxThreshold
+ */
 void Boop::getBoop(uint16_t& sensorValue, bool& isInRange, bool& isBoop, float& boopSpeed, bool& isContinuous, bool& isAngry) {
     isInRange = false;
     isBoop = false;

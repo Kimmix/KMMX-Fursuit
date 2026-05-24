@@ -16,92 +16,37 @@ bool APDS9930Sensor::readAPDSSensor(uint16_t &proximityData, float &ambientLight
 }
 
 /**
- * Filters and normalizes proximity data.
+ * Normalize proximity data to 0-1023 range.
  *
- * Applies minimum and maximum thresholds, and maps the value to a 0-1023 range.
- * This helps filter out noise and normalize readings across different lighting conditions.
+ * Applies minimum and maximum thresholds, auto-calibrates the maximum value,
+ * and maps the value to a 0-1023 range. This helps filter out noise and
+ * normalize readings across different lighting conditions.
  *
- * @param value Reference to the proximity value to be filtered
+ * @param value Reference to the proximity value to be normalized
  */
-void APDS9930Sensor::filterProx(uint16_t &value) {
+void APDS9930Sensor::normalizeProximity(uint16_t &value) {
+    // Apply offset correction
     value -= PROX_OFFSET;
+
+    // Filter out extremely high values (likely errors)
     if (value > PROX_MAX_VALUE) {
         value = 0;
+        return;
     }
+
+    // Auto-calibrate maximum value for dynamic range adjustment
     if (value > proximity_max) {
         proximity_max = value;
     }
+
+    // Filter out noise below minimum threshold
     if (value < PROX_MIN_VALUE) {
         value = 0;
+        return;
     }
-    // Use optimized fastMap from Utils instead of Arduino's map()
+
+    // Map to 0-1023 range using optimized fastMap from Utils
     value = fastMap<uint16_t>(value, 0, proximity_max, 0, 1023);
-}
-
-/**
- * Adds a proximity reading to the averaging buffer.
- *
- * @param value The proximity value to add to the buffer
- */
-void APDS9930Sensor::addProximityToBuffer(uint16_t value) {
-    proximityBuffer[bufferIndex] = value;
-    bufferIndex = (bufferIndex + 1) % AVERAGING_SAMPLES;
-
-    if (bufferIndex == 0) {
-        bufferFilled = true;
-    }
-}
-
-/**
- * Applies median filter to proximity readings for better noise rejection.
- * Uses the optimized generic medianFilter from Utils.
- *
- * Median filter is more effective than averaging for removing outliers/spikes.
- *
- * @return The median proximity value
- */
-uint16_t APDS9930Sensor::medianFilter() {
-    if (!bufferFilled && bufferIndex == 0) {
-        return 0; // No data yet
-    }
-
-    int count = bufferFilled ? AVERAGING_SAMPLES : bufferIndex;
-
-    // Use optimized generic median filter from Utils
-    return ::medianFilter<uint16_t, AVERAGING_SAMPLES>(proximityBuffer, count);
-}
-
-/**
- * Calculates the average of recent proximity readings using ESP-DSP power/sum function.
- * Kept for compatibility, but median filter is preferred.
- *
- * Uses hardware-accelerated sum calculation on ESP32-S3 via dot product.
- * sum = dotprod(buffer, ones_vector) which uses SIMD instructions.
- *
- * @return The average proximity value
- */
-uint16_t APDS9930Sensor::averageProximity() {
-    if (!bufferFilled && bufferIndex == 0) {
-        return 0; // No data yet
-    }
-
-    int count = bufferFilled ? AVERAGING_SAMPLES : bufferIndex;
-
-    // Convert to float array for ESP-DSP processing
-    float floatBuffer[AVERAGING_SAMPLES];
-    float onesVector[AVERAGING_SAMPLES];
-
-    for (int i = 0; i < count; i++) {
-        floatBuffer[i] = static_cast<float>(proximityBuffer[i]);
-        onesVector[i] = 1.0f;
-    }
-
-    // Use ESP-DSP dot product to calculate sum (hardware-accelerated)
-    // sum = dotprod(buffer, ones) where ones = [1,1,1,1,1]
-    float sum;
-    dsps_dotprod_f32(floatBuffer, onesVector, &sum, count);
-
-    return static_cast<uint16_t>(sum / count);
 }
 
 /**
@@ -114,14 +59,13 @@ uint16_t APDS9930Sensor::averageProximity() {
  * @return true if initialization was successful
  */
 bool APDS9930Sensor::setup() {
-    // Initialize buffer for sensor readings
-    for (int i = 0; i < AVERAGING_SAMPLES; i++) {
-        proximityBuffer[i] = 0;
-    }
-    bufferIndex = 0;
-    bufferFilled = false;
+    // Initialize buffer for sensor readings (via base class)
+    initializeBuffer();
+
+    // Initialize APDS-specific state
     ambientLightReadCounter = 0;
     lastAmbientLight = 0.0f;
+    proximity_max = 1;  // Reset auto-calibration
 
     // Initialize sensor
     sensorInitialized = apds.init();
@@ -146,11 +90,14 @@ bool APDS9930Sensor::setup() {
 /**
  * Reads and processes data from the sensor.
  *
- * Gets the current proximity reading, applies filtering, and uses median filter
+ * Gets the current proximity reading, applies normalization, and uses median filter
  * for noise rejection. Ambient light is read periodically to reduce overhead.
  *
+ * PERFORMANCE NOTE: Unlike VL6180X, APDS9930 is fast enough that throttling is
+ * typically not needed (READ_SKIP_COUNT = 1). However, the throttling mechanism
+ * is available for consistency and can be adjusted if needed.
+ *
  * @param proximityData Pointer to store the processed proximity data
- * @return void
  */
 void APDS9930Sensor::read(uint16_t *proximityData) {
     if (!sensorInitialized) {
@@ -159,9 +106,14 @@ void APDS9930Sensor::read(uint16_t *proximityData) {
         return;
     }
 
-    // Use static variable to track debug timing
-    static unsigned long lastDebugTime = 0;
-    const unsigned long debugInterval = 100; // Debug output every 100ms
+    // Throttle sensor reads if configured (typically disabled for APDS9930)
+    readSkipCounter++;
+    if (readSkipCounter < READ_SKIP_COUNT) {
+        // Return cached value
+        *proximityData = cachedProximity;
+        return;
+    }
+    readSkipCounter = 0;
 
     // Read ambient light periodically (every 50 samples ~1 second at 50Hz)
     // This reduces overhead and allows faster proximity reads
@@ -174,18 +126,19 @@ void APDS9930Sensor::read(uint16_t *proximityData) {
     if (readLight) {
         // Full read with ambient light
         if (readAPDSSensor(*proximityData, lastAmbientLight)) {
-            // Apply proximity filtering to normalize readings
-            filterProx(*proximityData);
+            // Normalize proximity data to 0-1023 range
+            normalizeProximity(*proximityData);
 
-            // Add to averaging buffer
+            // Add to buffer and apply median filter (via base class)
             addProximityToBuffer(*proximityData);
+            uint16_t filtered = medianFilter();
 
-            // Use median filter for better noise rejection
-            *proximityData = medianFilter();
+            // Cache result for throttled reads
+            cachedProximity = filtered;
+            *proximityData = filtered;
         } else {
-            // Error reading - use last valid reading
-            if (debugEnabled && (millis() - lastDebugTime > debugInterval)) {
-                lastDebugTime = millis();
+            // Error reading - use last valid reading from buffer
+            if (debugEnabled && shouldPrintDebug()) {
                 Serial.println(F("APDS9930 error reading sensor"));
             }
             *proximityData = medianFilter();
@@ -193,23 +146,24 @@ void APDS9930Sensor::read(uint16_t *proximityData) {
     } else {
         // Fast proximity-only read
         if (apds.readProximity(*proximityData)) {
-            // Apply proximity filtering to normalize readings
-            filterProx(*proximityData);
+            // Normalize proximity data to 0-1023 range
+            normalizeProximity(*proximityData);
 
-            // Add to averaging buffer
+            // Add to buffer and apply median filter (via base class)
             addProximityToBuffer(*proximityData);
+            uint16_t filtered = medianFilter();
 
-            // Use median filter for better noise rejection
-            *proximityData = medianFilter();
+            // Cache result for throttled reads
+            cachedProximity = filtered;
+            *proximityData = filtered;
         } else {
-            // Error reading - use last valid reading
+            // Error reading - use last valid reading from buffer
             *proximityData = medianFilter();
         }
     }
 
     // Print debug information if debug is enabled and interval has passed
-    if (debugEnabled && (millis() - lastDebugTime > debugInterval)) {
-        lastDebugTime = millis();
+    if (debugEnabled && shouldPrintDebug()) {
         Serial.print(F("APDS9930 - Light: "));
         Serial.print(lastAmbientLight);
         Serial.print(F(" lux, Proximity: "));

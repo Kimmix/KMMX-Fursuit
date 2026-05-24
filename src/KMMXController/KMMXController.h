@@ -14,7 +14,7 @@
 #include "Devices/LEDMatrixDisplay/Hub75DMA.h"
 #include "Devices/HornLED/HornLED.h"
 #include "Devices/Accelerometer/LIS3DH.h"
-#include "Devices/Proximity/APDS9930Sensor.h"
+#include "Devices/Proximity/IProximitySensor.h"
 #include "Devices/Ws2812/RGBStatus.h"
 #include "Devices/Ws2812/CheekPanel.h"
 #include "Devices/OLEDDisplay/SSD1306.h"
@@ -22,6 +22,7 @@
 
 class KMMXController {
    public:
+    ~KMMXController();  // Destructor to clean up dynamically allocated sensor
     void setupSensors();
     void update();
     void setEye(int i);
@@ -66,7 +67,7 @@ class KMMXController {
     CheekPanel cheekPanel = CheekPanel(argbCount, ARGB_PIN);
     HornLED hornLED;
     LIS3DH accelerometer;
-    APDS9930Sensor proximitySensor;
+    IProximitySensor* proximitySensor = nullptr;  // Polymorphic proximity sensor (VL6180X or APDS9930)
     SSD1306 oledDisplay;
     // Double-buffer for thread-safe sensor access
     SensorData sensorBuffer[2];
