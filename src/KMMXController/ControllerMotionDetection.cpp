@@ -489,7 +489,11 @@ void KMMXController::triggerPettingResponse() {
 
 /**
  * Tap Detection - Detects light taps for glitch effects
- * Uses accelerometer magnitude spikes to detect quick taps
+ * Uses two-stage peak + decay verification to distinguish taps from sustained motion
+ *
+ * Algorithm:
+ * 1. STAGE 1: Detect initial spike above threshold
+ * 2. STAGE 2: Wait for decay - verify magnitude drops quickly (confirming impulse, not sustained motion)
  */
 void KMMXController::detectTap(const SensorData& current) {
     unsigned long currentTime = millis();
@@ -498,20 +502,50 @@ void KMMXController::detectTap(const SensorData& current) {
     float magnitudeChange = fabsf(current.accelMagnitude - tapDetector.lastMagnitude);
     tapDetector.lastMagnitude = current.accelMagnitude;
 
-    // Detect spike: sudden increase in acceleration magnitude
-    bool tapDetected = (magnitudeChange >= tapSpikeThreshold);
+    // ========== STAGE 1: Detect Initial Spike ==========
+    if (!tapDetector.waitingForDecay) {
+        // Check if magnitude change exceeds threshold (potential tap)
+        if (magnitudeChange >= tapSpikeThreshold && hasDebounceExpired(tapDetector.lastTapTime, tapCooldown)) {
+            // Potential tap detected! Start peak tracking
+            tapDetector.peakMagnitude = magnitudeChange;
+            tapDetector.peakTime = currentTime;
+            tapDetector.waitingForDecay = true;
 
-    // Check tap cooldown to prevent double-counting
-    if (tapDetected && hasDebounceExpired(tapDetector.lastTapTime, tapCooldown)) {
-        // Valid tap detected! Trigger glitch effect
-        tapDetector.lastTapTime = currentTime;
+            if (enableMotionDebug) {
+                Serial.printf("[TAP] Peak detected: %.2f m/s² - waiting for decay...\n", magnitudeChange);
+            }
+        }
+        return;
+    }
+
+    // ========== STAGE 2: Verify Decay ==========
+    unsigned long timeSincePeak = currentTime - tapDetector.peakTime;
+
+    // Check if still within decay verification window
+    if (timeSincePeak < tapPeakDecayWindow) {
+        // Verify magnitude has dropped significantly (confirming it's a tap, not sustained motion)
+        if (magnitudeChange < tapDetector.peakMagnitude * tapDecayRatio) {
+            // Valid tap confirmed! Quick rise and fall = impulse
+            tapDetector.waitingForDecay = false;
+            tapDetector.lastTapTime = currentTime;
+
+            if (enableMotionDebug) {
+                Serial.printf("[TAP] ✓ Tap confirmed! Peak: %.2f m/s², Decay: %.2f m/s² (%.0f%% drop)\n",
+                              tapDetector.peakMagnitude, magnitudeChange,
+                              (1.0f - magnitudeChange / tapDetector.peakMagnitude) * 100.0f);
+            }
+
+            triggerTapResponse(tapDetector.peakMagnitude);
+        }
+        // Still within window but no decay yet - keep waiting
+    } else {
+        // Timeout - decay didn't happen fast enough, not a tap (sustained motion)
+        tapDetector.waitingForDecay = false;
 
         if (enableMotionDebug) {
-            Serial.printf("[TAP] Tap detected! Change: %.2f m/s² (threshold: %.2f)\n",
-                          magnitudeChange, tapSpikeThreshold);
+            Serial.printf("[TAP] ✗ Timeout - not a tap (sustained motion). Peak: %.2f m/s², Current: %.2f m/s²\n",
+                          tapDetector.peakMagnitude, magnitudeChange);
         }
-
-        triggerTapResponse(magnitudeChange);
     }
 }
 

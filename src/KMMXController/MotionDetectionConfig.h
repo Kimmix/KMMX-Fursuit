@@ -60,6 +60,10 @@ const bool enableTapDetection = true;                           // Enable/disabl
 const float tapSpikeThreshold = 1.0f;                           // m/s² threshold for detecting a light tap (higher than petting)
 const uint16_t tapCooldown = 100;                               // Minimum time between taps (ms)
 
+// Peak + decay verification (improves tap vs. motion detection)
+const uint16_t tapPeakDecayWindow = 50;                         // Time window to verify decay after peak (ms)
+const float tapDecayRatio = 0.4f;                               // Decay ratio to confirm tap (0.4 = must drop to 40% of peak)
+
 // Tap glitch effect scaling based on tap magnitude
 const uint16_t tapGlitchMinDuration = 300;                      // Minimum duration of glitch effect (ms) for light taps
 const uint16_t tapGlitchMaxDuration = 1200;                     // Maximum duration of glitch effect (ms) for hard taps

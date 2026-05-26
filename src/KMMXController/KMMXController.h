@@ -186,5 +186,10 @@ class KMMXController {
         float lastMagnitude = 0.0f;         // Previous magnitude reading (for spike detection)
         float lastTapMagnitude = 0.0f;      // Last detected tap magnitude (for HUD display)
         unsigned long lastTapDisplayTime = 0; // Time of last tap (for fade-out effect on HUD)
+
+        // Peak + decay verification fields
+        float peakMagnitude = 0.0f;         // Peak magnitude detected during tap
+        unsigned long peakTime = 0;         // Time when peak was detected
+        bool waitingForDecay = false;       // True when waiting to verify decay after peak
     } tapDetector;
 };
