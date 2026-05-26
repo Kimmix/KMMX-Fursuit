@@ -156,15 +156,7 @@ This project is licensed under the terms specified in the LICENSE file.
 ## 📱 Contact
 
 <div align="center">
-
-  <a href="https://github.com/yourusername/KMMX-Fursuit/issues">
-    <img src="https://img.shields.io/badge/GitHub-Issues-red.svg">
-  </a>
-  <a href="https://discord.com/">
-    <img src="https://img.shields.io/badge/Discord-kimmix-7289DA.svg">
-  </a>
-
-  <p>For questions or support, please open an issue in the GitHub repository or reach out on Discord: kimmix</p>
+  <p>For questions or support, reach out on Discord: kimmix</p>
 
 </div>
 
