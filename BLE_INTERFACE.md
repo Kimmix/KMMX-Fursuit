@@ -59,6 +59,23 @@ This document defines the Bluetooth Low Energy (BLE) GATT profile for controllin
 |------|------|------------|-------------|-------------|
 | Reboot | `e5f6a7b8-c9d0-4e5f-a0b1-2c3d4e5f6a7b` | WRITE | `uint8_t` (0/1) | Triggers system reboot. Write non-zero value to reboot. |
 
+### Motion Detection & Glitch Control
+
+| Name | UUID | Properties | Data Format | Description |
+|------|------|------------|-------------|-------------|
+| Glitch Trigger | `a1a2a3a4-b1b2-4c1c-d1d2-e1e2e3e4e5f1` | WRITE | `uint8_t` (0-100) | Manually triggers a glitch effect with specified intensity. 0 = subtle, 100 = maximum intensity. |
+| Motion Enable Flags | `a1a2a3a4-b1b2-4c1c-d1d2-e1e2e3e4e5f2` | READ, WRITE | `uint8_t` (bitfield) | Enable/disable motion detection features. Bit 0: Tap Detection, Bit 1: Petting Detection, Bit 2: Tilt Detection, Bit 3: Upside Down Detection. |
+| Tap Sensitivity | `a1a2a3a4-b1b2-4c1c-d1d2-e1e2e3e4e5f3` | READ, WRITE | `uint8_t` (0-100) | Adjusts tap detection sensitivity. 0 = very sensitive (light taps), 100 = requires hard taps. |
+| Glitch Intensity | `a1a2a3a4-b1b2-4c1c-d1d2-e1e2e3e4e5f4` | READ, WRITE | `uint8_t` (0-100) | Controls automatic glitch effect intensity range. 0 = subtle glitches, 100 = dramatic glitches. Affects duration, row count, and visual intensity. |
+
+**Motion Enable Flags Bitfield:**
+- **Bit 0 (0x01)**: Enable Tap Detection (triggers glitch on tap)
+- **Bit 1 (0x02)**: Enable Petting Detection (triggers smile on repeated pats)
+- **Bit 2 (0x04)**: Enable Tilt Detection (triggers expressions on head tilt)
+- **Bit 3 (0x08)**: Enable Upside Down Detection (triggers crying when held upside down)
+
+**Example:** `0x09` (binary: 1001) = Tap Detection + Upside Down Detection enabled
+
 ---
 
 ## Color Behavior

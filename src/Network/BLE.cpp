@@ -257,6 +257,54 @@ class RebootCallbacks : public NimBLECharacteristicCallbacks {
     }
 };
 
+class GlitchTriggerCallbacks : public NimBLECharacteristicCallbacks {
+    void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) {
+        if (!BLEManager::instance) return;
+        uint8_t intensity = pCharacteristic->getValue()[0];
+        if (BLEManager::instance->debugEnabled) {
+            Serial.print(F("[BLE] Glitch Trigger: "));
+            Serial.println(intensity);
+        }
+        BLEManager::instance->controller.triggerGlitch(intensity);
+    }
+};
+
+class MotionEnableFlagsCallbacks : public NimBLECharacteristicCallbacks {
+    void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) {
+        if (!BLEManager::instance) return;
+        uint8_t flags = pCharacteristic->getValue()[0];
+        if (BLEManager::instance->debugEnabled) {
+            Serial.print(F("[BLE] Motion Enable Flags: 0x"));
+            Serial.println(flags, HEX);
+        }
+        BLEManager::instance->controller.setMotionEnableFlags(flags);
+    }
+};
+
+class TapSensitivityCallbacks : public NimBLECharacteristicCallbacks {
+    void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) {
+        if (!BLEManager::instance) return;
+        uint8_t sensitivity = pCharacteristic->getValue()[0];
+        if (BLEManager::instance->debugEnabled) {
+            Serial.print(F("[BLE] Tap Sensitivity: "));
+            Serial.println(sensitivity);
+        }
+        BLEManager::instance->controller.setTapSensitivity(sensitivity);
+    }
+};
+
+class GlitchIntensityCallbacks : public NimBLECharacteristicCallbacks {
+    void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) {
+        if (!BLEManager::instance) return;
+        uint8_t intensity = pCharacteristic->getValue()[0];
+        if (BLEManager::instance->debugEnabled) {
+            Serial.print(F("[BLE] Glitch Intensity: "));
+            Serial.println(intensity);
+        }
+        BLEManager::instance->controller.setGlitchIntensity(intensity);
+    }
+};
+
 BLEManager& BLEManager::getInstance(KMMXController& ctrl) {
     if (!instance) {
         instance = new BLEManager(ctrl);
@@ -281,7 +329,11 @@ BLEManager::BLEManager(KMMXController& ctrl) : controller(ctrl),
                                                displayEffectOption1Characteristic(nullptr),
                                                displayEffectOption2Characteristic(nullptr),
                                                displayEffectOption3Characteristic(nullptr),
-                                               rebootCharacteristic(nullptr) {
+                                               rebootCharacteristic(nullptr),
+                                               glitchTriggerCharacteristic(nullptr),
+                                               motionEnableFlagsCharacteristic(nullptr),
+                                               tapSensitivityCharacteristic(nullptr),
+                                               glitchIntensityCharacteristic(nullptr) {
 }
 
 void BLEManager::setup() {
@@ -362,6 +414,22 @@ void BLEManager::setup() {
         BLE_REBOOT_CHARACTERISTIC_UUID,
         NIMBLE_PROPERTY::WRITE);
 
+    glitchTriggerCharacteristic = pService->createCharacteristic(
+        BLE_GLITCH_TRIGGER_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::WRITE);
+
+    motionEnableFlagsCharacteristic = pService->createCharacteristic(
+        BLE_MOTION_ENABLE_FLAGS_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    tapSensitivityCharacteristic = pService->createCharacteristic(
+        BLE_TAP_SENSITIVITY_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
+    glitchIntensityCharacteristic = pService->createCharacteristic(
+        BLE_GLITCH_INTENSITY_CHARACTERISTIC_UUID,
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+
     // Set default values for each characteristic
     uint8_t brightnessValue = controller.getDisplayBrightness();
     displayBrightnessCharacteristic->setValue(&brightnessValue, 1);
@@ -413,6 +481,16 @@ void BLEManager::setup() {
     uint8_t direction = controller.getDisplayEffectDirectionInverted();
     displayEffectOption3Characteristic->setValue(&direction, 1);
 
+    // Set motion detection & glitch control default values
+    uint8_t motionFlags = controller.getMotionEnableFlags();
+    motionEnableFlagsCharacteristic->setValue(&motionFlags, 1);
+
+    uint8_t tapSens = controller.getTapSensitivity();
+    tapSensitivityCharacteristic->setValue(&tapSens, 1);
+
+    uint8_t glitchInt = controller.getGlitchIntensity();
+    glitchIntensityCharacteristic->setValue(&glitchInt, 1);
+
     // Set callbacks for each characteristic (simple, direct callbacks)
     displayBrightnessCharacteristic->setCallbacks(new DisplayBrightnessCallbacks());
     eyeStateCharacteristic->setCallbacks(new EyeStateCallbacks());
@@ -429,6 +507,10 @@ void BLEManager::setup() {
     displayEffectOption2Characteristic->setCallbacks(new DisplayEffectOption2Callbacks());
     displayEffectOption3Characteristic->setCallbacks(new DisplayEffectOption3Callbacks());
     rebootCharacteristic->setCallbacks(new RebootCallbacks());
+    glitchTriggerCharacteristic->setCallbacks(new GlitchTriggerCallbacks());
+    motionEnableFlagsCharacteristic->setCallbacks(new MotionEnableFlagsCallbacks());
+    tapSensitivityCharacteristic->setCallbacks(new TapSensitivityCallbacks());
+    glitchIntensityCharacteristic->setCallbacks(new GlitchIntensityCallbacks());
 
     // Start the server (this automatically starts all services)
     pServer->start();

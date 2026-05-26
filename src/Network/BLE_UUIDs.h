@@ -5,7 +5,7 @@
 // ============================================================================
 // These UUIDs define the BLE GATT service and characteristics for remote
 // control of the KMMX fursuit controller via Bluetooth Low Energy.
-// 
+//
 // Each UUID is a 128-bit identifier that uniquely identifies a service or
 // characteristic in the GATT profile. These are custom UUIDs generated for
 // this project and should not be changed unless you also update the client
@@ -37,3 +37,9 @@
 
 // System Control Characteristics
 #define BLE_REBOOT_CHARACTERISTIC_UUID "e5f6a7b8-c9d0-4e5f-a0b1-2c3d4e5f6a7b"
+
+// Motion Detection & Glitch Control Characteristics
+#define BLE_GLITCH_TRIGGER_CHARACTERISTIC_UUID "a1a2a3a4-b1b2-4c1c-d1d2-e1e2e3e4e5f1"
+#define BLE_MOTION_ENABLE_FLAGS_CHARACTERISTIC_UUID "a1a2a3a4-b1b2-4c1c-d1d2-e1e2e3e4e5f2"
+#define BLE_TAP_SENSITIVITY_CHARACTERISTIC_UUID "a1a2a3a4-b1b2-4c1c-d1d2-e1e2e3e4e5f3"
+#define BLE_GLITCH_INTENSITY_CHARACTERISTIC_UUID "a1a2a3a4-b1b2-4c1c-d1d2-e1e2e3e4e5f4"

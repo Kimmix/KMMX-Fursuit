@@ -22,6 +22,10 @@ class DisplayEffectOption1Callbacks;
 class DisplayEffectOption2Callbacks;
 class DisplayEffectOption3Callbacks;
 class RebootCallbacks;
+class GlitchTriggerCallbacks;
+class MotionEnableFlagsCallbacks;
+class TapSensitivityCallbacks;
+class GlitchIntensityCallbacks;
 
 class BLEManager {
    public:
@@ -48,6 +52,10 @@ class BLEManager {
     friend class DisplayEffectOption2Callbacks;
     friend class DisplayEffectOption3Callbacks;
     friend class RebootCallbacks;
+    friend class GlitchTriggerCallbacks;
+    friend class MotionEnableFlagsCallbacks;
+    friend class TapSensitivityCallbacks;
+    friend class GlitchIntensityCallbacks;
 
    private:
     BLEManager(KMMXController& controller);
@@ -76,4 +84,8 @@ class BLEManager {
     NimBLECharacteristic* displayEffectOption2Characteristic;
     NimBLECharacteristic* displayEffectOption3Characteristic;
     NimBLECharacteristic* rebootCharacteristic;
+    NimBLECharacteristic* glitchTriggerCharacteristic;
+    NimBLECharacteristic* motionEnableFlagsCharacteristic;
+    NimBLECharacteristic* tapSensitivityCharacteristic;
+    NimBLECharacteristic* glitchIntensityCharacteristic;
 };

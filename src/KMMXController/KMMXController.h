@@ -56,6 +56,15 @@ class KMMXController {
     uint8_t getDisplayEffectDirectionInverted();
     void reboot();
 
+    // Motion Detection & Glitch Control (BLE)
+    void triggerGlitch(uint8_t intensity);                      // Manually trigger glitch effect with intensity 0-100
+    void setMotionEnableFlags(uint8_t flags);                   // Set motion detection enable flags (bitfield)
+    uint8_t getMotionEnableFlags();                             // Get current motion detection enable flags
+    void setTapSensitivity(uint8_t sensitivity);                // Set tap sensitivity 0-100 (maps to threshold)
+    uint8_t getTapSensitivity();                                // Get current tap sensitivity as 0-100
+    void setGlitchIntensity(uint8_t intensity);                 // Set glitch intensity 0-100 (affects min/max range)
+    uint8_t getGlitchIntensity();                               // Get current glitch intensity as 0-100
+
     // FPS counter access
     float getFPS() const;
     int getTargetFPS() const;
