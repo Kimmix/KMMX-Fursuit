@@ -202,32 +202,39 @@ void Hub75DMA::updateGlitchParams(const IntensityCache& cache, bool isInitialTri
         glitchState.glitchRadius = 999;  // Keep for backward compatibility
     } else {
         glitchState.isFullScreen = false;
-        // Scale radius from 1 row (low intensity) to 5 rows (high intensity)
-        const int maxRadiusRange = 5;
-        int maxRadius = 1 + (int)(maxRadiusRange * cache.squared);
-        glitchState.glitchRadius = 1 + (esp_random() % maxRadius);
+        const int minRadiusRange = 1;
+        const int maxRadiusRange = 6;
+        int radiusRange = maxRadiusRange - minRadiusRange;
+        int scaledRadius = minRadiusRange + (int)(radiusRange * cache.squared);
+        glitchState.glitchRadius = minRadiusRange + (esp_random() % (scaledRadius - minRadiusRange + 1));
     }
 
-    // Calculate active glitch rows with cubic scaling, respecting maxRowLimit
-    const int maxRowScaling = glitchState.maxRowLimit - 1;
-    int activeRows = 1 + (int)(cache.cubed * maxRowScaling);
-    glitchState.activeRowCount = constrain(activeRows, 1, glitchState.maxRowLimit);
+    // Calculate active glitch rows with cubic scaling, respecting maxRowLimit (2-8 rows)
+    const int minActiveRows = 1;
+    const int maxRowScaling = glitchState.maxRowLimit - minActiveRows;
+    int activeRows = minActiveRows + (int)(cache.cubed * maxRowScaling);
+    glitchState.activeRowCount = constrain(activeRows, minActiveRows, glitchState.maxRowLimit);
 
     // Shift constants (different for initial trigger vs updates)
+    // Initial: 10-40px, Update: 15-80px with quartic scaling
+    const int minHorizontalShift = isInitialTrigger ? 10 : 15;
     const int maxHorizontalShift = isInitialTrigger ? 40 : 80;
-    const int maxVerticalJitter = 2;
+    const int minVerticalJitter = 0;
+    const int maxVerticalJitter = 4;
 
     // Update active glitch rows
     for (uint8_t i = 0; i < glitchState.activeRowCount; i++) {
         glitchState.glitchRow[i] = esp_random() % panelHeight;
 
-        // Horizontal shift with quartic scaling
-        int maxShift = (int)(maxHorizontalShift * cache.quad);
-        glitchState.glitchShift[i] = (esp_random() % (maxShift * 2 + 1)) - maxShift;
+        // Horizontal shift with quartic scaling (10-40px initial, 15-80px update)
+        int shiftRange = maxHorizontalShift - minHorizontalShift;
+        int scaledShift = minHorizontalShift + (int)(shiftRange * cache.quad);
+        glitchState.glitchShift[i] = (esp_random() % (scaledShift * 2 + 1)) - scaledShift;
 
-        // Vertical jitter with quadratic scaling
-        int maxJitter = (int)(maxVerticalJitter * cache.squared);
-        glitchState.verticalJitter[i] = maxJitter > 0 ? (esp_random() % (maxJitter * 2 + 1)) - maxJitter : 0;
+        // Vertical jitter with quadratic scaling (0-4px)
+        int jitterRange = maxVerticalJitter - minVerticalJitter;
+        int scaledJitter = minVerticalJitter + (int)(jitterRange * cache.squared);
+        glitchState.verticalJitter[i] = scaledJitter > 0 ? (esp_random() % (scaledJitter * 2 + 1)) - scaledJitter : 0;
     }
 
     // Mark remaining rows as inactive (only set glitchRow, others don't matter)

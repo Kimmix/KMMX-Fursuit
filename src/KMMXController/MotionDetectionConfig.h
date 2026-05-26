@@ -74,8 +74,8 @@ constexpr float tapMagnitudeMax = 5.0f;                          // Maximum tap 
 constexpr uint16_t tapGlitchUpdateInterval = 75;                 // How often glitch pattern changes (ms)
 constexpr int tapGlitchFullScreenChance = 15;                    // Chance (0-100) for full-screen glitch instead of localized
 constexpr uint16_t tapGlitchRampDuration = 50;                   // Duration of smooth ramp-up at start (ms) - reduces jarring effect
-constexpr uint8_t tapGlitchMinRows = 1;                          // Minimum glitch rows for low intensity
-constexpr uint8_t tapGlitchMaxRows = 8;                          // Maximum glitch rows for high intensity
+constexpr uint8_t tapGlitchMinRows = 1;                          // Minimum glitch rows for low intensity (2-8 range)
+constexpr uint8_t tapGlitchMaxRows = 8;                          // Maximum glitch rows for high intensity (2-8 range)
 
 // ============================================================================
 // Idle Detection Configuration
