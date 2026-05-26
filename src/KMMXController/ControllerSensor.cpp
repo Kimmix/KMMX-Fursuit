@@ -11,7 +11,7 @@ void KMMXController::setupSensors() {
 
     // Initialize non-I2C devices (always succeed)
     statusLED.init();
-    cheekPanel.configure(sideColor1RGB, sideColor2RGB, sideLEDFadeInterval, sideLEDPositionChangeDelay);
+    cheekPanel.configure(sideColor1RGB, sideColor2RGB, sideLEDFadeInterval);
     cheekPanel.init();
 
     // Initialize I2C sensors (plug-and-play - gracefully handle missing devices)

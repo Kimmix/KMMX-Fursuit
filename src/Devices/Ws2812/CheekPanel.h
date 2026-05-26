@@ -2,12 +2,13 @@
 
 #include <Adafruit_NeoPixel.h>
 #include "GammaTable.h"
-#include "config.h"
 
+// Optimized circular edge LED strip - Color Wave effect with easing
+// Color expands smoothly from random position, respects L/R split
 class CheekPanel {
    public:
     CheekPanel(uint16_t numLeds, uint8_t pin);
-    void configure(uint32_t backgroundColor, uint32_t fadeColor, uint16_t fadeInterval, uint16_t positionChangeDelay);
+    void configure(uint32_t color1, uint32_t color2, uint16_t updateInterval);
     void init();
     void update();
     void setBrightness(uint8_t brightness);
@@ -19,19 +20,15 @@ class CheekPanel {
 
    private:
     Adafruit_NeoPixel strip;
-    uint32_t backgroundColor;
-    uint32_t fadeColor;
-    uint16_t fadeInterval;
-    uint16_t positionChangeDelay;
+    uint32_t color1;
+    uint32_t color2;
+    uint16_t updateInterval;
     unsigned long previousMillis;
-    unsigned long positionChangeMillis;
-    uint8_t fadeStep = 0;
-    int8_t fadeDirection = 1;
-    uint8_t randomPosition = 0;
-    const uint8_t fadeSteps = 50;
-    uint8_t brightness = 255;
+    uint8_t animStep;          // Animation step (0-39 for ~8s cycle)
+    int8_t animDirection;      // 1 = expanding, -1 = contracting
+    uint8_t centerPos;         // Center position for expansion
+    uint8_t brightness;
 
-    void setBackgroundColor(uint32_t color);
-    uint32_t applyGammaCorrection(uint32_t color);
-    uint32_t applyBrightness(uint32_t color);
+    uint32_t applyGamma(uint32_t color);
+    uint8_t easeInOutQuad(uint8_t t);  // Smooth easing function
 };
