@@ -12,7 +12,11 @@
 // ============================================================================
 
 // Global Motion Detection Settings
+#ifdef DISABLE_SERIAL_LOGGING
+const bool enableMotionDebug = false;                           // Disabled in production builds
+#else
 const bool enableMotionDebug = true;                            // Enable detailed debug logging for all motion detection
+#endif
 
 // ============================================================================
 // Tilt Detection - Detects sustained head tilt for curious/confused expressions

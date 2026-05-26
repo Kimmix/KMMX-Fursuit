@@ -1,7 +1,14 @@
 #pragma once
 
+// Default to enabled if not set by platformio.ini
+#ifndef ENABLE_RGB_STATUS_LED
+#define ENABLE_RGB_STATUS_LED 1
+#endif
+
+#if ENABLE_RGB_STATUS_LED
 #include <Adafruit_NeoPixel.h>
 #include "GammaTable.h"
+#endif
 
 enum Color { RED,
              PINK,
@@ -22,9 +29,14 @@ class RGBStatus {
     void update();
 
    private:
+#if ENABLE_RGB_STATUS_LED
     Adafruit_NeoPixel pixel;
     unsigned long lastChangeTime;
     bool isOn;
 
     void setColorInternal(uint32_t color);
+#else
+    // No-op implementation when disabled (zero storage overhead)
+    int dummyPin;
+#endif
 };

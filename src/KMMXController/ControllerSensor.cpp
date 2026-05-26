@@ -7,7 +7,7 @@
 void KMMXController::setupSensors() {
     // Initialize I2C bus for all sensors
     Wire.begin(S3_SDA, S3_SCL);
-    // Wire.setClock(400000);  // Set I2C to 400kHz Fast Mode (default is 100kHz) for faster sensor reads
+    Wire.setClock(400000);  // Set I2C to 400kHz Fast Mode (default is 100kHz) for faster sensor reads
 
     // Initialize non-I2C devices (always succeed)
     statusLED.init();

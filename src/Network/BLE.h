@@ -53,7 +53,11 @@ class BLEManager {
     BLEManager(KMMXController& controller);
     KMMXController& controller;
 
-    bool debugEnabled = true;  // Flag to control debug output
+#ifdef DISABLE_SERIAL_LOGGING
+    bool debugEnabled = false;  // Disabled in production builds
+#else
+    bool debugEnabled = true;   // Flag to control debug output
+#endif
 
     NimBLEServer* pServer;
     NimBLEService* pService;

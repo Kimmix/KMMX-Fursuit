@@ -8,7 +8,10 @@ KMMXController controller;
 BLEManager& bleManager = BLEManager::getInstance(controller);
 
 void setup() {
+    #ifndef DISABLE_SERIAL_LOGGING
     Serial.begin(115200);
+    #endif
+
     controller.setupSensors();
     bleManager.setup();
 }

@@ -1,5 +1,7 @@
 #include "RGBStatus.h"
 
+#if ENABLE_RGB_STATUS_LED
+// Full implementation when RGB Status LED is enabled
 RGBStatus::RGBStatus(int pin, int pixelCount)
     : pixel(pixelCount, pin, NEO_GRB + NEO_KHZ800), lastChangeTime(0), isOn(false) {}
 
@@ -65,3 +67,30 @@ void RGBStatus::setColorInternal(uint32_t color) {
     lastChangeTime = millis();
     isOn = true;
 }
+
+#else
+// No-op implementation when RGB Status LED is disabled (production builds)
+RGBStatus::RGBStatus(int pin, int pixelCount) : dummyPin(pin) {
+    // No initialization needed
+}
+
+void RGBStatus::init() {
+    // No-op
+}
+
+void RGBStatus::update() {
+    // No-op
+}
+
+void RGBStatus::setColor(Color color) {
+    // No-op
+}
+
+void RGBStatus::setColor(int r, int g, int b) {
+    // No-op
+}
+
+void RGBStatus::turnOff() {
+    // No-op
+}
+#endif
