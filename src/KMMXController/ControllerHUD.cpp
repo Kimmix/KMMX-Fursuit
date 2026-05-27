@@ -1,6 +1,7 @@
 #include "KMMXController.h"
 #include "Network/BLE.h"
 #include "Utils/Utils.h"  // Use optimized utility functions
+#include "MotionDetectionConfig.h"  // For tap magnitude constants
 
 extern BLEManager& bleManager;
 
@@ -247,7 +248,6 @@ void KMMXController::drawOLEDSensorBars(const SensorData& sensors) {
     int tapLevel = 0;
     if (tapDetector.lastTapMagnitude > 0) {
         constexpr unsigned long DECAY_DURATION = 1000;  // Decay duration in milliseconds
-        constexpr float MIN_DISPLAY_THRESHOLD = 0.5f;   // Minimum magnitude to display
         constexpr int MIN_PIXELS_TO_RENDER = 3;         // Minimum pixels needed for visible fill
 
         unsigned long timeSinceTap = millis() - tapDetector.lastTapDisplayTime;
@@ -261,10 +261,13 @@ void KMMXController::drawOLEDSensorBars(const SensorData& sensors) {
             currentMagnitude = 0.0f;
         }
 
-        // Map magnitude to bar width if above threshold
-        if (currentMagnitude >= MIN_DISPLAY_THRESHOLD) {
-            int magnitudeInt = constrain((int)(currentMagnitude * 10), 10, 50);
-            tapLevel = fastMap<int>(magnitudeInt, 10, 50, 0, TAP_BAR_WIDTH);
+        if (currentMagnitude >= tapMagnitudeMin) {
+            float clampedMagnitude = constrain(currentMagnitude, tapMagnitudeMin, tapMagnitudeMax);
+            float normalized = (clampedMagnitude - tapMagnitudeMin) / (tapMagnitudeMax - tapMagnitudeMin);
+            float scaled = sqrtf(normalized);
+
+            // Map to bar width
+            tapLevel = (int)(scaled * TAP_BAR_WIDTH);
             tapLevel = constrain(tapLevel, 0, TAP_BAR_WIDTH);
 
             // Prevent flash artifacts by skipping very small values
