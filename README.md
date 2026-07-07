@@ -5,12 +5,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Platform: ESP32](https://img.shields.io/badge/Platform-ESP32-blue.svg)](https://www.espressif.com/en/products/socs/esp32)
 [![IDE: PlatformIO](https://img.shields.io/badge/IDE-PlatformIO-orange.svg)](https://platformio.org/)
-[![Status](https://img.shields.io/badge/Status-In%20Development-orange.svg)](https://github.com/Kimmix/KMMX-Fursuit)
+[![Status](https://img.shields.io/badge/Status-In%20Development-orange.svg)](https://github.com/Kimmix/KMMX-Controller)
+
+ESP32-S3 firmware for HUB75 fursuit face displays, BLE control, proximity/motion/audio reactions, accent LEDs, OLED HUD.
 
 ### Controller V4 Preview
 
-<img src="doc\ControllerV4.3_real.webp" alt="Kimmix Controller V4 real board">
-<img src="doc\ControllerV4.3.webp" alt="Kimmix Controller V4">
+<img src="doc/ControllerV4.3_real.webp" alt="Kimmix Controller V4 real board">
+<img src="doc/ControllerV4.3.webp" alt="Kimmix Controller V4">
 
 </div>
 
@@ -27,6 +29,8 @@ Custom PCB designed in collaboration with [Tas.Polar](https://github.com/BaiTian
 >
 > Feel free to fork, experiment, and build upon this work within the terms of the MIT License. I'm sharing this publicly in the spirit of the maker community, but I'm not able to provide assistance, answer questions, or accept contributions at this stage of development.
 
+Current hardware target: **KMMX Controller V4**. V2 remains in the project as older supported hardware.
+
 ## 🌟 Features
 
 - **Animated LED Matrix Displays** for eyes and mouth expressions
@@ -35,7 +39,7 @@ Custom PCB designed in collaboration with [Tas.Polar](https://github.com/BaiTian
 - **Proximity sensing** for interactive "booping" responses
 - **Accelerometer integration** for motion-based animations and responses
 - **Bluetooth connectivity** for remote control and configuration
-- **Customizable expressions** with easy bitmap conversion tools
+- **Customizable expressions** using bitmap assets
 
 ## 🦊 Demo & Gallery
 
@@ -74,7 +78,6 @@ Custom PCB designed in collaboration with [Tas.Polar](https://github.com/BaiTian
   - **`Network/`** - Bluetooth connectivity
   - **`Renderer/`** - Animation and rendering code
   - **`Utils/`** - Helper functions
-- **`bitmapTool/`** - Tools for converting images to bitmaps
 - **`include/`** - Header files
 - **`lib/`** - External libraries
 - **`boards/`** - Custom board definitions
@@ -90,17 +93,19 @@ Custom PCB designed in collaboration with [Tas.Polar](https://github.com/BaiTian
 **Required:**
 
 - [PlatformIO](https://platformio.org/) IDE or PlatformIO Core
-- ESP32-S3 development board (or compatible ESP32 variant)
+- KMMX Controller V2/V4 custom ESP32-S3 board, or an ESP32-S3 board with matching pin/config changes
 - Basic understanding of C/C++ and embedded development
 - Soldering skills for hardware assembly
 
-**Hardware Components:**
+**Common Hardware Components:**
 
 - HUB75 LED Matrix panels (64x32 resolution recommended)
-- APDS9930 proximity sensor (optional, for booping feature)
-- LIS3DH accelerometer (optional, for motion detection)
+- APDS9930 or VL6180X proximity sensor (optional, for booping feature)
+- LIS3DH (V2) or MPU6050 (V4) accelerometer/IMU (optional, for motion detection)
 - I2S microphone module (optional, for viseme/audio reactivity)
-- WS2812 LED strips (optional, for cheek/status LEDs)
+- WS2812/SK6812 LED strips (optional, for cheek/status LEDs)
+- SSD1306 OLED display (optional, for HUD)
+- PWM fan (optional)
 - Appropriate power supply (5V, sufficient current for LED panels)
 
 ## ⚙️ Configuration
@@ -118,16 +123,18 @@ Key configuration areas you'll need to review:
 
 Look for configuration in:
 
-- Pin definitions in device-specific source files
-- Main controller initialization code
+- Board pin definitions in `boards/`
+- Main hardware settings in `src/config.h`
 - Individual device driver files in `src/Devices/`
+- BLE GATT service and characteristics in [`BLE_INTERFACE.md`](BLE_INTERFACE.md)
+- Generated bitmap headers in `src/Bitmaps/`; the bitmap generation tool is private and not included in this repository.
 
 ## 🎮 Web Control Panel
 
 Control your fursuit remotely via Bluetooth using a web browser!
 
 <div align="center">
-  <img src="doc\ble-web-app.webp" alt="BLE Web Control Panel" width="600">
+  <img src="doc/ble-web-app.webp" alt="BLE Web Control Panel" width="600">
 
   <p>
     <strong>📦 <a href="https://github.com/Kimmix/KMMX-ControlPanel">Project Repository</a></strong> |
@@ -145,18 +152,6 @@ Control your fursuit remotely via Bluetooth using a web browser!
 - ⚙️ Configure controller settings remotely
 - 🔋 No app installation required - runs directly in your browser
 
-## ✨ Animation Creation
-
-You can create custom animations using the included bitmap tools:
-
-1. Design your animations as image sequences in Adobe Photoshop or After Effects
-2. Export frames as individual images
-3. Use the converter tool in `bitmapTool/` to convert to C++ bitmap arrays
-4. Add the generated header files to your project's `src/Bitmaps/` directory
-5. Register and configure the new animations in the controller code
-
-**Note:** The bitmap tool is specific to my workflow and may require customization for your needs. Documentation for the tool is limited, so expect some trial and error.
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
@@ -164,8 +159,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 **TL;DR:** You're free to use, modify, and distribute this code for any purpose (commercial or personal), but it comes with no warranty. This project was built for my personal use, so while you're welcome to use it, please understand it's tailored to my specific hardware setup and requirements.
 
 ## 🤝 Support & Contributing
-
-**Current Status:** Not accepting contributions or providing support.
 
 As this is a personal project still in active development, I'm not currently:
 
