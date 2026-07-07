@@ -7,7 +7,6 @@
 
 #if ENABLE_RGB_STATUS_LED
 #include <Adafruit_NeoPixel.h>
-#include "GammaTable.h"
 #endif
 
 enum Color { RED,

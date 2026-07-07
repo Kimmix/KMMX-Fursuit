@@ -29,19 +29,6 @@ void Hub75DMA::drawMouth(const uint8_t* bitmap) {
     drawBitmap(bitmap, mouthWidth, mouthHeight, mouthOffsetX, mouthOffsetY);
 }
 
-void Hub75DMA::drawColorTest() {
-    uint8_t r, g, b;
-    const int testWidth = 3;
-
-    for (int row = 0; row < 64; row++) {
-        for (int col = 0; col < testWidth; col++) {
-            const int x = screenWidth - 1 - col;
-            getColorMap(255, row, x, r, g, b);
-            matrix->drawPixelRGB888(x, row, r, g, b);
-        }
-    }
-}
-
 void Hub75DMA::drawBitmap(const uint8_t* bitmap, int imageWidth, int imageHeight, int offsetX, int offsetY) {
     const int mirrorBaseX = -offsetX + panelWidth;
     const int screenWidth = panelWidth * 2;

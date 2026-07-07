@@ -80,9 +80,6 @@ void VL6180XSensor::read(uint16_t *proximityData) {
         return;
     }
 
-    // Use static variable to cache last valid distance for debugging
-    static uint8_t lastValidDistance = 255;
-
     // Throttle sensor reads - only read every READ_SKIP_COUNT calls
     readSkipCounter++;
     if (readSkipCounter < READ_SKIP_COUNT) {
@@ -102,9 +99,6 @@ void VL6180XSensor::read(uint16_t *proximityData) {
         *proximityData = cachedProximity;
         return;
     }
-
-    // Valid reading received
-    lastValidDistance = distance;
 
     // Normalize distance to 0-1023 range
     uint16_t normalized = normalizeDistance(distance);

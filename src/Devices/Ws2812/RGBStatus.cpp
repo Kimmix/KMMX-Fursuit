@@ -62,12 +62,7 @@ void RGBStatus::turnOff() {
 }
 
 void RGBStatus::setColorInternal(uint32_t color) {
-    uint8_t r = pgm_read_byte(&gammaTable[(color >> 16) & 0xFF]);
-    uint8_t g = pgm_read_byte(&gammaTable[(color >> 8) & 0xFF]);
-    uint8_t b = pgm_read_byte(&gammaTable[color & 0xFF]);
-
-    // Set the corrected color to the pixel
-    pixel.setPixelColor(0, pixel.Color(r, g, b));
+    pixel.setPixelColor(0, Adafruit_NeoPixel::gamma32(color));
     pixel.show();
 
     lastChangeTime = millis();

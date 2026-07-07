@@ -45,8 +45,7 @@ class KMMXController {
     void setViseme(int b);
     int getViseme();
     Viseme& viseme() { return mouthState.viseme; }
-    int getDisplayBrightness();
-    void setDisplayBrightness(int i);
+    Hub75DMA& displayControl() { return display; }
     int getHornBrightness();
     void setHornBrightness(int i);
     int getCheekBrightness();
@@ -55,21 +54,6 @@ class KMMXController {
     void setCheekFadeColor(uint8_t r, uint8_t g, uint8_t b);
     uint32_t getCheekBackgroundColor();
     uint32_t getCheekFadeColor();
-    void setDisplayColorMode(uint8_t mode);
-    uint8_t getDisplayColorMode();
-    void setDisplayGradientColors(uint8_t topR, uint8_t topG, uint8_t topB, uint8_t bottomR, uint8_t bottomG, uint8_t bottomB);
-    void getDisplayGradientTopColor(uint8_t& r, uint8_t& g, uint8_t& b);
-    void getDisplayGradientBottomColor(uint8_t& r, uint8_t& g, uint8_t& b);
-    void setDisplayDualSpiralColor(uint8_t spiralR, uint8_t spiralG, uint8_t spiralB);
-    void getDisplayDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& b);
-    void setDisplayDualCircleColor(uint8_t circleR, uint8_t circleG, uint8_t circleB);
-    void getDisplayDualCircleColor(uint8_t& r, uint8_t& g, uint8_t& b);
-    void setDisplayEffectThickness(uint8_t thickness);
-    uint8_t getDisplayEffectThickness();
-    void setDisplayEffectSpeed(uint8_t speed);
-    uint8_t getDisplayEffectSpeed();
-    void setDisplayEffectDirectionInverted(uint8_t inverted);
-    uint8_t getDisplayEffectDirectionInverted();
     void reboot();
 
     // Motion Detection & Glitch Control (BLE)

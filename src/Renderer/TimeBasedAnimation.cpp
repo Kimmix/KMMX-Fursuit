@@ -2,25 +2,9 @@
 #include <math.h>
 
 // Preset configurations
-const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_QUICK_LOOP = {
-    .durationMs = 500,
-    .playMode = AnimationPlayMode::LOOP,
-    .pauseAtEndMs = 0,
-    .pauseAtStartMs = 0,
-    .easingType = EasingType::NONE
-};
-
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SMOOTH_LOOP = {
     .durationMs = 900,
     .playMode = AnimationPlayMode::PING_PONG,
-    .pauseAtEndMs = 0,
-    .pauseAtStartMs = 0,
-    .easingType = EasingType::EASE_IN_OUT
-};
-
-const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_SLOW_LOOP = {
-    .durationMs = 1000,
-    .playMode = AnimationPlayMode::LOOP,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,
     .easingType = EasingType::EASE_IN_OUT
@@ -173,52 +157,12 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT = {
     .pauseAtStartMs = 300,
     .easingType = EasingType::BOUNCE_OVERSHOOT};
 
-const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT_FAST = {
-    .durationMs = 350,
-    .playMode = AnimationPlayMode::ONCE,
-    .pauseAtEndMs = 0,
-    .pauseAtStartMs = 0,
-    .easingType = EasingType::BOUNCE_OVERSHOOT
-};
-
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_ANTICIPATION = {
     .durationMs = 500,
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,
     .easingType = EasingType::ANTICIPATION
-};
-
-const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_ELASTIC_SNAP = {
-    .durationMs = 700,
-    .playMode = AnimationPlayMode::ONCE,
-    .pauseAtEndMs = 0,
-    .pauseAtStartMs = 0,
-    .easingType = EasingType::ELASTIC_SNAP
-};
-
-const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_EXCITED_PULSE = {
-    .durationMs = 1200,
-    .playMode = AnimationPlayMode::ONCE,
-    .pauseAtEndMs = 0,
-    .pauseAtStartMs = 0,
-    .easingType = EasingType::EXCITED_PULSE
-};
-
-const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_CURIOUS_PEEK = {
-    .durationMs = 800,
-    .playMode = AnimationPlayMode::ONCE,
-    .pauseAtEndMs = 0,
-    .pauseAtStartMs = 0,
-    .easingType = EasingType::CURIOUS_PEEK
-};
-
-const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_STARTLED_JUMP = {
-    .durationMs = 400,
-    .playMode = AnimationPlayMode::ONCE,
-    .pauseAtEndMs = 0,
-    .pauseAtStartMs = 0,
-    .easingType = EasingType::STARTLED_JUMP
 };
 
 void TimeBasedAnimation::init(TimeBasedAnimState& anim, const uint8_t** frames, short frameCount, const TimeBasedAnimConfig& config) {
@@ -401,64 +345,6 @@ float TimeBasedAnimation::applyEasing(float t, EasingType easingType) {
                 float t2 = (t - 0.2f) / 0.8f;  // 0 to 1
                 // Cubic ease out from 10% to 100%
                 return 0.1f + 0.9f * (1.0f - pow(1.0f - t2, 3.0f));
-            }
-        }
-
-        case EasingType::ELASTIC_SNAP: {
-            // Quick snap with multiple small bounces - fun and bouncy!
-            // The elastic bounces are built into the animation frames
-            // Uses damped sine wave for elastic effect, clamped to [0, 1]
-            if (t == 0.0f) return 0.0f;
-            if (t == 1.0f) return 1.0f;
-
-            // Create elastic effect that oscillates but stays within bounds
-            float frequency = 5.0f;  // Number of bounces
-            float decay = 5.0f;  // How fast bounces dampen
-            float oscillation = sin(t * frequency * 3.14159f) * exp(-decay * t);
-            // Blend oscillation with ease-out curve, scaled to stay in [0, 1]
-            float easeOut = 1.0f - pow(1.0f - t, 3.0f);
-            return easeOut + oscillation * 0.15f * (1.0f - t);  // Small bounces that fade out
-        }
-
-        case EasingType::EXCITED_PULSE: {
-            // Rapid pulsing that gradually slows down - excitement calming!
-            // The pulses are built into the animation frames
-            // Multiple bounces with exponential decay, stays within [0, 1]
-            float frequency = 8.0f;  // Number of pulses
-            float decay = 3.0f;  // How fast it calms down
-            float pulse = sin(t * frequency * 3.14159f) * exp(-decay * t);
-            // Reduced pulse amplitude to ensure we stay in bounds
-            return t + pulse * 0.15f * (1.0f - t);  // Blend with linear, fade out
-        }
-
-        case EasingType::CURIOUS_PEEK: {
-            // Slow start, quick middle, slow end - peeking motion
-            // Ease in-out with stronger curve
-            if (t < 0.5f) {
-                // Ease in (slow start)
-                return 2.0f * t * t;
-            } else {
-                // Ease out (slow end)
-                float t2 = t - 1.0f;
-                return 1.0f - 2.0f * t2 * t2;
-            }
-        }
-
-        case EasingType::STARTLED_JUMP: {
-            // Instant jump to 100%, then slow settle back to mid-point, then back to 100%
-            // The overshoot is built into the animation frames (last frame is the startled position)
-            // Perfect for startled reactions!
-            if (t < 0.1f) {
-                // First 10%: instant jump to 100%
-                return 1.0f;
-            } else if (t < 0.5f) {
-                // Next 40%: settle back from 100% to ~70%
-                float t2 = (t - 0.1f) / 0.4f;  // 0 to 1
-                return 1.0f - 0.3f * t2;  // Linear settle to 70%
-            } else {
-                // Last 50%: ease back to 100%
-                float t2 = (t - 0.5f) / 0.5f;  // 0 to 1
-                return 0.7f + 0.3f * (1.0f - pow(1.0f - t2, 2.0f));  // Ease out to 100%
             }
         }
 

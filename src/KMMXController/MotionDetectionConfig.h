@@ -63,22 +63,6 @@ constexpr uint16_t tapGlitchRampDuration = 50;
 constexpr uint8_t tapGlitchMinRows = 1;
 constexpr uint8_t tapGlitchMaxRows = 8;
 
-// Rotation-Based Gesture Detection (MPU6050 only)
-inline bool enableShakeDetection = true;
-inline float shakeThreshold = 4.0f;
-constexpr uint16_t shakeSustainTime = 300;
-constexpr uint16_t shakeCooldown = 2000;
-
-inline bool enableSpinDetection = true;
-inline float spinThreshold = 3.0f;
-constexpr uint16_t spinSustainTime = 500;
-constexpr uint16_t spinCooldown = 3000;
-
-inline bool enableNodDetection = true;
-inline float nodThreshold = 2.5f;
-constexpr uint16_t nodSustainTime = 200;
-constexpr uint16_t nodCooldown = 1500;
-
 // Idle Detection
 const uint32_t idleTimeout = 10 * 60000;
 const uint16_t baselineUpdateDelay = 2000;

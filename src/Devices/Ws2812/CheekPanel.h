@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Adafruit_NeoPixel.h>
-#include "GammaTable.h"
 
 // Optimized circular edge LED strip - Color Wave effect with easing
 // Color expands smoothly from random position, respects L/R split
