@@ -20,7 +20,7 @@ struct BoopResult {
 
 class Boop {
    private:
-    enum class State { IDLE, APPROACHING, HELD, TOO_CLOSE };
+    enum class State { IDLE, APPROACHING, HELD, RELEASING, TOO_CLOSE };
 
     State state = State::IDLE;
     unsigned long approachStartedAt = 0;

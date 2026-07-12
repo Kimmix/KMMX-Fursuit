@@ -38,10 +38,14 @@ BoopResult Boop::update(uint16_t proximity, unsigned long now) {
 
         case State::HELD:
             if (proximity < boopMaxThreshold) {
-                state = State::IDLE;
+                state = State::RELEASING;
                 return {BoopEvent::RELEASED};
             }
             return {BoopEvent::HELD};
+
+        case State::RELEASING:
+            if (proximity <= boopMinThreshold) state = State::IDLE;
+            return {BoopEvent::IDLE};
 
         case State::TOO_CLOSE:
             if (proximity >= 1023) {
