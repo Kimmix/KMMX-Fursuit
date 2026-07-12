@@ -9,15 +9,6 @@ int KMMXController::getTargetFPS() const {
     return fpsCounter.getTargetFPS();
 }
 
-// Brightness Control
-int KMMXController::getDisplayBrightness() {
-    return display.getBrightnessValue();
-}
-
-void KMMXController::setDisplayBrightness(int i) {
-    display.setBrightnessValue(i);
-}
-
 int KMMXController::getHornBrightness() {
     return hornLED.getBrightness();
 }
@@ -51,66 +42,6 @@ uint32_t KMMXController::getCheekBackgroundColor() {
 
 uint32_t KMMXController::getCheekFadeColor() {
     return cheekPanel.getFadeColor();
-}
-
-void KMMXController::setDisplayColorMode(uint8_t mode) {
-    display.setColorMode(mode);
-}
-
-uint8_t KMMXController::getDisplayColorMode() {
-    return display.getColorMode();
-}
-
-void KMMXController::setDisplayGradientColors(uint8_t topR, uint8_t topG, uint8_t topB, uint8_t bottomR, uint8_t bottomG, uint8_t bottomB) {
-    display.setGradientColors(topR, topG, topB, bottomR, bottomG, bottomB);
-}
-
-void KMMXController::getDisplayGradientTopColor(uint8_t& r, uint8_t& g, uint8_t& b) {
-    display.getGradientTopColor(r, g, b);
-}
-
-void KMMXController::getDisplayGradientBottomColor(uint8_t& r, uint8_t& g, uint8_t& b) {
-    display.getGradientBottomColor(r, g, b);
-}
-
-void KMMXController::setDisplayDualSpiralColor(uint8_t spiralR, uint8_t spiralG, uint8_t spiralB) {
-    display.setDualSpiralColor(spiralR, spiralG, spiralB);
-}
-
-void KMMXController::getDisplayDualSpiralColor(uint8_t& r, uint8_t& g, uint8_t& b) {
-    display.getDualSpiralColor(r, g, b);
-}
-
-void KMMXController::setDisplayDualCircleColor(uint8_t circleR, uint8_t circleG, uint8_t circleB) {
-    display.setDualCircleColor(circleR, circleG, circleB);
-}
-
-void KMMXController::getDisplayDualCircleColor(uint8_t& r, uint8_t& g, uint8_t& b) {
-    display.getDualCircleColor(r, g, b);
-}
-
-void KMMXController::setDisplayEffectThickness(uint8_t thickness) {
-    display.setEffectThickness(thickness);
-}
-
-uint8_t KMMXController::getDisplayEffectThickness() {
-    return display.getEffectThickness();
-}
-
-void KMMXController::setDisplayEffectSpeed(uint8_t speed) {
-    display.setEffectSpeed(speed);
-}
-
-uint8_t KMMXController::getDisplayEffectSpeed() {
-    return display.getEffectSpeed();
-}
-
-void KMMXController::setDisplayEffectDirectionInverted(uint8_t inverted) {
-    display.setEffectDirectionInverted(inverted);
-}
-
-uint8_t KMMXController::getDisplayEffectDirectionInverted() {
-    return display.getEffectDirectionInverted();
 }
 
 // State control for BLE

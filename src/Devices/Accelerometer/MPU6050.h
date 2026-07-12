@@ -2,7 +2,6 @@
 
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
-#include "IAccelerometer.h"
 
 /**
  * @brief MPU6050 6-Axis IMU implementation for KimmixControllerV4
@@ -10,11 +9,11 @@
  * This class wraps the Adafruit MPU6050 library to provide both accelerometer
  * and gyroscope functionality with sensor fusion for accurate orientation tracking.
  */
-class MPU6050 : public IAccelerometer {
+class MPU6050 {
 private:
     sensors_event_t accelEvent;     // Cached acceleration event
     sensors_event_t gyroEvent;      // Cached gyroscope event
-    sensors_event_t tempEvent;      // Temperature event (available for future use)
+    sensors_event_t tempEvent;
     Adafruit_MPU6050 mpu;           // MPU6050 driver instance
     bool sensorInitialized = false; // Initialization status
 
@@ -36,7 +35,6 @@ private:
     // Helper methods for sensor fusion
     void calibrateGyro();  // Auto-calibrate gyroscope offsets
     void updateSensorFusion(float dt);  // Update complementary filter
-    float getTemperature();  // Get temperature reading (°C)
 
 public:
     /**
@@ -56,7 +54,7 @@ public:
      *
      * @return true if initialization successful, false otherwise
      */
-    bool setUp() override;
+    bool setUp();
 
     /**
      * @brief Get the latest acceleration sensor reading
@@ -67,7 +65,7 @@ public:
      *
      * @return Pointer to sensors_event_t structure with acceleration data
      */
-    sensors_event_t* getSensorEvent() override;
+    sensors_event_t* getSensorEvent();
 
     /**
      * @brief Get the latest gyroscope sensor reading
@@ -104,5 +102,4 @@ public:
      *
      * @return true if sensor is initialized and ready
      */
-    bool isInitialized() const override { return sensorInitialized; }
 };

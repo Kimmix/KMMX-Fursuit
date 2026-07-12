@@ -19,10 +19,6 @@ enum class EasingType {
     EASE_IN_OUT,           // Smooth ease in and out (original behavior)
     BOUNCE_OVERSHOOT,      // Overshoots to ~150% then settles to 100% - alive and reactive!
     ANTICIPATION,          // Pulls back slightly before launching forward - great for reactions
-    ELASTIC_SNAP,          // Quick snap with multiple small bounces - fun and bouncy
-    EXCITED_PULSE,         // Rapid pulsing that gradually slows - excitement calming down
-    CURIOUS_PEEK,          // Slow start, quick middle, slow end - peeking at something
-    STARTLED_JUMP,         // Instant jump with slow settle - startled reaction
     BREATHING_NATURAL      // Asymmetric timing - inhale faster, exhale slower
 };
 
@@ -54,9 +50,7 @@ struct TimeBasedAnimState {
 class TimeBasedAnimation {
 public:
     // Preset configurations
-    static const TimeBasedAnimConfig CONFIG_QUICK_LOOP;      // 200ms loop
     static const TimeBasedAnimConfig CONFIG_SMOOTH_LOOP;     // 500ms smooth loop
-    static const TimeBasedAnimConfig CONFIG_SLOW_LOOP;       // 1000ms slow loop
     static const TimeBasedAnimConfig CONFIG_BREATHING;       // 2000ms natural breathing (asymmetric)
     static const TimeBasedAnimConfig CONFIG_BLINK;           // 150ms quick blink once
     static const TimeBasedAnimConfig CONFIG_TRANSITION;      // 300ms one-shot transition
@@ -64,12 +58,7 @@ public:
 
     // New expressive animation presets
     static const TimeBasedAnimConfig CONFIG_BOUNCE_OVERSHOOT;     // Bouncy overshoot - alive and reactive!
-    static const TimeBasedAnimConfig CONFIG_BOUNCE_OVERSHOOT_FAST; // Fast bouncy overshoot
     static const TimeBasedAnimConfig CONFIG_ANTICIPATION;         // Pull back then launch - great for reactions
-    static const TimeBasedAnimConfig CONFIG_ELASTIC_SNAP;         // Quick snap with bounces - fun!
-    static const TimeBasedAnimConfig CONFIG_EXCITED_PULSE;        // Rapid pulse slowing down - excitement!
-    static const TimeBasedAnimConfig CONFIG_CURIOUS_PEEK;         // Slow-fast-slow - peeking motion
-    static const TimeBasedAnimConfig CONFIG_STARTLED_JUMP;        // Instant jump, slow settle - startled!
 
     // Blink speed variants (for dynamic blink variance)
     static const TimeBasedAnimConfig CONFIG_BLINK_VERY_FAST;      // 100ms very fast blink

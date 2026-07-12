@@ -152,14 +152,3 @@ void MPU6050::updateSensorFusion(float dt) {
     if (fusedYaw > 180.0f) fusedYaw -= 360.0f;
     if (fusedYaw < -180.0f) fusedYaw += 360.0f;
 }
-
-// ============================================================================
-// TEMPERATURE SENSOR
-// ============================================================================
-
-float MPU6050::getTemperature() {
-    if (!sensorInitialized) {
-        return 0.0f;
-    }
-    return tempEvent.temperature;
-}

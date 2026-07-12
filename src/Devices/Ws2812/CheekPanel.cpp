@@ -114,10 +114,10 @@ void CheekPanel::update() {
 }
 
 uint32_t CheekPanel::applyGamma(uint32_t color) {
-    uint8_t r = pgm_read_byte(&gammaTable[(color >> 16) & 0xFF]);
-    uint8_t g = pgm_read_byte(&gammaTable[(color >> 8) & 0xFF]);
-    uint8_t b = pgm_read_byte(&gammaTable[color & 0xFF]);
-    return strip.Color(r, g, b);
+    uint8_t r = (color >> 16) & 0xFF;
+    uint8_t g = (color >> 8) & 0xFF;
+    uint8_t b = color & 0xFF;
+    return Adafruit_NeoPixel::gamma32(strip.Color(r, g, b));
 }
 
 uint8_t CheekPanel::easeInOutQuad(uint8_t t) {
