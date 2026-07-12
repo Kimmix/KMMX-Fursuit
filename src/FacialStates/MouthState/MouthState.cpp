@@ -13,6 +13,9 @@ MouthState::MouthState(Hub75DMA* display) : display(display) {
     TimeBasedAnimation::init(angryAnim, mouthAngryAnimation, angryLength, TimeBasedAnimation::CONFIG_TRANSITION);
 
     // Initialize animations with transition + loop pattern
+    initAnimationData(boopData, viseme.getFrames(Viseme::OH), 60, 20,
+                      TimeBasedAnimation::CONFIG_SMOOTH_LOOP);
+
     // Eh: no loop (plays once)
     initAnimationData(ehData, mouthEhAnimation, ehLength, 0, TimeBasedAnimation::CONFIG_ANTICIPATION);
 
@@ -58,7 +61,7 @@ void MouthState::update() {
             drawDefault();
             break;
         case MouthStateEnum::BOOP:
-            display->drawMouth(mouthOH15);
+            playAnimationWithLoop(boopData);
             break;
         case MouthStateEnum::ANGRYBOOP:
             angryBoop();
@@ -112,6 +115,9 @@ void MouthState::setState(MouthStateEnum newState, bool isPersistent, unsigned l
 
     // State-specific initialization
     switch (newState) {
+        case MouthStateEnum::BOOP:
+            resetAnimation(boopData);
+            break;
         case MouthStateEnum::ANGRYBOOP:
             TimeBasedAnimation::reset(angryAnim);
             break;

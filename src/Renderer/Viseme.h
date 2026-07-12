@@ -19,6 +19,7 @@ class Viseme {
     void initMic();
     void reset();
     const uint8_t* renderViseme();
+    const uint8_t** getFrames(VisemeType type) { return visemeFrames[type]; }
 
     // Noise threshold (adaptive)
     float getNoiseThreshold();

@@ -97,6 +97,7 @@ class MouthState {
     TimeBasedAnimState angryAnim;
 
     // Animation data structures for transition + loop pattern
+    MouthAnimationData boopData;
     MouthAnimationData ehData;
     MouthAnimationData poutData;
     MouthAnimationData droolingData;

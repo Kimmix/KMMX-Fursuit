@@ -27,6 +27,7 @@ class APDS9930Sensor : public BaseProximitySensor {
     static constexpr int PROX_MIN_VALUE = 50;     // Minimum valid proximity value
     static constexpr int PROX_MAX_VALUE = 50000;  // Maximum valid proximity value
     static constexpr int PROX_OFFSET = 200;       // Offset value to adjust proximity readings
+    static constexpr int PROX_SENSOR_MAX = 1023;  // APDS9930 proximity ADC saturation
 
     /**
      * Normalize proximity data to 0-1023 range.

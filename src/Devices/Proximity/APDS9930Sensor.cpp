@@ -11,14 +11,14 @@
  * @param value Reference to the proximity value to be normalized
  */
 void APDS9930Sensor::normalizeProximity(uint16_t &value) {
-    // Apply offset correction
-    value -= PROX_OFFSET;
-
     // Filter out extremely high values (likely errors)
     if (value > PROX_MAX_VALUE) {
         value = 0;
         return;
     }
+
+    const bool saturated = value >= PROX_SENSOR_MAX;
+    value = value > PROX_OFFSET ? value - PROX_OFFSET : 0;
 
     // Auto-calibrate maximum value for dynamic range adjustment
     if (value > proximity_max) {
@@ -32,7 +32,8 @@ void APDS9930Sensor::normalizeProximity(uint16_t &value) {
     }
 
     // Map to 0-1023 range using optimized fastMap from Utils
-    value = fastMap<uint16_t>(value, 0, proximity_max, 0, 1023);
+    const uint16_t normalized = fastMap<uint16_t>(value, 0, proximity_max, 0, 1023);
+    value = saturated ? 1023 : (normalized < 1023 ? normalized : 1022);
 }
 
 /**
