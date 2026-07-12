@@ -17,6 +17,7 @@ float Boop::calculateBoopSpeed() {
  * State transitions (thresholds from config.h):
  * - IDLE -> BOOP_IN_PROGRESS: boopMinThreshold < value < boopMaxThreshold
  * - IDLE -> ANGRY: value >= 1023
+ * - IDLE -> BOOP_CONTINUOUS: boopMaxThreshold <= value < 1023
  * - BOOP_IN_PROGRESS -> BOOP_CONTINUOUS: value >= boopMaxThreshold
  * - BOOP_IN_PROGRESS -> IDLE: value < boopMinThreshold
  * - BOOP_CONTINUOUS -> IDLE: value < boopMaxThreshold
@@ -27,13 +28,17 @@ BoopStatus Boop::getBoop(uint16_t sensorValue) {
 
     switch (currentBoopState) {
         case IDLE:
-            if (sensorValue > boopMinThreshold && sensorValue < boopMaxThreshold) {
+            if (sensorValue >= 1023) {
+                currentBoopState = ANGRY;
+                status.isAngry = true;
+            } else if (sensorValue >= boopMaxThreshold) {
+                currentBoopState = BOOP_CONTINUOUS;
+                status.isBoop = true;
+                status.boopSpeed = 1.0f;
+            } else if (sensorValue > boopMinThreshold) {
                 currentBoopState = BOOP_IN_PROGRESS;
                 boopStartTime = millis();
                 status.isInRange = true;
-            } else if (sensorValue >= 1023) {
-                currentBoopState = ANGRY;
-                status.isAngry = true;
             }
             break;
 

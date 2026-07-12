@@ -51,7 +51,7 @@ class EyeState {
     Hub75DMA* display;
     SensorData sensorData;
     GooglyEye googlyEye;
-    EyeStateEnum prevState, currentState = EyeStateEnum::IDLE;
+    EyeStateEnum prevState = EyeStateEnum::IDLE, currentState = EyeStateEnum::IDLE;
     bool isTransitioning = false;
 
     unsigned long stateStartTime;  // When current state started (for auto-reset)

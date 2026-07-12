@@ -155,7 +155,7 @@ void MouthState::setState(MouthStateEnum newState, bool isPersistent, unsigned l
 }
 
 void MouthState::savePrevState(MouthStateEnum newState) {
-    prevState = newState;
+    prevState = (newState == MouthStateEnum::BOOP || newState == MouthStateEnum::ANGRYBOOP) ? MouthStateEnum::IDLE : newState;
 }
 
 void MouthState::playPrevState() {
