@@ -47,7 +47,7 @@ class MouthState {
    private:
     Hub75DMA* display;
     SensorData sensorData;
-    MouthStateEnum prevState, currentState = MouthStateEnum::IDLE;
+    MouthStateEnum prevState = MouthStateEnum::IDLE, currentState = MouthStateEnum::IDLE;
     unsigned long mouthInterval, nextAngry;
     unsigned long stateStartTime = 0;       // When current state started (for auto-reset)
     unsigned long customResetDuration = 0;  // Custom duration override (0 = infinite)
@@ -97,6 +97,7 @@ class MouthState {
     TimeBasedAnimState angryAnim;
 
     // Animation data structures for transition + loop pattern
+    MouthAnimationData boopData;
     MouthAnimationData ehData;
     MouthAnimationData poutData;
     MouthAnimationData droolingData;

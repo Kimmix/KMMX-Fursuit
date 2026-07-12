@@ -214,8 +214,7 @@ void EyeState::setState(EyeStateEnum newState, bool isPersistent, unsigned long 
 }
 
 void EyeState::savePrevState(EyeStateEnum newState) {
-    // No exclusions - let isPersistent parameter control saving logic
-    prevState = newState;
+    prevState = newState == EyeStateEnum::BOOP ? EyeStateEnum::IDLE : newState;
 }
 
 void EyeState::playPrevState() {

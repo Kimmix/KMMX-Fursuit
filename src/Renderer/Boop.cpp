@@ -1,71 +1,56 @@
 #include "Boop.h"
-#include "Utils/Utils.h"  // Use optimized utility functions
 
-/**
- * Calculate boop speed from elapsed time (faster approach = higher speed).
- * Maps time between 100ms and boopMaxDuration to 0.0-1.0 for animation intensity.
- */
-float Boop::calculateBoopSpeed() {
-    unsigned long elapsedTime = millis() - boopStartTime;
-    float speed = mapFloat(elapsedTime, 100, boopMaxDuration, 0, 100);
-    return speed / 100;
+float Boop::speedFor(unsigned long elapsed) {
+    if (elapsed <= 100) return 1.0f;
+    if (elapsed >= boopMaxDuration) return 0.0f;
+    return 1.0f - static_cast<float>(elapsed - 100) / (boopMaxDuration - 100);
 }
 
-/**
- * Process sensor value and update boop state machine.
- *
- * State transitions (thresholds from config.h):
- * - IDLE -> BOOP_IN_PROGRESS: boopMinThreshold < value < boopMaxThreshold
- * - IDLE -> ANGRY: value >= 1023
- * - BOOP_IN_PROGRESS -> BOOP_CONTINUOUS: value >= boopMaxThreshold
- * - BOOP_IN_PROGRESS -> IDLE: value < boopMinThreshold
- * - BOOP_CONTINUOUS -> IDLE: value < boopMaxThreshold
- * - ANGRY -> IDLE: value < boopMaxThreshold
- */
-BoopStatus Boop::getBoop(uint16_t sensorValue) {
-    BoopStatus status;
-
-    switch (currentBoopState) {
-        case IDLE:
-            if (sensorValue > boopMinThreshold && sensorValue < boopMaxThreshold) {
-                currentBoopState = BOOP_IN_PROGRESS;
-                boopStartTime = millis();
-                status.isInRange = true;
-            } else if (sensorValue >= 1023) {
-                currentBoopState = ANGRY;
-                status.isAngry = true;
+BoopResult Boop::update(uint16_t proximity, unsigned long now) {
+    switch (state) {
+        case State::IDLE:
+            if (proximity >= 1023) {
+                state = State::TOO_CLOSE;
+                return {BoopEvent::TOO_CLOSE};
             }
-            break;
-
-        case BOOP_IN_PROGRESS:
-            status.isInRange = true;
-            if (sensorValue >= boopMaxThreshold) {
-                status.boopSpeed = calculateBoopSpeed();
-                if (status.boopSpeed > 0.0) {
-                    status.isBoop = true;
-                    currentBoopState = BOOP_CONTINUOUS;
-                } else {
-                    currentBoopState = IDLE;
-                }
-            } else if (sensorValue < boopMinThreshold) {
-                currentBoopState = IDLE;
+            if (proximity >= boopMaxThreshold) {
+                state = State::HELD;
+                return {BoopEvent::COMPLETED, 1.0f};
             }
-            break;
-
-        case BOOP_CONTINUOUS:
-            status.isContinuous = true;
-            if (sensorValue < boopMaxThreshold) {
-                currentBoopState = IDLE;
+            if (proximity > boopMinThreshold) {
+                state = State::APPROACHING;
+                approachStartedAt = now;
+                return {BoopEvent::APPROACHING};
             }
-            break;
+            return {BoopEvent::IDLE};
 
-        case ANGRY:
-            status.isAngry = true;
-            if (sensorValue < boopMaxThreshold) {
-                currentBoopState = IDLE;
+        case State::APPROACHING:
+            if (proximity >= boopMaxThreshold) {
+                state = State::HELD;
+                return {BoopEvent::COMPLETED, speedFor(now - approachStartedAt)};
             }
-            break;
+            if (proximity <= boopMinThreshold) {
+                state = State::IDLE;
+                return {BoopEvent::INCOMPLETE_RELEASE};
+            }
+            return {BoopEvent::APPROACHING};
+
+        case State::HELD:
+            if (proximity < boopMaxThreshold) {
+                state = State::IDLE;
+                return {BoopEvent::RELEASED};
+            }
+            return {BoopEvent::HELD};
+
+        case State::TOO_CLOSE:
+            if (proximity >= 1023) return {BoopEvent::TOO_CLOSE};
+            if (proximity < boopMaxThreshold) {
+                state = State::IDLE;
+                return {BoopEvent::RELEASED};
+            }
+            state = State::HELD;
+            return {BoopEvent::HELD};
     }
 
-    return status;
+    return {BoopEvent::IDLE};
 }

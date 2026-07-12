@@ -110,11 +110,6 @@ class KMMXController {
 
     void renderFace();
     void handleBoop();
-    void handleBoopCompleted(float speed, bool eyeAlreadyActive);
-    void handleBoopInRange();
-    void handleBoopContinuous(bool eyeAlreadyActive);
-    void handleBoopAngry();
-    void handleBoopIdle(bool wasInRange, bool wasBooped);
     template<typename StateType, typename EnumType>
     void setStateIfDifferent(StateType& state, EnumType targetState, unsigned long timeout);
     void updateOLED();
@@ -162,7 +157,7 @@ class KMMXController {
     uint8_t motionCounter = 0;  // Counter for hysteresis (sustained motion detection)
     bool baselineInitialized = false;  // Whether baseline has been set
     unsigned long nextFrame;
-    unsigned long nextBoop = 0;
+    unsigned long lastBoopUpdate = static_cast<unsigned long>(-50);
     bool isSleeping = false;
     bool accelerometerInitialized = false;  // Track if accelerometer successfully initialized
     bool oledInitialized = false;  // Track if OLED successfully initialized

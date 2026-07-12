@@ -22,6 +22,8 @@ inline bool KMMXController::hasDebounceExpired(unsigned long lastTime, uint16_t 
  * Restore previous eye and mouth state (reusable across all detectors)
  */
 void KMMXController::restorePreviousState(EyeStateEnum prevEye, MouthStateEnum prevMouth) {
+    if (prevEye == EyeStateEnum::BOOP) prevEye = EyeStateEnum::IDLE;
+    if (prevMouth == MouthStateEnum::BOOP || prevMouth == MouthStateEnum::ANGRYBOOP) prevMouth = MouthStateEnum::IDLE;
     eyeState.setState(prevEye, false, 0);      // Temporary, no timeout (manual control)
     mouthState.setState(prevMouth, false, 0);  // Temporary, no timeout (manual control)
 }
