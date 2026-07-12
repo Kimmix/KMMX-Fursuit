@@ -201,7 +201,6 @@ class EyeState {
     unsigned long nextSleepFrameChange;
 
     // Helper methods
-    void movingEye();
     void idleFace();
     void updateIdleMicroMovements();
     void checkAndTriggerBlink();
