@@ -53,6 +53,11 @@ class EyeState {
     GooglyEye googlyEye;
     EyeStateEnum prevState = EyeStateEnum::IDLE, currentState = EyeStateEnum::IDLE;
     bool isTransitioning = false;
+    bool isReturning = false;
+    EyeStateEnum pendingState = EyeStateEnum::IDLE;
+    bool pendingPersistent = false;
+    unsigned long pendingDuration = 0;
+    TimeBasedAnimState returnAnim;
 
     unsigned long stateStartTime;  // When current state started (for auto-reset)
     unsigned long customResetDuration = 0;  // Custom duration override (0 = use animation's autoResetDuration)
@@ -199,4 +204,5 @@ class EyeState {
                           const TimeBasedAnimConfig& loopConfig);
     void resetAnimation(AnimationData& data);
     AnimationData* getAnimationData(EyeStateEnum state);
+    void applyState(EyeStateEnum newState, bool isPersistent, unsigned long durationMs);
 };

@@ -27,7 +27,7 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK = {
 };
 
 const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_TRANSITION = {
-    .durationMs = 300,
+    .durationMs = 150,
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,

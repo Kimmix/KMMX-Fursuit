@@ -47,6 +47,15 @@ void MouthState::startMic() {
 }
 
 void MouthState::update() {
+    if (isReturning) {
+        display->drawMouth(TimeBasedAnimation::update(returnAnim));
+        if (TimeBasedAnimation::isComplete(returnAnim)) {
+            isReturning = false;
+            applyState(pendingState, pendingPersistent, pendingDuration);
+        }
+        return;
+    }
+
     if (customResetDuration > 0) {
         if (millis() - stateStartTime >= customResetDuration) {
             customResetDuration = 0;
@@ -108,6 +117,33 @@ void MouthState::update() {
 }
 
 void MouthState::setState(MouthStateEnum newState, bool isPersistent, unsigned long durationMs) {
+    if (isReturning) {
+        if (newState == currentState) {
+            isReturning = false;
+        } else {
+            pendingState = newState;
+            pendingPersistent = isPersistent;
+            pendingDuration = durationMs;
+        }
+        return;
+    }
+
+    const uint8_t** frames;
+    uint8_t frameCount;
+    if (currentState != newState && getAnimationFrames(currentState, frames, frameCount)) {
+        TimeBasedAnimation::init(returnAnim, frames, frameCount, TimeBasedAnimation::CONFIG_TRANSITION);
+        returnAnim.isReversing = true;
+        isReturning = true;
+        pendingState = newState;
+        pendingPersistent = isPersistent;
+        pendingDuration = durationMs;
+        return;
+    }
+
+    applyState(newState, isPersistent, durationMs);
+}
+
+void MouthState::applyState(MouthStateEnum newState, bool isPersistent, unsigned long durationMs) {
     // Mark as transitioning if state is changing
     if (currentState != newState) {
         isTransitioning = true;
@@ -120,6 +156,9 @@ void MouthState::setState(MouthStateEnum newState, bool isPersistent, unsigned l
             break;
         case MouthStateEnum::ANGRYBOOP:
             TimeBasedAnimation::reset(angryAnim);
+            break;
+        case MouthStateEnum::WAH:
+            TimeBasedAnimation::reset(wahAnim);
             break;
         case MouthStateEnum::EH:
             resetAnimation(ehData);
@@ -255,6 +294,23 @@ void MouthState::resetAnimation(MouthAnimationData& data) {
     TimeBasedAnimation::reset(data.transitionAnim);
     if (data.loopFrameCount > 0) {
         TimeBasedAnimation::reset(data.loopAnim);
+    }
+}
+
+bool MouthState::getAnimationFrames(MouthStateEnum state, const uint8_t**& frames, uint8_t& frameCount) {
+    switch (state) {
+        case MouthStateEnum::BOOP: frames = boopData.frames; frameCount = boopData.frameCount; return true;
+        case MouthStateEnum::ANGRYBOOP: frames = mouthAngryAnimation; frameCount = angryLength; return true;
+        case MouthStateEnum::WAH: frames = mouthWahAnimation; frameCount = wahLength; return true;
+        case MouthStateEnum::EH: frames = ehData.frames; frameCount = ehData.frameCount; return true;
+        case MouthStateEnum::POUT: frames = poutData.frames; frameCount = poutData.frameCount; return true;
+        case MouthStateEnum::DROOLING: frames = droolingData.frames; frameCount = droolingData.frameCount; return true;
+        case MouthStateEnum::ANGRY: frames = angryNewData.frames; frameCount = angryNewData.frameCount; return true;
+        case MouthStateEnum::LOWER: frames = lowerData.frames; frameCount = lowerData.frameCount; return true;
+        case MouthStateEnum::SHOCK: frames = shockData.frames; frameCount = shockData.frameCount; return true;
+        case MouthStateEnum::SMALL: frames = smallData.frames; frameCount = smallData.frameCount; return true;
+        case MouthStateEnum::WORRY: frames = worryData.frames; frameCount = worryData.frameCount; return true;
+        default: return false;
     }
 }
 

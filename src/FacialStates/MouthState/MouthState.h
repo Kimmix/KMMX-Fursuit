@@ -52,6 +52,11 @@ class MouthState {
     unsigned long stateStartTime = 0;       // When current state started (for auto-reset)
     unsigned long customResetDuration = 0;  // Custom duration override (0 = infinite)
     bool isTransitioning = false;
+    bool isReturning = false;
+    MouthStateEnum pendingState = MouthStateEnum::IDLE;
+    bool pendingPersistent = false;
+    unsigned long pendingDuration = 0;
+    TimeBasedAnimState returnAnim;
     const uint8_t *visemeFrame = mouthDefault, *mouthFrame = mouthDefault;
 
     const uint8_t* defaultAnimation[60] = {mouthDefault1, mouthDefault2, mouthDefault3, mouthDefault4, mouthDefault5, mouthDefault6, mouthDefault7, mouthDefault8, mouthDefault9, mouthDefault10, mouthDefault11, mouthDefault12, mouthDefault13, mouthDefault14, mouthDefault15, mouthDefault16, mouthDefault17, mouthDefault18, mouthDefault19, mouthDefault20, mouthDefault21, mouthDefault22, mouthDefault23, mouthDefault24, mouthDefault25, mouthDefault26, mouthDefault27, mouthDefault28, mouthDefault29, mouthDefault30, mouthDefault31, mouthDefault32, mouthDefault33, mouthDefault34, mouthDefault35, mouthDefault36, mouthDefault37, mouthDefault38, mouthDefault39, mouthDefault40, mouthDefault41, mouthDefault42, mouthDefault43, mouthDefault44, mouthDefault45, mouthDefault46, mouthDefault47, mouthDefault48, mouthDefault49, mouthDefault50, mouthDefault51, mouthDefault52, mouthDefault53, mouthDefault54, mouthDefault55, mouthDefault56, mouthDefault57, mouthDefault58, mouthDefault59, mouthDefault60};
@@ -114,6 +119,8 @@ class MouthState {
     void initAnimationData(MouthAnimationData& data, const uint8_t** frames, uint8_t frameCount,
                            uint8_t loopFrameCount, const TimeBasedAnimConfig& loopConfig);
     void resetAnimation(MouthAnimationData& data);
+    void applyState(MouthStateEnum newState, bool isPersistent, unsigned long durationMs);
+    bool getAnimationFrames(MouthStateEnum state, const uint8_t**& frames, uint8_t& frameCount);
 
     TaskHandle_t visemeTaskHandle = NULL;
     void startVisemeTask();

@@ -79,6 +79,15 @@ AnimationData* EyeState::getAnimationData(EyeStateEnum state) {
 }
 
 void EyeState::update() {
+    if (isReturning) {
+        display->drawEye(TimeBasedAnimation::update(returnAnim));
+        if (TimeBasedAnimation::isComplete(returnAnim)) {
+            isReturning = false;
+            applyState(pendingState, pendingPersistent, pendingDuration);
+        }
+        return;
+    }
+
     // Check for custom duration auto-reset (PRIORITY 1)
     if (customResetDuration > 0) {
         if (millis() - stateStartTime >= customResetDuration) {
@@ -158,6 +167,33 @@ void EyeState::update() {
 }
 
 void EyeState::setState(EyeStateEnum newState, bool isPersistent, unsigned long durationMs) {
+    if (isReturning) {
+        if (newState == currentState) {
+            isReturning = false;
+        } else {
+            pendingState = newState;
+            pendingPersistent = isPersistent;
+            pendingDuration = durationMs;
+        }
+        return;
+    }
+
+    AnimationData* currentAnimation = getAnimationData(currentState);
+    if (currentState != newState && currentAnimation) {
+        TimeBasedAnimation::init(returnAnim, currentAnimation->frames, currentAnimation->frameCount,
+                                 TimeBasedAnimation::CONFIG_TRANSITION);
+        returnAnim.isReversing = true;
+        isReturning = true;
+        pendingState = newState;
+        pendingPersistent = isPersistent;
+        pendingDuration = durationMs;
+        return;
+    }
+
+    applyState(newState, isPersistent, durationMs);
+}
+
+void EyeState::applyState(EyeStateEnum newState, bool isPersistent, unsigned long durationMs) {
     // Mark as transitioning if state is changing
     if (currentState != newState) {
         isTransitioning = true;
