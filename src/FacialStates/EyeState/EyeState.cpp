@@ -293,7 +293,7 @@ void EyeState::movingEye() {
     */
 
     // Always render current idle frame (with micro-movements)
-    display->drawEye(idleLookFrames[currentIdleFrame]);
+    display->drawEye(currentIdleBitmap);
 }
 
 void EyeState::idleFace() {
@@ -305,14 +305,38 @@ void EyeState::idleFace() {
 void EyeState::updateIdleMicroMovements() {
     if (millis() < nextIdleAction) return;
 
+    if (pendingIdleFrame) {
+        if (idleTransitionStep < 3) {
+            currentIdleBitmap = idleTransitionFrames[pendingIdleFrame][idleTransitionStep++];
+            nextIdleAction = millis() + 60;
+            return;
+        }
+        currentIdleFrame = pendingIdleFrame;
+        currentIdleBitmap = idleLookFrames[currentIdleFrame];
+        pendingIdleFrame = 0;
+        idleTransitionStep = 0;
+        nextIdleAction = millis() + 800 + (esp_random() % 3200);
+        return;
+    }
+
     uint32_t randomAction = esp_random() % 100;
 
     if (randomAction < 30) {
         // 30% - Quick eye dart (subtle look around)
-        currentIdleFrame = esp_random() % idleLookFramesLength;
+        uint8_t nextFrame = esp_random() % idleLookFramesLength;
+        if (nextFrame) {
+            pendingIdleFrame = nextFrame;
+            currentIdleFrame = 0;
+            currentIdleBitmap = eyeDefault;
+            nextIdleAction = millis() + 40;
+            return;
+        }
+        currentIdleFrame = nextFrame;
+        currentIdleBitmap = idleLookFrames[currentIdleFrame];
     } else if (randomAction < 50) {
         // 20% - Return to center
         currentIdleFrame = 0;
+        currentIdleBitmap = eyeDefault;
     }
     // 50% - Stay in current position (no change needed)
 

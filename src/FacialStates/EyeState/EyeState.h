@@ -66,7 +66,21 @@ class EyeState {
 
     // Idle micro-movement frames for variety
     const uint8_t* idleLookFrames[10] = {eyeDefault, eyeUp5, eyeUp10, eyeLookSharp5, eyeLookSharp10, eyeGiggle14, eyeUnimpressed14, eyeUnimpressed20, eyeSad8, eyeSmile10};
+    const uint8_t* idleTransitionFrames[10][3] = {
+        {eyeDefault, eyeDefault, eyeDefault},
+        {eyeUp1, eyeUp3, eyeUp4},
+        {eyeUp2, eyeUp5, eyeUp8},
+        {eyeLookSharp1, eyeLookSharp3, eyeLookSharp4},
+        {eyeLookSharp2, eyeLookSharp5, eyeLookSharp8},
+        {eyeGiggle3, eyeGiggle7, eyeGiggle10},
+        {eyeUnimpressed3, eyeUnimpressed7, eyeUnimpressed10},
+        {eyeUnimpressed5, eyeUnimpressed10, eyeUnimpressed15},
+        {eyeSad2, eyeSad4, eyeSad6},
+        {eyeSmile2, eyeSmile5, eyeSmile8}};
+    const uint8_t* currentIdleBitmap = eyeDefault;
     uint8_t currentIdleFrame = 0;
+    uint8_t pendingIdleFrame = 0;
+    uint8_t idleTransitionStep = 0;
     const uint8_t idleLookFramesLength = arrayLength(idleLookFrames);
 
     // Accelerometer-based eye movement animations (currently disabled)
