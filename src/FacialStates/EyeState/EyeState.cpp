@@ -114,7 +114,14 @@ void EyeState::update() {
             blink();
             break;
         case EyeStateEnum::BOOP:
-            playAnimationWithLoop(boopData);
+            if (sensorData.proximity > boopMinThreshold) {
+                float progress = static_cast<float>(constrain(sensorData.proximity, boopMinThreshold, boopMaxThreshold) - boopMinThreshold) /
+                                 (boopMaxThreshold - boopMinThreshold);
+                progress = progress * progress * (3.0f - 2.0f * progress);
+                display->drawEye(boopAnimation[static_cast<uint8_t>(roundf(progress * (arrayLength(boopAnimation) - 1)))]);
+            } else {
+                playAnimationWithLoop(boopData);
+            }
             break;
         case EyeStateEnum::ARROW:
             playAnimationWithLoop(arrowData);

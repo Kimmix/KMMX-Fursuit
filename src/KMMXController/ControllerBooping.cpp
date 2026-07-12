@@ -10,6 +10,7 @@ void KMMXController::handleBoop() {
 
     switch (result.event) {
         case BoopEvent::APPROACHING:
+            setStateIfDifferent(eyeState, EyeStateEnum::BOOP, 0);
             setStateIfDifferent(mouthState, MouthStateEnum::BOOP, 0);
             if (isSleeping) resetIdleTime();
             break;
