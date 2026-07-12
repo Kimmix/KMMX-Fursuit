@@ -1,4 +1,5 @@
 #include "KMMXController.h"
+#include "MotionDetectionConfig.h"
 
 void KMMXController::handleBoop() {
     const unsigned long now = millis();
@@ -30,6 +31,16 @@ void KMMXController::handleBoop() {
             setStateIfDifferent(eyeState, EyeStateEnum::ANGRY, 0);
             setStateIfDifferent(mouthState, MouthStateEnum::ANGRYBOOP, 0);
             resetIdleTime();
+            break;
+
+        case BoopEvent::LOCKED_OUT:
+            enableBoopDetection = false;
+            if (eyeState.getState() == EyeStateEnum::ANGRY) {
+                eyeState.setState(EyeStateEnum::ANGRY, false, 1500);
+            }
+            if (mouthState.getState() == MouthStateEnum::ANGRYBOOP) {
+                mouthState.setState(MouthStateEnum::ANGRYBOOP, false, 1500);
+            }
             break;
 
         case BoopEvent::INCOMPLETE_RELEASE:

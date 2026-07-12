@@ -8,6 +8,7 @@ enum class BoopEvent {
     COMPLETED,
     HELD,
     TOO_CLOSE,
+    LOCKED_OUT,
     RELEASED,
     INCOMPLETE_RELEASE
 };
@@ -23,6 +24,9 @@ class Boop {
 
     State state = State::IDLE;
     unsigned long approachStartedAt = 0;
+    unsigned long tooCloseStartedAt = 0;
+
+    static constexpr unsigned long disableAfterTooCloseMs = 10000;
 
     static float speedFor(unsigned long elapsed);
 
