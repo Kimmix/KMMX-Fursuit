@@ -154,6 +154,12 @@ void KMMXController::updateOLED() {
     oledDisplay.clear();
     oledDisplay.setFont(u8g2_font_5x8_tr);
 
+    if (slotMachine.isEnabled()) {
+        drawOLEDSlotMachine();
+        oledDisplay.update();
+        return;
+    }
+
     const SensorData& sensors = getSensorData();
 
     // Draw all HUD components
@@ -165,6 +171,59 @@ void KMMXController::updateOLED() {
     drawOLEDAccelerometer(sensors);
 
     oledDisplay.update();
+}
+
+void KMMXController::drawOLEDSlotMachine() {
+    auto* u8g2 = oledDisplay.getU8g2();
+    const SlotMachine::State state = slotMachine.getState();
+    const SlotMachine::Outcome outcome = slotMachine.getOutcome();
+
+    oledDisplay.drawFrame(0, 0, 128, 64);
+    oledDisplay.drawText(34, 10, "SLOT MACHINE");
+    u8g2->drawLine(1, 13, 126, 13);
+
+    if (state == SlotMachine::State::READY) {
+        const uint8_t charge = slotMachine.getCharge();
+        oledDisplay.drawText(charge ? 43 : 31, 29, charge ? "CHARGING" : "BOOP TO SPIN");
+        drawHorizontalBar(oledDisplay, 12, 38, 104, 12, charge * 104 / 100);
+        char percent[8];
+        snprintf(percent, sizeof(percent), "%u%%", charge);
+        oledDisplay.drawText(56, 60, percent);
+        return;
+    }
+
+    if (state == SlotMachine::State::SPINNING) {
+        oledDisplay.drawText(slotMachine.isAnticipating() ? 37 : 43, 27,
+                             slotMachine.isAnticipating() ? "SO CLOSE..." : "SPINNING");
+        const uint8_t stopped = slotMachine.getStoppedReels();
+        for (uint8_t i = 0; i < 3; ++i) {
+            const int x = 19 + i * 34;
+            oledDisplay.drawFrame(x, 34, 22, 22);
+            if (i < stopped) {
+                oledDisplay.drawBox(x + 4, 38, 14, 14);
+            } else {
+                const int y = 37 + (millis() / 100 + i * 4) % 16;
+                u8g2->drawLine(x + 3, y, x + 18, y);
+            }
+        }
+        return;
+    }
+
+    if (state == SlotMachine::State::REVEAL) {
+        oledDisplay.setFont(u8g2_font_6x12_tr);
+        oledDisplay.drawText(13, 41, "AND THE RESULT IS...");
+        return;
+    }
+
+    oledDisplay.setFont(u8g2_font_6x12_tr);
+    if (outcome == SlotMachine::Outcome::WIN) {
+        const uint8_t symbol = slotMachine.getResultSymbol();
+        const char* names[] = {"CHERRIES", "HEARTS", "STARS", "DIAMONDS"};
+        oledDisplay.drawText(symbol == 3 ? 23 : 32, 34, symbol == 3 ? "MEGA JACKPOT!" : "JACKPOT!");
+        oledDisplay.drawText(40, 53, names[symbol % 4]);
+    } else {
+        oledDisplay.drawText(31, 40, "AW DANG IT");
+    }
 }
 
 void KMMXController::drawOLEDFaceMirror() {

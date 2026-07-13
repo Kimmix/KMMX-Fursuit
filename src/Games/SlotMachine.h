@@ -9,12 +9,15 @@
 class SlotMachine {
    public:
     enum class Outcome : uint8_t { NONE, WIN, LOSE };
+    enum class State : uint8_t { READY, SPINNING, REVEAL, RESULT };
 
     explicit SlotMachine(Hub75DMA* display);
 
     void setEnabled(bool value);
     bool isEnabled() const;
     Outcome getOutcome() const;
+    State getState() const;
+    uint8_t getCharge() const;
     uint8_t getStoppedReels() const;
     bool isAnticipating() const;
     uint8_t getResultSymbol() const;
@@ -22,8 +25,6 @@ class SlotMachine {
     void render(unsigned long now = millis());
 
    private:
-    enum class Phase : uint8_t { READY, SPINNING, REVEAL, RESULT };
-
     static constexpr uint8_t reelCount = 3;
     static constexpr uint8_t symbolCount = 4;
     static constexpr unsigned long revealDurationMs = 450;
@@ -42,7 +43,7 @@ class SlotMachine {
     bool inputWasEnabled = false;
     bool renderWasEnabled = false;
     bool winning = false;
-    Phase phase = Phase::READY;
+    std::atomic<State> phase{State::READY};
     unsigned long phaseStartedAt = 0;
     unsigned long lastReelStepAt[reelCount] = {0, 0, 0};
     uint8_t reels[reelCount] = {0, 1, 2};

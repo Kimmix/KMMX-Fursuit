@@ -81,6 +81,14 @@ SlotMachine::Outcome SlotMachine::getOutcome() const {
     return outcome.load();
 }
 
+SlotMachine::State SlotMachine::getState() const {
+    return phase.load();
+}
+
+uint8_t SlotMachine::getCharge() const {
+    return charge.load();
+}
+
 uint8_t SlotMachine::getStoppedReels() const {
     return stoppedReels.load();
 }
@@ -124,16 +132,16 @@ void SlotMachine::render(unsigned long now) {
         resetGame();
         renderWasEnabled = true;
     }
-    if (spinRequested.exchange(false) && phase != Phase::SPINNING && phase != Phase::REVEAL) startSpin(now);
-    if (phase == Phase::SPINNING) updateSpin(now);
-    if (phase == Phase::REVEAL && now - phaseStartedAt >= revealDurationMs) {
+    if (spinRequested.exchange(false) && phase != State::SPINNING && phase != State::REVEAL) startSpin(now);
+    if (phase == State::SPINNING) updateSpin(now);
+    if (phase == State::REVEAL && now - phaseStartedAt >= revealDurationMs) {
         outcome.store(winning ? Outcome::WIN : Outcome::LOSE);
-        phase = Phase::RESULT;
+        phase = State::RESULT;
         phaseStartedAt = now;
     }
     const unsigned long resultTime = winning && reels[0] == 3 ? megaResultDurationMs : resultDurationMs;
-    if (phase == Phase::RESULT && now - phaseStartedAt >= resultTime) {
-        phase = Phase::READY;
+    if (phase == State::RESULT && now - phaseStartedAt >= resultTime) {
+        phase = State::READY;
         outcome.store(Outcome::NONE);
     }
     drawPanel(now);
@@ -145,7 +153,7 @@ void SlotMachine::startSpin(unsigned long now) {
         previousReels[i] = reels[i];
         reels[i] = esp_random() % symbolCount;
     }
-    phase = Phase::SPINNING;
+    phase = State::SPINNING;
     phaseStartedAt = now;
     for (unsigned long& stepAt : lastReelStepAt) stepAt = now;
     winning = false;
@@ -178,13 +186,13 @@ void SlotMachine::updateSpin(unsigned long now) {
         winning = isWinning(reels);
         resultSymbol.store(reels[0]);
         anticipating.store(false);
-        phase = Phase::REVEAL;
+        phase = State::REVEAL;
         phaseStartedAt = now;
     }
 }
 
 void SlotMachine::resetGame() {
-    phase = Phase::READY;
+    phase = State::READY;
     winning = false;
     charge.store(0);
     stoppedReels.store(0);
@@ -205,14 +213,14 @@ void SlotMachine::drawPanel(unsigned long now) {
     const uint32_t themeRgb = symbolColors[result[0] % symbolCount];
     const uint16_t theme = display->color565(themeRgb >> 16, themeRgb >> 8, themeRgb);
     const unsigned long spinElapsed = now - phaseStartedAt;
-    const bool anticipating = phase == Phase::SPINNING && result[0] == result[1] &&
+    const bool anticipating = phase == State::SPINNING && result[0] == result[1] &&
                               spinElapsed >= reelStopMs[1] && spinElapsed < reelStopMs[2] + anticipationMs;
 
-    if (phase == Phase::READY) {
+    if (phase == State::READY) {
         drawWord(boopWord, 5, 16, 1, white);
         drawChargeMeter(charge.load(), pink);
     }
-    if (phase == Phase::RESULT) {
+    if (phase == State::RESULT) {
         if (winning && reels[0] == 3) {
             const uint32_t rgb = rainbowColors[(now / 90) % 6];
             drawWord(megaWord, 5, 16, 1, display->color565(rgb >> 16, rgb >> 8, rgb));
@@ -220,13 +228,13 @@ void SlotMachine::drawPanel(unsigned long now) {
         else drawWord(awDangItWord, 10, 5, 1, red);
     }
 
-    const uint16_t frameColor = phase == Phase::RESULT && winning
+    const uint16_t frameColor = phase == State::RESULT && winning
                                     ? ((now / 150) % 2 ? theme : white)
-                                    : (phase == Phase::RESULT ? red : (anticipating ? ((now / 90) % 2 ? yellow : pink) : white));
+                                    : (phase == State::RESULT ? red : (anticipating ? ((now / 90) % 2 ? yellow : pink) : white));
     for (uint8_t i = 0; i < reelCount; ++i) {
         const int x = i * 17;
         drawRect(x, 8, 16, 18, frameColor);
-        if (phase == Phase::SPINNING) {
+        if (phase == State::SPINNING) {
             const unsigned long stopAt = reelStopMs[i] + (i == reelCount - 1 && result[0] == result[1] ? anticipationMs : 0);
             if (spinElapsed < stopAt) {
                 const unsigned long stepMs = reelStepInterval(spinElapsed, stopAt);
@@ -246,7 +254,7 @@ void SlotMachine::drawPanel(unsigned long now) {
         } else {
             uint8_t brightness = 255;
             int highlightColumn = -1;
-            if (phase == Phase::READY) {
+            if (phase == State::READY) {
                 const uint8_t shimmer = (now / 25 + i * 10) % 40;
                 brightness = 150 + (shimmer < 20 ? shimmer : 39 - shimmer) * 5;
             } else if (winning && reels[i] == 1) {
@@ -258,8 +266,8 @@ void SlotMachine::drawPanel(unsigned long now) {
             drawSymbol(reels[i], x + 3, 12, brightness, highlightColumn);
         }
     }
-    if (phase == Phase::READY) drawMarquee(now, display->color565(45, 70, 100), display->color565(115, 45, 105));
-    if (phase == Phase::RESULT && winning) {
+    if (phase == State::READY) drawMarquee(now, display->color565(45, 70, 100), display->color565(115, 45, 105));
+    if (phase == State::RESULT && winning) {
         if (reels[0] == 3) drawRainbowMarquee(now);
         else drawMarquee(now, theme, white);
         drawWinParticles(now, theme, result[0] == 0 ? yellow : white);
