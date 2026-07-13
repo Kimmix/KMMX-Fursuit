@@ -24,7 +24,7 @@ class SlotMachine {
     static constexpr uint8_t reelCount = 3;
     static constexpr uint8_t symbolCount = 4;
     static constexpr unsigned long reelStepMs = 80;
-    static constexpr unsigned long resultDurationMs = 1500;
+    static constexpr unsigned long resultDurationMs = 3000;
 
     Hub75DMA* display;
     Boop boop;
@@ -38,13 +38,15 @@ class SlotMachine {
     unsigned long phaseStartedAt = 0;
     unsigned long lastReelStepAt = 0;
     uint8_t reels[reelCount] = {0, 1, 2};
+    uint8_t previousReels[reelCount] = {0, 1, 2};
     uint8_t result[reelCount] = {0, 1, 2};
 
     void startSpin(unsigned long now);
     void updateSpin(unsigned long now);
     void resetGame();
     void drawPanel(unsigned long now);
-    void drawSymbol(uint8_t symbol, int x, int y);
+    void drawSymbol(uint8_t symbol, int x, int y, uint8_t brightness = 255);
+    void drawMarquee(unsigned long now, uint16_t first, uint16_t second);
     void drawWord(const uint8_t* const* glyphs, uint8_t count, int x, int y, uint16_t color);
     void drawGlyph(const uint8_t* glyph, int x, int y, uint16_t color);
     void drawRect(int x, int y, int width, int height, uint16_t color);
