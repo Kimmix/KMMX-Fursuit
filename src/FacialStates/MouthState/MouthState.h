@@ -41,12 +41,15 @@ class MouthState {
     void playPrevState();
     MouthStateEnum getState() const;
     void setSensorData(const SensorData& data);
+    void setBoopCompleted(bool completed);
+    void releaseBoop(unsigned long durationMs);
     void resetMovingMouth();
     void setSlowAnimation(bool slow);
 
    private:
     Hub75DMA* display;
     SensorData sensorData;
+    bool boopCompleted = false;
     MouthStateEnum prevState = MouthStateEnum::IDLE, currentState = MouthStateEnum::IDLE;
     unsigned long mouthInterval, nextAngry;
     unsigned long stateStartTime = 0;       // When current state started (for auto-reset)

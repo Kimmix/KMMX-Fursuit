@@ -99,7 +99,7 @@ public:
      * Reset animation to beginning
      * @param anim Animation state
      */
-    static void reset(TimeBasedAnimState& anim);
+    static void reset(TimeBasedAnimState& anim, short startFrameIndex = 0);
 
     /**
      * Change animation configuration at runtime

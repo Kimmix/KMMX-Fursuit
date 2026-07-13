@@ -64,7 +64,7 @@ FXStateEnum FXState::getState() const {
 
 void FXState::flyingHeartState() {
     flyingHeart.renderHeart();
-    if (millis() - resetHeart >= 5000) {
+    if (millis() - resetHeart >= boopHeartDuration) {
         currentState = FXStateEnum::IDLE;
         flyingHeart.resetAll();
     }

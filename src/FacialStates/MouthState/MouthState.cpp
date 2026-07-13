@@ -15,6 +15,7 @@ MouthState::MouthState(Hub75DMA* display) : display(display) {
     // Initialize animations with transition + loop pattern
     initAnimationData(boopData, viseme.getFrames(Viseme::OH), 60, 20,
                       TimeBasedAnimation::CONFIG_SMOOTH_LOOP);
+    boopData.loopAnim.config.durationMs = boopData.loopAnim.config.durationMs * boopLoopDurationPercent / 100;
 
     // Eh: no loop (plays once)
     initAnimationData(ehData, mouthEhAnimation, ehLength, 0, TimeBasedAnimation::CONFIG_ANTICIPATION);
@@ -70,7 +71,20 @@ void MouthState::update() {
             drawDefault();
             break;
         case MouthStateEnum::BOOP:
-            playAnimationWithLoop(boopData);
+            if (boopCompleted) {
+                display->drawMouth(boopData.frames[boopData.frameCount - 1]);
+            } else if (sensorData.proximity > boopMinThreshold && sensorData.proximity < boopMaxThreshold) {
+                float progress = static_cast<float>(constrain(sensorData.proximity, boopMinThreshold, boopMaxThreshold) - boopMinThreshold) /
+                                 (boopMaxThreshold - boopMinThreshold);
+                progress = progress * progress * (3.0f - 2.0f * progress);
+                short targetFrame = roundf(progress * (boopData.frameCount - 1));
+                short currentFrame = boopData.transitionAnim.currentFrameIndex;
+                currentFrame += constrain(targetFrame - currentFrame, -1, 1);
+                TimeBasedAnimation::reset(boopData.transitionAnim, currentFrame);
+                display->drawMouth(boopData.frames[currentFrame]);
+            } else {
+                playAnimationWithLoop(boopData);
+            }
             break;
         case MouthStateEnum::ANGRYBOOP:
             angryBoop();
@@ -144,6 +158,8 @@ void MouthState::setState(MouthStateEnum newState, bool isPersistent, unsigned l
 }
 
 void MouthState::applyState(MouthStateEnum newState, bool isPersistent, unsigned long durationMs) {
+    if (newState != MouthStateEnum::BOOP) boopCompleted = false;
+
     // Mark as transitioning if state is changing
     if (currentState != newState) {
         isTransitioning = true;
@@ -213,6 +229,20 @@ MouthStateEnum MouthState::getState() const {
 
 void MouthState::setSensorData(const SensorData& data) {
     sensorData = data;
+}
+
+void MouthState::setBoopCompleted(bool completed) {
+    boopCompleted = completed;
+    stateStartTime = millis();
+    customResetDuration = 0;
+}
+
+void MouthState::releaseBoop(unsigned long durationMs) {
+    boopCompleted = false;
+    isTransitioning = false;
+    TimeBasedAnimation::reset(boopData.loopAnim, boopData.loopFrameCount - 1);
+    stateStartTime = millis();
+    customResetDuration = durationMs;
 }
 
 void MouthState::drawDefault() {

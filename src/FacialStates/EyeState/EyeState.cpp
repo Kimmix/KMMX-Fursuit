@@ -9,6 +9,7 @@ EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis(
 
     // Initialize all animations with transition + loop pattern
     initAnimationData(boopData, boopAnimation, 48, 18, 2500, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);        // Auto-reset after 2.5s
+    boopData.loopAnim.config.durationMs = boopData.loopAnim.config.durationMs * boopLoopDurationPercent / 100;
     initAnimationData(arrowData, boopAnimation, 48, 18, 0, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);          // No auto-reset (duplicate of boop for BLE)
     initAnimationData(oFaceData, oFaceAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);              // No auto-reset
     initAnimationData(smileData, smileAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMILE_LOOP);               // No auto-reset, special ping-pong loop
@@ -99,7 +100,7 @@ void EyeState::update() {
 
     // Check for animation-specific auto-reset (PRIORITY 2 - fallback)
     AnimationData* animData = getAnimationData(currentState);
-    if (animData && animData->autoResetDuration > 0) {
+    if (customResetDuration == 0 && animData && animData->autoResetDuration > 0 && !boopCompleted) {
         if (millis() - stateStartTime >= animData->autoResetDuration) {
             setState(prevState, false, 0);  // Properly restore state (not just direct assignment)
             return;  // Exit early - state just changed
@@ -114,11 +115,17 @@ void EyeState::update() {
             blink();
             break;
         case EyeStateEnum::BOOP:
-            if (sensorData.proximity > boopMinThreshold) {
+            if (boopCompleted) {
+                display->drawEye(boopAnimation[arrayLength(boopAnimation) - 1]);
+            } else if (sensorData.proximity > boopMinThreshold && sensorData.proximity < boopMaxThreshold) {
                 float progress = static_cast<float>(constrain(sensorData.proximity, boopMinThreshold, boopMaxThreshold) - boopMinThreshold) /
                                  (boopMaxThreshold - boopMinThreshold);
                 progress = progress * progress * (3.0f - 2.0f * progress);
-                display->drawEye(boopAnimation[static_cast<uint8_t>(roundf(progress * (arrayLength(boopAnimation) - 1)))]);
+                short targetFrame = roundf(progress * (arrayLength(boopAnimation) - 1));
+                short currentFrame = boopData.transitionAnim.currentFrameIndex;
+                currentFrame += constrain(targetFrame - currentFrame, -1, 1);
+                TimeBasedAnimation::reset(boopData.transitionAnim, currentFrame);
+                display->drawEye(boopAnimation[currentFrame]);
             } else {
                 playAnimationWithLoop(boopData);
             }
@@ -201,6 +208,8 @@ void EyeState::setState(EyeStateEnum newState, bool isPersistent, unsigned long 
 }
 
 void EyeState::applyState(EyeStateEnum newState, bool isPersistent, unsigned long durationMs) {
+    if (newState != EyeStateEnum::BOOP) boopCompleted = false;
+
     // Mark as transitioning if state is changing
     if (currentState != newState) {
         isTransitioning = true;
@@ -271,6 +280,20 @@ EyeStateEnum EyeState::getState() const {
 
 void EyeState::setSensorData(const SensorData& data) {
     sensorData = data;
+}
+
+void EyeState::setBoopCompleted(bool completed) {
+    boopCompleted = completed;
+    stateStartTime = millis();
+    customResetDuration = 0;
+}
+
+void EyeState::releaseBoop(unsigned long durationMs) {
+    boopCompleted = false;
+    isTransitioning = false;
+    TimeBasedAnimation::reset(boopData.loopAnim, boopData.loopFrameCount - 1);
+    stateStartTime = millis();
+    customResetDuration = durationMs;
 }
 
 void EyeState::idleFace() {

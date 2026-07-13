@@ -177,9 +177,11 @@ void TimeBasedAnimation::init(TimeBasedAnimState& anim, const uint8_t** frames, 
     anim.hasCompleted = false;
 }
 
-void TimeBasedAnimation::reset(TimeBasedAnimState& anim) {
-    anim.currentFrameIndex = 0;
-    anim.animStartTime = millis();
+void TimeBasedAnimation::reset(TimeBasedAnimState& anim, short startFrameIndex) {
+    anim.currentFrameIndex = constrain(startFrameIndex, 0, anim.frameCount - 1);
+    anim.animStartTime = millis() - (anim.frameCount > 1
+        ? anim.config.durationMs * anim.currentFrameIndex / (anim.frameCount - 1)
+        : 0);
     anim.pauseStartTime = 0;
     anim.isPaused = false;
     anim.isReversing = false;

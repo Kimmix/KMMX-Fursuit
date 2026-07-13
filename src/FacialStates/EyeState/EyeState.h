@@ -46,10 +46,13 @@ class EyeState {
     void playPrevState();
     EyeStateEnum getState() const;
     void setSensorData(const SensorData& data);
+    void setBoopCompleted(bool completed);
+    void releaseBoop(unsigned long durationMs);
 
    private:
     Hub75DMA* display;
     SensorData sensorData;
+    bool boopCompleted = false;
     GooglyEye googlyEye;
     EyeStateEnum prevState = EyeStateEnum::IDLE, currentState = EyeStateEnum::IDLE;
     bool isTransitioning = false;

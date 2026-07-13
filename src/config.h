@@ -118,6 +118,9 @@ const uint8_t sensorUpdateInterval = 20;        // Sensor update interval in ms 
 const uint16_t boopMinThreshold = 100;          // Minimum proximity distance to activate boop
 const uint16_t boopMaxThreshold = 900;          // Maximum proximity detection range
 const uint16_t boopMaxDuration = 2000;          // Maximum duration for calculating boop speed (ms)
+const uint16_t boopHeartDuration = 5000;        // Heart FX duration (ms)
+const uint16_t boopFaceDuration = 3000;         // Post-release eye and mouth loop duration (ms)
+const uint8_t boopLoopDurationPercent = 70;     // Percentage of boop loop duration relative to full animation
 
 // ============================================================================
 // COMPONENT-SPECIFIC CONFIGURATIONS
