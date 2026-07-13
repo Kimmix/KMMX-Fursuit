@@ -9,6 +9,7 @@ EyeState::EyeState(Hub75DMA* display) : display(display), startSleepTime(millis(
 
     // Initialize all animations with transition + loop pattern
     initAnimationData(boopData, boopAnimation, 48, 18, 2500, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);        // Auto-reset after 2.5s
+    boopData.loopAnim.config.durationMs = boopData.loopAnim.config.durationMs * boopLoopDurationPercent / 100;
     initAnimationData(arrowData, boopAnimation, 48, 18, 0, TimeBasedAnimation::CONFIG_BOUNCE_OVERSHOOT);          // No auto-reset (duplicate of boop for BLE)
     initAnimationData(oFaceData, oFaceAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMOOTH_LOOP);              // No auto-reset
     initAnimationData(smileData, smileAnimation, 48, 10, 0, TimeBasedAnimation::CONFIG_SMILE_LOOP);               // No auto-reset, special ping-pong loop
@@ -35,7 +36,7 @@ void EyeState::initAnimationData(AnimationData& data, const uint8_t** frames, ui
     data.autoResetDuration = autoResetDuration;
 
     // Initialize transition animation (full animation, plays once)
-    TimeBasedAnimation::init(data.transitionAnim, frames, frameCount, TimeBasedAnimation::CONFIG_TRANSITION);
+    TimeBasedAnimation::init(data.transitionAnim, frames, frameCount, TimeBasedAnimation::CONFIG_TRANSITION_END);
 
     // Initialize loop animation (last N frames only)
     // Uses pointer arithmetic to reference the last N frames without duplicating data
@@ -79,6 +80,15 @@ AnimationData* EyeState::getAnimationData(EyeStateEnum state) {
 }
 
 void EyeState::update() {
+    if (isReturning) {
+        display->drawEye(TimeBasedAnimation::update(returnAnim));
+        if (TimeBasedAnimation::isComplete(returnAnim)) {
+            isReturning = false;
+            applyState(pendingState, pendingPersistent, pendingDuration);
+        }
+        return;
+    }
+
     // Check for custom duration auto-reset (PRIORITY 1)
     if (customResetDuration > 0) {
         if (millis() - stateStartTime >= customResetDuration) {
@@ -90,7 +100,7 @@ void EyeState::update() {
 
     // Check for animation-specific auto-reset (PRIORITY 2 - fallback)
     AnimationData* animData = getAnimationData(currentState);
-    if (animData && animData->autoResetDuration > 0) {
+    if (customResetDuration == 0 && animData && animData->autoResetDuration > 0 && !boopCompleted) {
         if (millis() - stateStartTime >= animData->autoResetDuration) {
             setState(prevState, false, 0);  // Properly restore state (not just direct assignment)
             return;  // Exit early - state just changed
@@ -105,7 +115,20 @@ void EyeState::update() {
             blink();
             break;
         case EyeStateEnum::BOOP:
-            playAnimationWithLoop(boopData);
+            if (boopCompleted) {
+                display->drawEye(boopAnimation[arrayLength(boopAnimation) - 1]);
+            } else if (sensorData.proximity > boopMinThreshold && sensorData.proximity < boopMaxThreshold) {
+                float progress = static_cast<float>(constrain(sensorData.proximity, boopMinThreshold, boopMaxThreshold) - boopMinThreshold) /
+                                 (boopMaxThreshold - boopMinThreshold);
+                progress = progress * progress * (3.0f - 2.0f * progress);
+                short targetFrame = roundf(progress * (arrayLength(boopAnimation) - 1));
+                short currentFrame = boopData.transitionAnim.currentFrameIndex;
+                currentFrame += constrain(targetFrame - currentFrame, -1, 1);
+                TimeBasedAnimation::reset(boopData.transitionAnim, currentFrame);
+                display->drawEye(boopAnimation[currentFrame]);
+            } else {
+                playAnimationWithLoop(boopData);
+            }
             break;
         case EyeStateEnum::ARROW:
             playAnimationWithLoop(arrowData);
@@ -158,6 +181,35 @@ void EyeState::update() {
 }
 
 void EyeState::setState(EyeStateEnum newState, bool isPersistent, unsigned long durationMs) {
+    if (isReturning) {
+        if (newState == currentState) {
+            isReturning = false;
+        } else {
+            pendingState = newState;
+            pendingPersistent = isPersistent;
+            pendingDuration = durationMs;
+        }
+        return;
+    }
+
+    AnimationData* currentAnimation = getAnimationData(currentState);
+    if (currentState != newState && currentAnimation) {
+        TimeBasedAnimation::init(returnAnim, currentAnimation->frames, currentAnimation->frameCount,
+                                 TimeBasedAnimation::CONFIG_TRANSITION_END);
+        returnAnim.isReversing = true;
+        isReturning = true;
+        pendingState = newState;
+        pendingPersistent = isPersistent;
+        pendingDuration = durationMs;
+        return;
+    }
+
+    applyState(newState, isPersistent, durationMs);
+}
+
+void EyeState::applyState(EyeStateEnum newState, bool isPersistent, unsigned long durationMs) {
+    if (newState != EyeStateEnum::BOOP) boopCompleted = false;
+
     // Mark as transitioning if state is changing
     if (currentState != newState) {
         isTransitioning = true;
@@ -230,38 +282,22 @@ void EyeState::setSensorData(const SensorData& data) {
     sensorData = data;
 }
 
-void EyeState::movingEye() {
-    // DISABLED: Accelerometer-based eye movement
-    // Uncomment the code below to enable tilt-based eye animations
+void EyeState::setBoopCompleted(bool completed) {
+    boopCompleted = completed;
+    stateStartTime = millis();
+    customResetDuration = 0;
+}
 
-    /*
-    float zAcc = sensorData.accelZ;
-    const float leftThreshold = 3.00, rightThreshold = -3.00,
-                leftMaxThreshold = 6.00, rightMaxThreshold = -6.00;
-    static float smoothedLeftAcc = 0.0f;
-    static float smoothedRightAcc = 0.0f;
-
-    // Check for left movement (positive direction)
-    int leftLevel = smoothAccelerometerMovement(zAcc, smoothedLeftAcc, leftThreshold, leftMaxThreshold, 0.3f, 0.5f, 19, false);
-    if (leftLevel >= 0) {
-        display->drawEye(eyeUpAnimation[leftLevel], eyeDownAnimation[leftLevel]);
-        return;
-    }
-
-    // Check for right movement (negative direction)
-    int rightLevel = smoothAccelerometerMovement(zAcc, smoothedRightAcc, rightThreshold, rightMaxThreshold, 0.3f, 0.5f, 19, true);
-    if (rightLevel >= 0) {
-        display->drawEye(eyeDownAnimation[rightLevel], eyeUpAnimation[rightLevel]);
-        return;
-    }
-    */
-
-    // Always render current idle frame (with micro-movements)
-    display->drawEye(idleLookFrames[currentIdleFrame]);
+void EyeState::releaseBoop(unsigned long durationMs) {
+    boopCompleted = false;
+    isTransitioning = false;
+    TimeBasedAnimation::reset(boopData.loopAnim, boopData.loopFrameCount - 1);
+    stateStartTime = millis();
+    customResetDuration = durationMs;
 }
 
 void EyeState::idleFace() {
-    movingEye();  // Renders the current idle frame
+    display->drawEye(currentIdleBitmap);
     updateIdleMicroMovements();
     checkAndTriggerBlink();
 }
@@ -269,14 +305,38 @@ void EyeState::idleFace() {
 void EyeState::updateIdleMicroMovements() {
     if (millis() < nextIdleAction) return;
 
+    if (pendingIdleFrame) {
+        if (idleTransitionStep < 3) {
+            currentIdleBitmap = idleTransitionFrames[pendingIdleFrame][idleTransitionStep++];
+            nextIdleAction = millis() + 60;
+            return;
+        }
+        currentIdleFrame = pendingIdleFrame;
+        currentIdleBitmap = idleLookFrames[currentIdleFrame];
+        pendingIdleFrame = 0;
+        idleTransitionStep = 0;
+        nextIdleAction = millis() + 800 + (esp_random() % 3200);
+        return;
+    }
+
     uint32_t randomAction = esp_random() % 100;
 
     if (randomAction < 30) {
         // 30% - Quick eye dart (subtle look around)
-        currentIdleFrame = esp_random() % idleLookFramesLength;
+        uint8_t nextFrame = esp_random() % idleLookFramesLength;
+        if (nextFrame) {
+            pendingIdleFrame = nextFrame;
+            currentIdleFrame = 0;
+            currentIdleBitmap = eyeDefault;
+            nextIdleAction = millis() + 40;
+            return;
+        }
+        currentIdleFrame = nextFrame;
+        currentIdleBitmap = idleLookFrames[currentIdleFrame];
     } else if (randomAction < 50) {
         // 20% - Return to center
         currentIdleFrame = 0;
+        currentIdleBitmap = eyeDefault;
     }
     // 50% - Stay in current position (no change needed)
 

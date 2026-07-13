@@ -10,6 +10,9 @@ void KMMXController::handleBoop() {
 
     switch (result.event) {
         case BoopEvent::APPROACHING:
+            eyeState.setBoopCompleted(false);
+            mouthState.setBoopCompleted(false);
+            setStateIfDifferent(eyeState, EyeStateEnum::BOOP, 0);
             setStateIfDifferent(mouthState, MouthStateEnum::BOOP, 0);
             if (isSleeping) resetIdleTime();
             break;
@@ -19,6 +22,8 @@ void KMMXController::handleBoop() {
             fxState.setState(FXStateEnum::Heart);
             setStateIfDifferent(eyeState, EyeStateEnum::BOOP, 0);
             setStateIfDifferent(mouthState, MouthStateEnum::BOOP, 0);
+            eyeState.setBoopCompleted(true);
+            mouthState.setBoopCompleted(true);
             resetIdleTime();
             break;
 
@@ -28,6 +33,7 @@ void KMMXController::handleBoop() {
             break;
 
         case BoopEvent::TOO_CLOSE:
+            fxState.setState(FXStateEnum::IDLE);
             setStateIfDifferent(eyeState, EyeStateEnum::ANGRY, 0);
             setStateIfDifferent(mouthState, MouthStateEnum::ANGRYBOOP, 0);
             resetIdleTime();
@@ -52,12 +58,12 @@ void KMMXController::handleBoop() {
 
         case BoopEvent::RELEASED:
             if (eyeState.getState() == EyeStateEnum::BOOP) {
-                eyeState.setState(EyeStateEnum::BOOP, false, 2500);
+                eyeState.releaseBoop(boopFaceDuration);
             } else if (eyeState.getState() == EyeStateEnum::ANGRY) {
                 eyeState.setState(EyeStateEnum::ANGRY, false, 1500);
             }
             if (mouthState.getState() == MouthStateEnum::BOOP) {
-                mouthState.setState(MouthStateEnum::BOOP, false, 700);
+                mouthState.releaseBoop(boopFaceDuration);
             } else if (mouthState.getState() == MouthStateEnum::ANGRYBOOP) {
                 mouthState.setState(MouthStateEnum::ANGRYBOOP, false, 1500);
             }

@@ -49,7 +49,7 @@ void FlyingHeart::resetAll() {
 }
 
 void FlyingHeart::setSpeed(float speed) {
-    speedModifier = std::max(0.1f, std::min(1.0f, 1.0f - speed));
+    speedModifier = std::max(0.1f, std::min(1.0f, speed));
 }
 
 FlyingHeart::HeartSize FlyingHeart::getRandomHeartSize() {

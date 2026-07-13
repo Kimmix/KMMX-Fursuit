@@ -2,7 +2,7 @@
 
 #if ENABLE_RGB_STATUS_LED
 // Full implementation when RGB Status LED is enabled
-#ifdef KMMX_CONTROLLER_V4
+#ifdef BOARD_KMMX_V4
 // V4 uses SK6812 3535 RGB with RGB color order
 RGBStatus::RGBStatus(int pin, int pixelCount)
     : pixel(pixelCount, pin, NEO_RGB + NEO_KHZ800), lastChangeTime(0), isOn(false) {}
