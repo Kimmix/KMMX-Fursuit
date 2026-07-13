@@ -10,7 +10,7 @@ MouthState::MouthState(Hub75DMA* display) : display(display) {
     TimeBasedAnimation::init(idleAnim, defaultAnimation, defaultAnimationLength, TimeBasedAnimation::CONFIG_BREATHING);
 
     // Initialize angry animation (20 frames, quick transition)
-    TimeBasedAnimation::init(angryAnim, mouthAngryAnimation, angryLength, TimeBasedAnimation::CONFIG_TRANSITION);
+    TimeBasedAnimation::init(angryAnim, mouthAngryAnimation, angryLength, TimeBasedAnimation::CONFIG_TRANSITION_END);
 
     // Initialize animations with transition + loop pattern
     initAnimationData(boopData, viseme.getFrames(Viseme::OH), 60, 20,
@@ -145,7 +145,7 @@ void MouthState::setState(MouthStateEnum newState, bool isPersistent, unsigned l
     const uint8_t** frames;
     uint8_t frameCount;
     if (currentState != newState && getAnimationFrames(currentState, frames, frameCount)) {
-        TimeBasedAnimation::init(returnAnim, frames, frameCount, TimeBasedAnimation::CONFIG_TRANSITION);
+        TimeBasedAnimation::init(returnAnim, frames, frameCount, TimeBasedAnimation::CONFIG_TRANSITION_END);
         returnAnim.isReversing = true;
         isReturning = true;
         pendingState = newState;
@@ -314,7 +314,7 @@ void MouthState::initAnimationData(MouthAnimationData& data, const uint8_t** fra
     data.loopFrameCount = loopFrameCount;
 
     // Initialize transition animation (full animation, plays once)
-    TimeBasedAnimation::init(data.transitionAnim, frames, frameCount, TimeBasedAnimation::CONFIG_TRANSITION);
+    TimeBasedAnimation::init(data.transitionAnim, frames, frameCount, TimeBasedAnimation::CONFIG_TRANSITION_END);
     if (loopFrameCount > 0) {
         TimeBasedAnimation::init(data.loopAnim, &frames[frameCount - loopFrameCount], loopFrameCount, loopConfig);
     }

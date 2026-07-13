@@ -36,7 +36,7 @@ void EyeState::initAnimationData(AnimationData& data, const uint8_t** frames, ui
     data.autoResetDuration = autoResetDuration;
 
     // Initialize transition animation (full animation, plays once)
-    TimeBasedAnimation::init(data.transitionAnim, frames, frameCount, TimeBasedAnimation::CONFIG_TRANSITION);
+    TimeBasedAnimation::init(data.transitionAnim, frames, frameCount, TimeBasedAnimation::CONFIG_TRANSITION_END);
 
     // Initialize loop animation (last N frames only)
     // Uses pointer arithmetic to reference the last N frames without duplicating data
@@ -195,7 +195,7 @@ void EyeState::setState(EyeStateEnum newState, bool isPersistent, unsigned long 
     AnimationData* currentAnimation = getAnimationData(currentState);
     if (currentState != newState && currentAnimation) {
         TimeBasedAnimation::init(returnAnim, currentAnimation->frames, currentAnimation->frameCount,
-                                 TimeBasedAnimation::CONFIG_TRANSITION);
+                                 TimeBasedAnimation::CONFIG_TRANSITION_END);
         returnAnim.isReversing = true;
         isReturning = true;
         pendingState = newState;

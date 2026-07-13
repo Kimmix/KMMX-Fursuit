@@ -26,8 +26,8 @@ const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_BLINK = {
     .easingType = EasingType::NONE
 };
 
-const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_TRANSITION = {
-    .durationMs = 150,
+const TimeBasedAnimConfig TimeBasedAnimation::CONFIG_TRANSITION_END = {
+    .durationMs = 250,
     .playMode = AnimationPlayMode::ONCE,
     .pauseAtEndMs = 0,
     .pauseAtStartMs = 0,

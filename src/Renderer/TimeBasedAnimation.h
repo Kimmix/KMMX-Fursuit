@@ -53,7 +53,7 @@ public:
     static const TimeBasedAnimConfig CONFIG_SMOOTH_LOOP;     // 500ms smooth loop
     static const TimeBasedAnimConfig CONFIG_BREATHING;       // 2000ms natural breathing (asymmetric)
     static const TimeBasedAnimConfig CONFIG_BLINK;           // 150ms quick blink once
-    static const TimeBasedAnimConfig CONFIG_TRANSITION;      // 300ms one-shot transition
+    static const TimeBasedAnimConfig CONFIG_TRANSITION_END;      // 300ms one-shot transition
     static const TimeBasedAnimConfig CONFIG_SMILE_LOOP;      // 500ms smile loop with pauses
 
     // New expressive animation presets
