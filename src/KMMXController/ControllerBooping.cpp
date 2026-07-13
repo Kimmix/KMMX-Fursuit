@@ -29,6 +29,7 @@ void KMMXController::handleBoop() {
             break;
 
         case BoopEvent::TOO_CLOSE:
+            fxState.setState(FXStateEnum::IDLE);
             setStateIfDifferent(eyeState, EyeStateEnum::ANGRY, 0);
             setStateIfDifferent(mouthState, MouthStateEnum::ANGRYBOOP, 0);
             resetIdleTime();
