@@ -31,5 +31,6 @@ class Boop {
     static float speedFor(unsigned long elapsed);
 
    public:
+    void reset() { state = State::IDLE; }
     BoopResult update(uint16_t proximity, unsigned long now = millis());
 };

@@ -7,8 +7,15 @@ void KMMXController::update() {
     statusLED.update();
     cheekPanel.update();
     hornLED.update();
-    if (boopInitialized && enableBoopDetection) {
-        handleBoop();
+    const bool gameActive = slotMachine.isEnabled();
+    if (gameActive != slotMachineWasEnabled) {
+        boop.reset();
+        resetIdleTime();
+        slotMachineWasEnabled = gameActive;
+    }
+    if (boopInitialized) {
+        slotMachine.update(getSensorData().proximity);
+        if (!gameActive && enableBoopDetection) handleBoop();
     }
     if (oledInitialized) {
         updateOLED();
@@ -46,12 +53,24 @@ void KMMXController::renderTask(void* parameter) {
         ctrl->display.clearScreen();
         ctrl->display.updateColorEffectsFrame();  // Update cached time once per frame
         ctrl->display.updateGlitch();  // Update glitch effect state
-        ctrl->display.drawNose(noseNew);
-        ctrl->mouthState.update();
-        ctrl->eyeState.update();
-        ctrl->fxState.update();
+        if (ctrl->slotMachine.isEnabled()) {
+            ctrl->slotMachine.render();
+        } else {
+            ctrl->display.drawNose(noseNew);
+            ctrl->mouthState.update();
+            ctrl->eyeState.update();
+            ctrl->fxState.update();
+        }
 
         // Update FPS counter
         ctrl->fpsCounter.update();
     }
+}
+
+void KMMXController::setSlotMachineEnabled(int enabled) {
+    slotMachine.setEnabled(enabled == 1);
+}
+
+int KMMXController::getSlotMachineEnabled() const {
+    return slotMachine.isEnabled();
 }

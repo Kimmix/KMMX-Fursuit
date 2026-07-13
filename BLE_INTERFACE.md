@@ -115,6 +115,9 @@ For frontend reset buttons, use the defaults from the parameter table rather tha
 | Name | UUID | Properties | Data Format | Description |
 |------|------|------------|-------------|-------------|
 | Reboot | `e5f6a7b8-c9d0-4e5f-a0b1-2c3d4e5f6a7b` | WRITE | `uint8_t` (0/1) | Triggers system reboot. Write non-zero value to reboot. |
+| Slot Machine Enable | `a1a2a3a4-b1b2-4c1c-d1d2-e1e2e3e4e5f5` | READ, WRITE | `uint8_t` (0/1) | `1` starts game mode; `0` stops it and restores the normal face. |
+
+While game mode is enabled, a completed proximity boop spins the three reels. Holding the sensor does not repeat a spin; the player must release and boop again. The proximity sensor cannot start game mode by itself.
 
 ### Motion Detection & Glitch Control
 
@@ -168,11 +171,13 @@ For frontend reset buttons, use the defaults from the parameter table rather tha
 ✅ Eye State
 ✅ Mouth State
 ✅ Viseme
+✅ Viseme Advanced Parameters (13)
 ✅ Horn Brightness
 ✅ Cheek Brightness
 ✅ Cheek Background Color
 ✅ Cheek Fade Color
 ✅ Reboot
+✅ Slot Machine Enable
 ✅ Glitch Trigger
 ✅ Motion Enable Flags
 ✅ Tap Sensitivity
@@ -182,8 +187,8 @@ For frontend reset buttons, use the defaults from the parameter table rather tha
 🆕 Fan Speed
 
 **Total Characteristics:**
-- V2: 19 characteristics
-- V4: 23 characteristics (19 + 4 fan control)
+- V2: 33 characteristics
+- V4: 34 characteristics (33 + fan control)
 
 ---
 
@@ -193,3 +198,4 @@ For frontend reset buttons, use the defaults from the parameter table rather tha
 |---------|------|---------|
 | 1.0 | Initial | Original KMMX-Fursuit BLE specification (V2 hardware) |
 | 2.0 | 2026-06 | Added V4 hardware support, fan control characteristics, hardware version documentation |
+| 2.1 | 2026-07 | Added BLE-controlled slot machine game mode |

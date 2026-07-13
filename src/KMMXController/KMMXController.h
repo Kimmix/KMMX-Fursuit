@@ -11,6 +11,7 @@
 #include "FacialStates/FXState/FXState.h"
 
 #include "Renderer/Boop.h"
+#include "Games/SlotMachine.h"
 
 #include "Devices/LEDMatrixDisplay/Hub75DMA.h"
 #include "Devices/HornLED/HornLED.h"
@@ -55,6 +56,8 @@ class KMMXController {
     uint32_t getCheekBackgroundColor();
     uint32_t getCheekFadeColor();
     void reboot();
+    void setSlotMachineEnabled(int enabled);
+    int getSlotMachineEnabled() const;
 
     // Motion Detection & Glitch Control (BLE)
     void triggerGlitch(uint8_t intensity);                      // Manually trigger glitch effect with intensity 0-100
@@ -97,6 +100,7 @@ class KMMXController {
     MouthState mouthState = MouthState(&display);
     FXState fxState = FXState(&display);
     Boop boop;
+    SlotMachine slotMachine = SlotMachine(&display);
     int16_t pixelPos = 0;
 
     // Performance tracking
@@ -162,6 +166,7 @@ class KMMXController {
     bool accelerometerInitialized = false;  // Track if accelerometer successfully initialized
     bool oledInitialized = false;  // Track if OLED successfully initialized
     bool boopInitialized = false;
+    bool slotMachineWasEnabled = false;
     unsigned short prevHornBright = hornBrightness;
     // Motion detection state structures
     struct TiltDetector {

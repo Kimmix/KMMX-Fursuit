@@ -47,7 +47,7 @@ using ByteWriteHandler = void (*)(KMMXController&, uint8_t);
 using ByteValidator = bool (*)(uint8_t);
 
 static bool validAnyByte(uint8_t) { return true; }
-static bool validViseme(uint8_t value) { return value <= 1; }
+static bool validBoolean(uint8_t value) { return value <= 1; }
 static bool validNonZero(uint8_t value) { return value != 0; }
 
 static void setDisplayBrightness(KMMXController& controller, uint8_t value) { controller.displayControl().setBrightnessValue(value); }
@@ -61,6 +61,7 @@ static void setDisplayEffectThickness(KMMXController& controller, uint8_t value)
 static void setDisplayEffectSpeed(KMMXController& controller, uint8_t value) { controller.displayControl().setEffectSpeed(value); }
 static void setDisplayEffectDirection(KMMXController& controller, uint8_t value) { controller.displayControl().setEffectDirectionInverted(value); }
 static void rebootController(KMMXController& controller, uint8_t) { controller.reboot(); }
+static void setSlotMachineEnabled(KMMXController& controller, uint8_t value) { controller.setSlotMachineEnabled(value); }
 static void triggerGlitch(KMMXController& controller, uint8_t value) { controller.triggerGlitch(value); }
 static void setMotionFlags(KMMXController& controller, uint8_t value) { controller.setMotionEnableFlags(value); }
 static void setTapSensitivity(KMMXController& controller, uint8_t value) { controller.setTapSensitivity(value); }
@@ -359,6 +360,10 @@ void BLEManager::setup() {
         BLE_REBOOT_CHARACTERISTIC_UUID,
         BLE_WRITE);
 
+    auto* slotMachineEnableCharacteristic = pService->createCharacteristic(
+        BLE_SLOT_MACHINE_ENABLE_CHARACTERISTIC_UUID,
+        BLE_RW);
+
     auto* glitchTriggerCharacteristic = pService->createCharacteristic(
         BLE_GLITCH_TRIGGER_CHARACTERISTIC_UUID,
         BLE_WRITE);
@@ -447,6 +452,9 @@ void BLEManager::setup() {
 
     uint8_t visemeValue = controller.getViseme();
     visemeCharacteristic->setValue(&visemeValue, 1);
+
+    uint8_t slotMachineValue = controller.getSlotMachineEnabled();
+    slotMachineEnableCharacteristic->setValue(&slotMachineValue, 1);
 
     uint8_t hornValue = controller.getHornBrightness();
     hornBrightnessCharacteristic->setValue(&hornValue, 1);
@@ -547,7 +555,7 @@ void BLEManager::setup() {
     displayBrightnessCharacteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Display Brightness: "), setDisplayBrightness));
     eyeStateCharacteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Eye State: "), setEyeState));
     mouthStateCharacteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Mouth State: "), setMouthState));
-    visemeCharacteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Viseme: "), setVisemeState, validViseme));
+    visemeCharacteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Viseme: "), setVisemeState, validBoolean));
     hornBrightnessCharacteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Horn Brightness: "), setHornBrightness));
     cheekBrightnessCharacteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Cheek Brightness: "), setCheekBrightness));
     cheekBgColorCharacteristic->setCallbacks(new CheekBgColorCallbacks());
@@ -559,6 +567,7 @@ void BLEManager::setup() {
     displayEffectOption2Characteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Display Effect Option 2 (Speed): "), setDisplayEffectSpeed));
     displayEffectOption3Characteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Display Effect Option 3 (Direction Inverted): "), setDisplayEffectDirection));
     rebootCharacteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Reboot requested: "), rebootController, validNonZero));
+    slotMachineEnableCharacteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Slot Machine: "), setSlotMachineEnabled, validBoolean));
     glitchTriggerCharacteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Glitch Trigger: "), triggerGlitch));
     motionEnableFlagsCharacteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Motion Enable Flags: 0x"), setMotionFlags, validAnyByte, true));
     tapSensitivityCharacteristic->setCallbacks(new ByteWriteCallbacks(F("[BLE] Tap Sensitivity: "), setTapSensitivity));
