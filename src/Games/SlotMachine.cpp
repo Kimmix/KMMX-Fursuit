@@ -22,6 +22,7 @@ const uint8_t* const boopWord[] = {glyphB, glyphO, glyphO, glyphP};
 const uint8_t* const winWord[] = {glyphW, glyphI, glyphN};
 const uint32_t symbolColors[] = {0xFF3030, 0xFF4C8B, 0xFFD83D, 0x52C7FF};
 const unsigned long reelStopMs[] = {700, 1000, 1300};
+constexpr int slotScreenOffsetX = 14;
 }  // namespace
 
 SlotMachine::SlotMachine(Hub75DMA* display) : display(display) {
@@ -127,9 +128,9 @@ void SlotMachine::drawPanel(unsigned long now) {
                                     ? ((now / 150) % 2 ? yellow : white)
                                     : (phase == Phase::RESULT ? red : white);
     for (uint8_t i = 0; i < reelCount; ++i) {
-        const int x = 2 + i * 20;
-        drawRect(x, 8, 18, 18, frameColor);
-        drawSymbol(reels[i], x + 4, 12);
+        const int x = i * 17;
+        drawRect(x, 8, 16, 18, frameColor);
+        drawSymbol(reels[i], x + 3, 12);
     }
 }
 
@@ -173,8 +174,9 @@ void SlotMachine::drawRect(int x, int y, int width, int height, uint16_t color) 
 }
 
 void SlotMachine::drawPixelBoth(int x, int y, uint16_t color) {
-    display->drawPixel(x, y, color);
-    display->drawPixel(x + panelResX, y, color);
+    const int shiftedX = x + slotScreenOffsetX;
+    display->drawPixel(shiftedX, y, color);
+    display->drawPixel(shiftedX + panelResX, y, color);
 }
 
 bool SlotMachine::isWinning(const uint8_t values[reelCount]) {
