@@ -171,6 +171,10 @@ class KMMXController {
     SlotMachine::Outcome slotHornOutcome = SlotMachine::Outcome::NONE;
     int slotHornBrightness = hornBrightness;
     unsigned long lastSlotHornFlash = 0;
+    unsigned long slotHornCueUntil = 0;
+    uint8_t slotHornStoppedReels = 0;
+    bool slotHornAnticipating = false;
+    bool slotHornWasEnabled = false;
     bool slotHornFlashOn = false;
     unsigned short prevHornBright = hornBrightness;
     // Motion detection state structures
