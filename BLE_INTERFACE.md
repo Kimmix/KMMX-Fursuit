@@ -117,7 +117,7 @@ For frontend reset buttons, use the defaults from the parameter table rather tha
 | Reboot | `e5f6a7b8-c9d0-4e5f-a0b1-2c3d4e5f6a7b` | WRITE | `uint8_t` (0/1) | Triggers system reboot. Write non-zero value to reboot. |
 | Slot Machine Enable | `a1a2a3a4-b1b2-4c1c-d1d2-e1e2e3e4e5f5` | READ, WRITE | `uint8_t` (0/1) | `1` starts game mode; `0` stops it and restores the normal face. |
 
-While game mode is enabled, a completed proximity boop spins the three reels. Holding the sensor does not repeat a spin; the player must release and boop again. The proximity sensor cannot start game mode by itself.
+While game mode is enabled, a completed proximity boop spins the three reels. Holding the sensor does not repeat a spin; the player must release and boop again. Wins flash the horn LED, losses dim it, and its previous brightness is restored after the result. The proximity sensor cannot start game mode by itself.
 
 ### Motion Detection & Glitch Control
 

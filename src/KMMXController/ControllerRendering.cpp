@@ -6,11 +6,16 @@ extern BLEManager& bleManager;
 void KMMXController::update() {
     statusLED.update();
     cheekPanel.update();
+    updateSlotMachineHorn();
     hornLED.update();
     const bool gameActive = slotMachine.isEnabled();
     if (gameActive != slotMachineWasEnabled) {
         boop.reset();
-        resetIdleTime();
+        if (isSleeping) resetIdleTime();
+        else {
+            stillTime = 0;
+            motionCounter = 0;
+        }
         slotMachineWasEnabled = gameActive;
     }
     if (boopInitialized) {
@@ -65,12 +70,4 @@ void KMMXController::renderTask(void* parameter) {
         // Update FPS counter
         ctrl->fpsCounter.update();
     }
-}
-
-void KMMXController::setSlotMachineEnabled(int enabled) {
-    slotMachine.setEnabled(enabled == 1);
-}
-
-int KMMXController::getSlotMachineEnabled() const {
-    return slotMachine.isEnabled();
 }

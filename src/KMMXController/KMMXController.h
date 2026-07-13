@@ -114,6 +114,7 @@ class KMMXController {
 
     void renderFace();
     void handleBoop();
+    void updateSlotMachineHorn();
     template<typename StateType, typename EnumType>
     void setStateIfDifferent(StateType& state, EnumType targetState, unsigned long timeout);
     void updateOLED();
@@ -167,6 +168,10 @@ class KMMXController {
     bool oledInitialized = false;  // Track if OLED successfully initialized
     bool boopInitialized = false;
     bool slotMachineWasEnabled = false;
+    SlotMachine::Outcome slotHornOutcome = SlotMachine::Outcome::NONE;
+    int slotHornBrightness = hornBrightness;
+    unsigned long lastSlotHornFlash = 0;
+    bool slotHornFlashOn = false;
     unsigned short prevHornBright = hornBrightness;
     // Motion detection state structures
     struct TiltDetector {

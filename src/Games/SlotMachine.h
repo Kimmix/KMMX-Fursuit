@@ -8,10 +8,13 @@
 
 class SlotMachine {
    public:
+    enum class Outcome : uint8_t { NONE, WIN, LOSE };
+
     explicit SlotMachine(Hub75DMA* display);
 
     void setEnabled(bool value);
     bool isEnabled() const;
+    Outcome getOutcome() const;
     void update(uint16_t proximity, unsigned long now = millis());
     void render(unsigned long now = millis());
 
@@ -27,6 +30,7 @@ class SlotMachine {
     Boop boop;
     std::atomic<bool> enabled{false};
     std::atomic<bool> spinRequested{false};
+    std::atomic<Outcome> outcome{Outcome::NONE};
     bool inputWasEnabled = false;
     bool renderWasEnabled = false;
     bool winning = false;

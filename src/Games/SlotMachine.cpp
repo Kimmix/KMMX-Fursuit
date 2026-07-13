@@ -35,11 +35,18 @@ SlotMachine::SlotMachine(Hub75DMA* display) : display(display) {
 
 void SlotMachine::setEnabled(bool value) {
     enabled.store(value);
-    if (!value) spinRequested.store(false);
+    if (!value) {
+        spinRequested.store(false);
+        outcome.store(Outcome::NONE);
+    }
 }
 
 bool SlotMachine::isEnabled() const {
     return enabled.load();
+}
+
+SlotMachine::Outcome SlotMachine::getOutcome() const {
+    return outcome.load();
 }
 
 void SlotMachine::update(uint16_t proximity, unsigned long now) {
@@ -65,7 +72,10 @@ void SlotMachine::render(unsigned long now) {
     }
     if (spinRequested.exchange(false) && phase != Phase::SPINNING) startSpin(now);
     if (phase == Phase::SPINNING) updateSpin(now);
-    if (phase == Phase::RESULT && now - phaseStartedAt >= resultDurationMs) phase = Phase::READY;
+    if (phase == Phase::RESULT && now - phaseStartedAt >= resultDurationMs) {
+        phase = Phase::READY;
+        outcome.store(Outcome::NONE);
+    }
     drawPanel(now);
 }
 
@@ -75,6 +85,7 @@ void SlotMachine::startSpin(unsigned long now) {
     phaseStartedAt = now;
     lastReelStepAt = now;
     winning = false;
+    outcome.store(Outcome::NONE);
 }
 
 void SlotMachine::updateSpin(unsigned long now) {
@@ -88,6 +99,7 @@ void SlotMachine::updateSpin(unsigned long now) {
     if (elapsed >= reelStopMs[reelCount - 1]) {
         for (uint8_t i = 0; i < reelCount; ++i) reels[i] = result[i];
         winning = isWinning(reels);
+        outcome.store(winning ? Outcome::WIN : Outcome::LOSE);
         phase = Phase::RESULT;
         phaseStartedAt = now;
     }
@@ -96,6 +108,7 @@ void SlotMachine::updateSpin(unsigned long now) {
 void SlotMachine::resetGame() {
     phase = Phase::READY;
     winning = false;
+    outcome.store(Outcome::NONE);
     reels[0] = 0;
     reels[1] = 1;
     reels[2] = 2;
