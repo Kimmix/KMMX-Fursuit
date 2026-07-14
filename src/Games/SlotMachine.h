@@ -19,6 +19,7 @@ class SlotMachine {
     State getState() const;
     uint8_t getCharge() const;
     uint8_t getStoppedReels() const;
+    uint8_t getMatchingReels() const;
     bool isAnticipating() const;
     uint8_t getResultSymbol() const;
     void update(uint16_t proximity, unsigned long now = millis());
@@ -38,6 +39,7 @@ class SlotMachine {
     std::atomic<Outcome> outcome{Outcome::NONE};
     std::atomic<uint8_t> charge{0};
     std::atomic<uint8_t> stoppedReels{0};
+    std::atomic<uint8_t> matchingReels{0};
     std::atomic<bool> anticipating{false};
     std::atomic<uint8_t> resultSymbol{0};
     bool inputWasEnabled = false;

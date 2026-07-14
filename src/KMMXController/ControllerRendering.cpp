@@ -5,7 +5,8 @@ extern BLEManager& bleManager;
 
 void KMMXController::update() {
     statusLED.update();
-    cheekPanel.update();
+    updateSlotMachineCheeks();
+    if (!slotMachine.isEnabled()) cheekPanel.update();
     updateSlotMachineHorn();
     hornLED.update();
     const bool gameActive = slotMachine.isEnabled();

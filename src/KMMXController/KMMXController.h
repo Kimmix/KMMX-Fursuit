@@ -115,6 +115,7 @@ class KMMXController {
     void renderFace();
     void handleBoop();
     void updateSlotMachineHorn();
+    void updateSlotMachineCheeks();
     template<typename StateType, typename EnumType>
     void setStateIfDifferent(StateType& state, EnumType targetState, unsigned long timeout);
     void updateOLED();

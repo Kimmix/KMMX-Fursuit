@@ -52,6 +52,15 @@ constexpr int reelBounceOffset(unsigned long elapsed) {
 constexpr unsigned long reelStepInterval(unsigned long elapsed, unsigned long stopAt) {
     return 45 + (elapsed < stopAt ? elapsed : stopAt) * 95 / stopAt;
 }
+
+uint8_t matchingReelMask(const uint8_t* values, uint8_t stopped) {
+    if (!stopped) return 0;
+    uint8_t mask = 1;
+    for (uint8_t i = 1; i < stopped; ++i) {
+        if (values[i] == values[0]) mask |= 1 << i;
+    }
+    return mask;
+}
 }  // namespace
 
 SlotMachine::SlotMachine(Hub75DMA* display) : display(display) {
@@ -60,6 +69,7 @@ SlotMachine::SlotMachine(Hub75DMA* display) : display(display) {
     const uint8_t loss[] = {1, 2, 1};
     assert(isWinning(win));
     assert(!isWinning(loss));
+    assert(matchingReelMask(win, 3) == 0b111 && matchingReelMask(loss, 3) == 0b101);
     assert(reelBounceOffset(0) == 0 && reelBounceOffset(reelBounceMs / 2) == 2 && reelBounceOffset(reelBounceMs) == 0);
     assert(reelStepInterval(0, 1000) == 45 && reelStepInterval(1000, 1000) == 140);
 #endif
@@ -91,6 +101,10 @@ uint8_t SlotMachine::getCharge() const {
 
 uint8_t SlotMachine::getStoppedReels() const {
     return stoppedReels.load();
+}
+
+uint8_t SlotMachine::getMatchingReels() const {
+    return matchingReels.load();
 }
 
 bool SlotMachine::isAnticipating() const {
@@ -159,6 +173,7 @@ void SlotMachine::startSpin(unsigned long now) {
     winning = false;
     charge.store(0);
     stoppedReels.store(0);
+    matchingReels.store(0);
     anticipating.store(false);
     outcome.store(Outcome::NONE);
 }
@@ -179,6 +194,7 @@ void SlotMachine::updateSpin(unsigned long now) {
         }
     }
     stoppedReels.store(stopped);
+    matchingReels.store(matchingReelMask(result, stopped));
     anticipating.store(matchingPair && elapsed >= reelStopMs[1] && elapsed < reelStopMs[2] + anticipationMs);
     const unsigned long finalStopAt = reelStopMs[reelCount - 1] + (matchingPair ? anticipationMs : 0);
     if (elapsed >= finalStopAt + reelBounceMs) {
@@ -196,6 +212,7 @@ void SlotMachine::resetGame() {
     winning = false;
     charge.store(0);
     stoppedReels.store(0);
+    matchingReels.store(0);
     anticipating.store(false);
     outcome.store(Outcome::NONE);
     reels[0] = 0;

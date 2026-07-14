@@ -196,12 +196,13 @@ void KMMXController::drawOLEDSlotMachine() {
         oledDisplay.drawText(slotMachine.isAnticipating() ? 37 : 43, 27,
                              slotMachine.isAnticipating() ? "SO CLOSE..." : "SPINNING");
         const uint8_t stopped = slotMachine.getStoppedReels();
+        const uint8_t matching = slotMachine.getMatchingReels();
         for (uint8_t i = 0; i < 3; ++i) {
             const int x = 19 + i * 34;
             oledDisplay.drawFrame(x, 34, 22, 22);
-            if (i < stopped) {
+            if (matching & (1 << i)) {
                 oledDisplay.drawBox(x + 4, 38, 14, 14);
-            } else {
+            } else if (i >= stopped) {
                 const int y = 37 + (millis() / 100 + i * 4) % 16;
                 u8g2->drawLine(x + 3, y, x + 18, y);
             }
