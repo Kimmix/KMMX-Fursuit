@@ -59,6 +59,12 @@ constexpr uint8_t easedCharge(uint8_t value) {
     return 100 - remaining * remaining * remaining / 10000;
 }
 
+constexpr uint8_t smoothedCharge(uint8_t current, uint8_t target) {
+    if (current < target) return current + (target - current + 3) / 4;
+    if (current > target) return current - (current - target + 3) / 4;
+    return current;
+}
+
 uint8_t matchingReelMask(const uint8_t* values, uint8_t stopped) {
     if (!stopped) return 0;
     uint8_t mask = 1;
@@ -79,6 +85,7 @@ SlotMachine::SlotMachine(Hub75DMA* display) : display(display) {
     assert(reelBounceOffset(0) == 0 && reelBounceOffset(reelBounceMs / 2) == 2 && reelBounceOffset(reelBounceMs) == 0);
     assert(reelStepInterval(0, 1000) == 45 && reelStepInterval(1000, 1000) == 140);
     assert(easedCharge(0) == 0 && easedCharge(50) == 88 && easedCharge(100) == 100);
+    assert(smoothedCharge(0, 100) == 25 && smoothedCharge(100, 0) == 75 && smoothedCharge(99, 100) == 100);
 #endif
 }
 
@@ -103,7 +110,7 @@ SlotMachine::State SlotMachine::getState() const {
 }
 
 uint8_t SlotMachine::getCharge() const {
-    return charge.load();
+    return displayedCharge.load();
 }
 
 uint8_t SlotMachine::getStoppedReels() const {
@@ -154,6 +161,10 @@ void SlotMachine::render(unsigned long now) {
         resetGame();
         renderWasEnabled = true;
     }
+    if (now - lastChargeUpdateAt >= chargeSmoothingIntervalMs) {
+        lastChargeUpdateAt = now;
+        displayedCharge.store(smoothedCharge(displayedCharge.load(), charge.load()));
+    }
     if (spinRequested.exchange(false) && phase != State::SPINNING && phase != State::REVEAL) startSpin(now);
     if (phase == State::SPINNING) updateSpin(now);
     if (phase == State::REVEAL && now - phaseStartedAt >= revealDurationMs) {
@@ -180,6 +191,7 @@ void SlotMachine::startSpin(unsigned long now) {
     for (unsigned long& stepAt : lastReelStepAt) stepAt = now;
     winning = false;
     charge.store(0);
+    displayedCharge.store(0);
     stoppedReels.store(0);
     matchingReels.store(0);
     anticipating.store(false);
@@ -219,6 +231,7 @@ void SlotMachine::resetGame() {
     phase = State::READY;
     winning = false;
     charge.store(0);
+    displayedCharge.store(0);
     stoppedReels.store(0);
     matchingReels.store(0);
     anticipating.store(false);
@@ -251,7 +264,7 @@ void SlotMachine::drawPanel(unsigned long now) {
         } else if (winning) drawWord(jackpotWord, 8, 10, 1, theme);
         else drawWord(awDangItWord, 10, 5, 1, red);
     }
-    if (phase == State::READY || phase == State::RESULT) drawChargeMeter(charge.load(), pink);
+    if (phase == State::READY || phase == State::RESULT) drawChargeMeter(getCharge(), pink);
 
     const uint16_t frameColor = phase == State::RESULT && winning
                                     ? ((now / 150) % 2 ? theme : white)

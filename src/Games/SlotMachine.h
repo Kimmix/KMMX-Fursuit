@@ -31,6 +31,7 @@ class SlotMachine {
     static constexpr unsigned long revealDurationMs = 450;
     static constexpr unsigned long resultDurationMs = 3000;
     static constexpr unsigned long megaResultDurationMs = 5000;
+    static constexpr unsigned long chargeSmoothingIntervalMs = 20;
 
     Hub75DMA* display;
     Boop boop;
@@ -38,6 +39,7 @@ class SlotMachine {
     std::atomic<bool> spinRequested{false};
     std::atomic<Outcome> outcome{Outcome::NONE};
     std::atomic<uint8_t> charge{0};
+    std::atomic<uint8_t> displayedCharge{0};
     std::atomic<uint8_t> stoppedReels{0};
     std::atomic<uint8_t> matchingReels{0};
     std::atomic<bool> anticipating{false};
@@ -47,6 +49,7 @@ class SlotMachine {
     bool winning = false;
     std::atomic<State> phase{State::READY};
     unsigned long phaseStartedAt = 0;
+    unsigned long lastChargeUpdateAt = 0;
     unsigned long lastReelStepAt[reelCount] = {0, 0, 0};
     uint8_t reels[reelCount] = {0, 1, 2};
     uint8_t previousReels[reelCount] = {0, 1, 2};
