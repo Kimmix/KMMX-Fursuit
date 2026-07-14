@@ -11,6 +11,7 @@
 #include "FacialStates/FXState/FXState.h"
 
 #include "Renderer/Boop.h"
+#include "Games/SlotMachine.h"
 
 #include "Devices/LEDMatrixDisplay/Hub75DMA.h"
 #include "Devices/HornLED/HornLED.h"
@@ -55,6 +56,8 @@ class KMMXController {
     uint32_t getCheekBackgroundColor();
     uint32_t getCheekFadeColor();
     void reboot();
+    void setSlotMachineEnabled(int enabled);
+    int getSlotMachineEnabled() const;
 
     // Motion Detection & Glitch Control (BLE)
     void triggerGlitch(uint8_t intensity);                      // Manually trigger glitch effect with intensity 0-100
@@ -97,6 +100,7 @@ class KMMXController {
     MouthState mouthState = MouthState(&display);
     FXState fxState = FXState(&display);
     Boop boop;
+    SlotMachine slotMachine = SlotMachine(&display);
     int16_t pixelPos = 0;
 
     // Performance tracking
@@ -110,9 +114,12 @@ class KMMXController {
 
     void renderFace();
     void handleBoop();
+    void updateSlotMachineHorn();
+    void updateSlotMachineCheeks();
     template<typename StateType, typename EnumType>
     void setStateIfDifferent(StateType& state, EnumType targetState, unsigned long timeout);
     void updateOLED();
+    void drawOLEDSlotMachine();
     void drawOLEDFaceMirror();
     void drawOLEDSensorBars(const SensorData& sensors);
     void drawOLEDBluetooth();
@@ -162,6 +169,15 @@ class KMMXController {
     bool accelerometerInitialized = false;  // Track if accelerometer successfully initialized
     bool oledInitialized = false;  // Track if OLED successfully initialized
     bool boopInitialized = false;
+    bool slotMachineWasEnabled = false;
+    SlotMachine::Outcome slotHornOutcome = SlotMachine::Outcome::NONE;
+    int slotHornBrightness = hornBrightness;
+    unsigned long lastSlotHornFlash = 0;
+    unsigned long slotHornCueUntil = 0;
+    uint8_t slotHornStoppedReels = 0;
+    bool slotHornAnticipating = false;
+    bool slotHornWasEnabled = false;
+    bool slotHornFlashOn = false;
     unsigned short prevHornBright = hornBrightness;
     // Motion detection state structures
     struct TiltDetector {

@@ -16,6 +16,8 @@ class CheekPanel {
     void setFadeColorRGB(uint8_t r, uint8_t g, uint8_t b);
     uint32_t getBackgroundColor() const;
     uint32_t getFadeColor() const;
+    void showPattern(uint32_t first, uint32_t second, uint8_t offset, uint8_t brightness);
+    void resume();
 
    private:
     Adafruit_NeoPixel strip;

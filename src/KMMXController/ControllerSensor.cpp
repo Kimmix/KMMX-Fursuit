@@ -98,8 +98,8 @@ void KMMXController::readSensorTask(void* parameter) {
         ctrl->prevSensorData = ctrl->sensorBuffer[ctrl->activeBuffer];
         ctrl->activeBuffer = writeBuffer;
 
-        // Motion detection (only if accelerometer initialized)
-        if (ctrl->accelerometerInitialized) {
+        // Motion detection (only if accelerometer initialized and no game owns the display)
+        if (ctrl->accelerometerInitialized && !ctrl->slotMachine.isEnabled()) {
             ctrl->checkIdleAndSleep(ctrl, millis());
             ctrl->checkMotionFeatures(ctrl);
         }

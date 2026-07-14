@@ -56,6 +56,20 @@ uint32_t CheekPanel::getFadeColor() const {
     return color2;
 }
 
+void CheekPanel::showPattern(uint32_t first, uint32_t second, uint8_t offset, uint8_t value) {
+    strip.setBrightness(value);
+    const uint32_t colors[] = {applyGamma(first), applyGamma(second)};
+    for (uint16_t i = 0; i < strip.numPixels(); ++i) {
+        strip.setPixelColor(i, colors[((i + offset) / 3) % 2]);
+    }
+    strip.show();
+}
+
+void CheekPanel::resume() {
+    strip.setBrightness(brightness);
+    previousMillis = 0;
+}
+
 void CheekPanel::update() {
     unsigned long currentMillis = millis();
 

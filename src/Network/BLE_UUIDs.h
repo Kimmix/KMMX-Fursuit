@@ -54,6 +54,7 @@
 
 // System Control Characteristics
 #define BLE_REBOOT_CHARACTERISTIC_UUID "e5f6a7b8-c9d0-4e5f-a0b1-2c3d4e5f6a7b"
+#define BLE_SLOT_MACHINE_ENABLE_CHARACTERISTIC_UUID "a1a2a3a4-b1b2-4c1c-d1d2-e1e2e3e4e5f5"
 
 // Motion Detection & Glitch Control Characteristics
 #define BLE_GLITCH_TRIGGER_CHARACTERISTIC_UUID "a1a2a3a4-b1b2-4c1c-d1d2-e1e2e3e4e5f1"
