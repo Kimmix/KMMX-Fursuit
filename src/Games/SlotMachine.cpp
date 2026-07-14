@@ -54,6 +54,11 @@ constexpr unsigned long reelStepInterval(unsigned long elapsed, unsigned long st
     return 45 + (elapsed < stopAt ? elapsed : stopAt) * 95 / stopAt;
 }
 
+constexpr uint8_t easedCharge(uint8_t value) {
+    const uint16_t remaining = 100 - value;
+    return 100 - remaining * remaining * remaining / 10000;
+}
+
 uint8_t matchingReelMask(const uint8_t* values, uint8_t stopped) {
     if (!stopped) return 0;
     uint8_t mask = 1;
@@ -73,6 +78,7 @@ SlotMachine::SlotMachine(Hub75DMA* display) : display(display) {
     assert(matchingReelMask(win, 3) == 0b111 && matchingReelMask(loss, 3) == 0b101);
     assert(reelBounceOffset(0) == 0 && reelBounceOffset(reelBounceMs / 2) == 2 && reelBounceOffset(reelBounceMs) == 0);
     assert(reelStepInterval(0, 1000) == 45 && reelStepInterval(1000, 1000) == 140);
+    assert(easedCharge(0) == 0 && easedCharge(50) == 88 && easedCharge(100) == 100);
 #endif
 }
 
@@ -128,7 +134,8 @@ void SlotMachine::update(uint16_t proximity, unsigned long now) {
     }
     const BoopResult boopResult = boop.update(proximity, now);
     if (boopResult.event == BoopEvent::APPROACHING) {
-        charge.store((proximity - boopMinThreshold) * 100 / (boopMaxThreshold - boopMinThreshold));
+        const uint8_t linearCharge = (proximity - boopMinThreshold) * 100 / (boopMaxThreshold - boopMinThreshold);
+        charge.store(easedCharge(linearCharge));
     } else if (boopResult.event == BoopEvent::COMPLETED) {
         charge.store(100);
         spinRequested.store(true);
@@ -236,7 +243,6 @@ void SlotMachine::drawPanel(unsigned long now) {
 
     if (phase == State::READY) {
         drawWord(boopWord, 5, 16, 1, white);
-        drawChargeMeter(charge.load(), pink);
     }
     if (phase == State::RESULT) {
         if (winning && reels[0] == 3) {
@@ -245,6 +251,7 @@ void SlotMachine::drawPanel(unsigned long now) {
         } else if (winning) drawWord(jackpotWord, 8, 10, 1, theme);
         else drawWord(awDangItWord, 10, 5, 1, red);
     }
+    if (phase == State::READY || phase == State::RESULT) drawChargeMeter(charge.load(), pink);
 
     const uint16_t frameColor = phase == State::RESULT && winning
                                     ? ((now / 150) % 2 ? theme : white)
@@ -415,7 +422,7 @@ void SlotMachine::drawRect(int x, int y, int width, int height, uint16_t color) 
 void SlotMachine::drawPixelBoth(int x, int y, uint16_t color) {
     const int shiftedX = x + slotScreenOffsetX;
     display->drawPixel(shiftedX, y, color);
-    display->drawPixel(shiftedX + panelResX, y, color);
+    display->drawPixel(screenWidth - 1 - shiftedX, y, color);
 }
 
 bool SlotMachine::isWinning(const uint8_t values[reelCount]) {
