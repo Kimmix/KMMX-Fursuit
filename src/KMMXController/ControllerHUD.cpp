@@ -219,9 +219,10 @@ void KMMXController::drawOLEDSlotMachine() {
     oledDisplay.setFont(u8g2_font_6x12_tr);
     if (outcome == SlotMachine::Outcome::WIN) {
         const uint8_t symbol = slotMachine.getResultSymbol();
-        const char* names[] = {"CHERRIES", "HEARTS", "STARS", "DIAMONDS"};
+        const char* names[] = {"RAM", "HEARTS", "STARS", "DIAMONDS"};
         oledDisplay.drawText(symbol == 3 ? 23 : 32, 34, symbol == 3 ? "MEGA JACKPOT!" : "JACKPOT!");
-        oledDisplay.drawText(40, 53, names[symbol % 4]);
+        const char* name = names[symbol % 4];
+        oledDisplay.drawText((128 - u8g2->getStrWidth(name)) / 2, 53, name);
     } else {
         oledDisplay.drawText(31, 40, "AW DANG IT");
     }

@@ -7,7 +7,7 @@ constexpr int hornFadeSpeed = 20;
 const unsigned long hornWinIntervals[] = {220, 300, 120, 75};
 constexpr unsigned long hornReelTickMs = 80;
 constexpr unsigned long hornAnticipationIntervalMs = 110;
-const uint32_t slotSymbolColors[] = {0xFF3030, 0xFF4C8B, 0xFFD83D, 0x52C7FF};
+const uint32_t slotSymbolColors[] = {0x45E06F, 0xFF4C8B, 0xFFD83D, 0x52C7FF};
 const uint32_t slotRainbowColors[] = {0xFF3030, 0xFFE13D, 0x45E06F, 0x52C7FF, 0xB060FF};
 constexpr unsigned long cheekUpdateIntervalMs = 50;
 }

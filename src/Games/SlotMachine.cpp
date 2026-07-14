@@ -5,11 +5,12 @@
 
 namespace {
 const uint8_t symbols[][5] PROGMEM = {
-    {0b00100, 0b00110, 0b00100, 0b01010, 0b01110},  // Cherry
+    {0b000111, 0b001011, 0b010110, 0b101100, 0b111000},  // Diagonal PC RAM
     {0b01010, 0b11111, 0b11111, 0b01110, 0b00100},  // Heart
     {0b00100, 0b10101, 0b01110, 0b10101, 0b00100},  // Star
     {0b00100, 0b01110, 0b11111, 0b01110, 0b00100},  // Diamond
 };
+const uint8_t ramContacts[] PROGMEM = {0b000001, 0b000001, 0b000010, 0b000100, 0b001000};
 
 const uint8_t glyphB[] PROGMEM = {0b110, 0b101, 0b110, 0b101, 0b110};
 const uint8_t glyphA[] PROGMEM = {0b010, 0b101, 0b111, 0b101, 0b101};
@@ -34,7 +35,7 @@ const uint8_t* const jackpotWord[] = {glyphJ, glyphA, glyphC, glyphK, glyphP, gl
 const uint8_t* const megaWord[] = {glyphM, glyphE, glyphG, glyphA, glyphBang};
 const uint8_t* const awDangItWord[] = {
     glyphA, glyphW, glyphSpace, glyphD, glyphA, glyphN, glyphG, glyphSpace, glyphI, glyphT};
-const uint32_t symbolColors[] = {0xFF3030, 0xFF4C8B, 0xFFD83D, 0x52C7FF};
+const uint32_t symbolColors[] = {0x45E06F, 0xFF4C8B, 0xFFD83D, 0x52C7FF};
 const uint32_t rainbowColors[] = {0xFF3030, 0xFF9D2E, 0xFFE13D, 0x45E06F, 0x52C7FF, 0xB060FF};
 const unsigned long reelStopMs[] = {700, 1000, 1300};
 const int8_t particleDx[] = {-2, -1, 0, 1, 2, -2, 2, -1, 0, 1, -2, 2};
@@ -293,21 +294,30 @@ void SlotMachine::drawPanel(unsigned long now) {
 
 void SlotMachine::drawSymbol(uint8_t symbol, int x, int y, uint8_t brightness,
                              int highlightColumn, bool squashed) {
-    const uint32_t rgb = symbolColors[symbol % symbolCount];
+    const uint8_t symbolIndex = symbol % symbolCount;
+    const uint8_t width = symbolIndex == 0 ? 6 : 5;
+    const int originX = symbolIndex == 0 ? x - 1 : x;
+    const uint32_t rgb = symbolColors[symbolIndex];
     const uint16_t color = display->color565(((rgb >> 16) & 0xFF) * brightness / 255,
                                              ((rgb >> 8) & 0xFF) * brightness / 255,
                                              (rgb & 0xFF) * brightness / 255);
+    const uint16_t contacts = display->color565(255 * brightness / 255, 190 * brightness / 255,
+                                                40 * brightness / 255);
     const uint16_t highlight = display->color565(255, 255, 255);
     for (uint8_t row = 0; row < 5; ++row) {
-        const uint8_t bits = pgm_read_byte(&symbols[symbol % symbolCount][row]);
-        for (uint8_t col = 0; col < 5; ++col) {
-            if (!(bits & (1 << (4 - col)))) continue;
+        const uint8_t bits = pgm_read_byte(&symbols[symbolIndex][row]);
+        const uint8_t contactBits = symbolIndex == 0 ? pgm_read_byte(&ramContacts[row]) : 0;
+        for (uint8_t col = 0; col < width; ++col) {
+            const uint8_t bit = 1 << (width - 1 - col);
+            if (!(bits & bit)) continue;
+            const uint16_t pixelColor = contactBits & bit ? contacts : color;
             const uint8_t pixelHeight = squashed ? 1 : 2;
             for (uint8_t py = 0; py < pixelHeight; ++py) {
                 const int pixelY = y + row * pixelHeight + py;
                 if (pixelY < 9 || pixelY > 24) continue;
-                drawPixelBoth(x + col * 2, pixelY, col * 2 == highlightColumn ? highlight : color);
-                drawPixelBoth(x + col * 2 + 1, pixelY, col * 2 + 1 == highlightColumn ? highlight : color);
+                drawPixelBoth(originX + col * 2, pixelY, col * 2 == highlightColumn ? highlight : pixelColor);
+                drawPixelBoth(originX + col * 2 + 1, pixelY,
+                              col * 2 + 1 == highlightColumn ? highlight : pixelColor);
             }
         }
     }
