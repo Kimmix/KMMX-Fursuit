@@ -273,15 +273,18 @@ void MouthState::movingMouth() {
         const TimeBasedAnimConfig& base = slowIdleAnimation
                                               ? TimeBasedAnimation::CONFIG_BREATHING_SLOW
                                               : TimeBasedAnimation::CONFIG_BREATHING;
-        idleSigh = --breathsUntilSigh == 0;
+        const bool recoveryBreath = idleSigh;
+        idleSigh = !recoveryBreath && --breathsUntilSigh == 0;
         if (idleSigh) breathsUntilSigh = random(10, 21);
 
-        idleAnim.config.durationMs = random(base.durationMs * 9 / 10, base.durationMs * 11 / 10 + 1);
-        idleAnim.config.pauseAtStartMs = random(base.pauseAtStartMs * 3 / 4, base.pauseAtStartMs * 5 / 4 + 1);
-        idleAnim.config.pauseAtEndMs = idleSigh
-                                           ? base.pauseAtEndMs * 2
-                                           : random(base.pauseAtEndMs * 3 / 4, base.pauseAtEndMs * 5 / 4 + 1);
-        idleAnim.frameCount = idleSigh ? defaultAnimationLength : random(52, defaultAnimationLength + 1);
+        idleAnim.frameCount = idleSigh ? defaultAnimationLength
+                                      : recoveryBreath ? 52 : random(52, defaultAnimationLength + 1);
+        const unsigned long depth = idleAnim.frameCount - 52;
+        const unsigned long durationPercent = 90 + depth * 20 / (defaultAnimationLength - 52);
+        const unsigned long pausePercent = 75 + depth * 50 / (defaultAnimationLength - 52);
+        idleAnim.config.durationMs = base.durationMs * durationPercent / 100;
+        idleAnim.config.pauseAtStartMs = base.pauseAtStartMs * pausePercent / 100;
+        idleAnim.config.pauseAtEndMs = base.pauseAtEndMs * pausePercent / 100 * (idleSigh ? 2 : 1);
     }
 }
 
