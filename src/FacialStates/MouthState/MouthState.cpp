@@ -254,15 +254,35 @@ void MouthState::resetMovingMouth() {
 }
 
 void MouthState::setSlowAnimation(bool slow) {
+    slowIdleAnimation = slow;
     if (slow) {
         TimeBasedAnimation::setConfig(idleAnim, TimeBasedAnimation::CONFIG_BREATHING_SLOW);
     } else {
         TimeBasedAnimation::setConfig(idleAnim, TimeBasedAnimation::CONFIG_BREATHING);
     }
+    idleAnim.frameCount = defaultAnimationLength;
 }
 
 void MouthState::movingMouth() {
+    const bool wasReversing = idleAnim.isReversing;
     mouthFrame = TimeBasedAnimation::update(idleAnim);
+
+    if (!wasReversing && idleAnim.isReversing && idleSigh) {
+        idleAnim.config.durationMs = idleAnim.config.durationMs * 6 / 5;
+    } else if (wasReversing && !idleAnim.isReversing) {
+        const TimeBasedAnimConfig& base = slowIdleAnimation
+                                              ? TimeBasedAnimation::CONFIG_BREATHING_SLOW
+                                              : TimeBasedAnimation::CONFIG_BREATHING;
+        idleSigh = --breathsUntilSigh == 0;
+        if (idleSigh) breathsUntilSigh = random(10, 21);
+
+        idleAnim.config.durationMs = random(base.durationMs * 9 / 10, base.durationMs * 11 / 10 + 1);
+        idleAnim.config.pauseAtStartMs = random(base.pauseAtStartMs * 3 / 4, base.pauseAtStartMs * 5 / 4 + 1);
+        idleAnim.config.pauseAtEndMs = idleSigh
+                                           ? base.pauseAtEndMs * 2
+                                           : random(base.pauseAtEndMs * 3 / 4, base.pauseAtEndMs * 5 / 4 + 1);
+        idleAnim.frameCount = idleSigh ? defaultAnimationLength : random(52, defaultAnimationLength + 1);
+    }
 }
 
 void MouthState::angryBoop() {

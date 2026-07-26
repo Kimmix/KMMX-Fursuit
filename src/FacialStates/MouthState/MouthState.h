@@ -103,6 +103,9 @@ class MouthState {
     TimeBasedAnimState wahAnim;
     TimeBasedAnimState idleAnim;
     TimeBasedAnimState angryAnim;
+    bool slowIdleAnimation = false;
+    bool idleSigh = false;
+    uint8_t breathsUntilSigh = 10;
 
     // Animation data structures for transition + loop pattern
     MouthAnimationData boopData;

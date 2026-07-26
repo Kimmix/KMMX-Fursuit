@@ -267,7 +267,12 @@ short TimeBasedAnimation::calculateFrameIndex(const TimeBasedAnimState& anim, un
     if (anim.frameCount <= 1) return 0;
 
     // Calculate linear progress (0.0 - 1.0)
-    float progress = (float)elapsedMs / (float)anim.config.durationMs;
+    // A relaxed exhale takes longer than the inhale, avoiding a mechanical ping-pong rhythm.
+    float durationMs = anim.config.durationMs;
+    if (anim.config.easingType == EasingType::BREATHING_NATURAL && anim.isReversing) {
+        durationMs *= 1.4f;
+    }
+    float progress = (float)elapsedMs / durationMs;
 
     // Clamp to valid range
     if (progress > 1.0f) progress = 1.0f;
@@ -351,18 +356,8 @@ float TimeBasedAnimation::applyEasing(float t, EasingType easingType) {
         }
 
         case EasingType::BREATHING_NATURAL: {
-            // Symmetric ease in-out for smooth breathing loop
-            // The asymmetry comes from pauseAtStartMs and pauseAtEndMs in the config
-            // This creates a perfect loop when used with PING_PONG mode
-            if (t < 0.5f) {
-                // First half: ease in (accelerating)
-                float t2 = t * 2.0f;  // 0 to 1
-                return 0.5f * t2 * t2;  // Quadratic ease in
-            } else {
-                // Second half: ease out (decelerating)
-                float t2 = (t - 0.5f) * 2.0f;  // 0 to 1
-                return 0.5f + 0.5f * (1.0f - (1.0f - t2) * (1.0f - t2));  // Quadratic ease out
-            }
+            // Quintic easing removes the visible acceleration changes of the old two-part curve.
+            return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
         }
 
         default:
