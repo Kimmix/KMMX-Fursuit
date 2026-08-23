@@ -303,45 +303,47 @@ void EyeState::idleFace() {
 }
 
 void EyeState::updateIdleMicroMovements() {
-    if (millis() < nextIdleAction) return;
+    const unsigned long now = millis();
+    if (now < nextIdleAction) return;
 
     if (pendingIdleFrame) {
         if (idleTransitionStep < 3) {
             currentIdleBitmap = idleTransitionFrames[pendingIdleFrame][idleTransitionStep++];
-            nextIdleAction = millis() + 60;
+            nextIdleAction = now + 60;
             return;
         }
         currentIdleFrame = pendingIdleFrame;
         currentIdleBitmap = idleLookFrames[currentIdleFrame];
         pendingIdleFrame = 0;
         idleTransitionStep = 0;
-        nextIdleAction = millis() + 800 + (esp_random() % 3200);
+        idleCorrectionMade = false;
+        nextIdleAction = now + 600 + (esp_random() % 1200);
         return;
     }
 
-    uint32_t randomAction = esp_random() % 100;
-
-    if (randomAction < 30) {
-        // 30% - Quick eye dart (subtle look around)
-        uint8_t nextFrame = esp_random() % idleLookFramesLength;
-        if (nextFrame) {
-            pendingIdleFrame = nextFrame;
-            currentIdleFrame = 0;
-            currentIdleBitmap = eyeDefault;
-            nextIdleAction = millis() + 40;
+    if (currentIdleFrame) {
+        const uint8_t correctionFrame = idleCorrectionFrames[currentIdleFrame];
+        if (!idleCorrectionMade && correctionFrame && (esp_random() % 100) < 65) {
+            currentIdleFrame = correctionFrame;
+            currentIdleBitmap = idleLookFrames[currentIdleFrame];
+            idleCorrectionMade = true;
+            nextIdleAction = now + 250 + (esp_random() % 550);
             return;
         }
-        currentIdleFrame = nextFrame;
-        currentIdleBitmap = idleLookFrames[currentIdleFrame];
-    } else if (randomAction < 50) {
-        // 20% - Return to center
+
         currentIdleFrame = 0;
         currentIdleBitmap = eyeDefault;
+        idleCorrectionMade = false;
+        nextIdleAction = now + 5000 + (esp_random() % 7000);
+        nextBlink = now;
+        return;
     }
-    // 50% - Stay in current position (no change needed)
 
-    // Schedule next micro-movement (800ms - 4000ms)
-    nextIdleAction = millis() + 800 + (esp_random() % 3200);
+    const uint32_t expression = esp_random() % 100;
+    pendingIdleFrame = expression < 80 ? 1 + (esp_random() % 4)
+                       : expression < 95 ? ((esp_random() % 2) ? 5 : 9)
+                                         : 6 + (esp_random() % 3);
+    nextIdleAction = now + 40;
 }
 
 void EyeState::checkAndTriggerBlink() {

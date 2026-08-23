@@ -84,7 +84,8 @@ class EyeState {
     uint8_t currentIdleFrame = 0;
     uint8_t pendingIdleFrame = 0;
     uint8_t idleTransitionStep = 0;
-    const uint8_t idleLookFramesLength = arrayLength(idleLookFrames);
+    bool idleCorrectionMade = false;
+    const uint8_t idleCorrectionFrames[10] = {0, 2, 1, 4, 3, 0, 7, 6, 0, 0};
 
     // Accelerometer-based eye movement animations (currently disabled)
     const uint8_t* eyeDownAnimation[20] = {
